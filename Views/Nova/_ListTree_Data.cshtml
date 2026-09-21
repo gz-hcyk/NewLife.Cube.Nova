@@ -10,8 +10,23 @@
     var fields = ViewBag.Fields as FieldCollection;
     var fk = fact.Unique;
     var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+
+    // 树形配置：用于定位「节点名」列与 Parent 键
+    var treeSet = fact.EntityType.GetValue("Setting") as IEntityTreeSetting;
+    var keyName = treeSet?.Key ?? fk?.Name ?? "ID";
+    var parentName = treeSet?.Parent ?? "ParentID";
+    var nameField = treeSet?.Name;
+    // 优先在 TreeNodeName / 名称字段列上放展开按钮
+    var treeCol = fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("TreeNodeName"))
+        ?? fields.FirstOrDefault(e => !nameField.IsNullOrEmpty() && e.Name.EqualIgnoreCase(nameField))
+        ?? fields.FirstOrDefault(e => e.Name.EqualIgnoreCase("Name", "DisplayName", "Title"))
+        ?? fields.FirstOrDefault();
 }
-<table class="nv-table">
+<div class="nv-treetable-bar">
+    <button type="button" class="nv-btn nv-btn-sm" data-nv-act="treetable-expand-all" title="展开全部">展开</button>
+    <button type="button" class="nv-btn nv-btn-sm" data-nv-act="treetable-collapse-all" title="折叠全部">折叠</button>
+</div>
+<table class="nv-table nv-treetable" data-nv-treetable="1">
     <thead>
         <tr>
             @if (set.EnableSelect)
@@ -55,8 +70,13 @@
             {
                 p = fact.EntityType.GetValue("Root") as IEntityTree;
             }
-            var id = entity[fk.Name];
-            <tr class="@(fields.GetRowClass?.Invoke(entity))">
+            var id = entity[keyName];
+            var pid = entity[parentName];
+            var depth = entity.Deepth;
+            var hasChild = entity.Childs != null && entity.Childs.Count > 0;
+            var rowCls = fields.GetRowClass?.Invoke(entity) ?? "";
+            if (hasChild) rowCls = (rowCls + " is-open has-child").Trim();
+            <tr class="@rowCls" data-id="@id" data-pid="@pid" data-depth="@depth" data-has-child="@(hasChild ? "1" : "0")">
                 @if (set.EnableSelect)
                 {
                     <td class="nv-td-sticky nv-td-mid"><input type="checkbox" name="keys" value="@entity[fk.Name]" /></td>
@@ -64,10 +84,48 @@
                 @foreach (var item in fields)
                 {
                     var df = item as ListField;
+                    var isTreeCol = treeCol != null && item.Name.EqualIgnoreCase(treeCol.Name);
                     var txt = "";
                     if (df != null && df.DataVisible != null && !df.DataVisible(entity))
                     {
                         <td></td>
+                    }
+                    else if (isTreeCol)
+                    {
+                        // 节点名列：缩进 + 展开/折叠 + 原有单元格内容
+                        var tdClass = df?.GetTextClass(entity) ?? "nv-td-mid";
+                        <td class="@tdClass nv-treetable-node" style="--nv-tree-depth:@depth">
+                            <div class="nv-treetable-cell">
+                                @if (hasChild)
+                                {
+                                    <button type="button" class="nv-tree-toggle" data-nv-act="treetable-toggle" title="展开/折叠" aria-expanded="true">
+                                        <i class="nv-ico nv-ico-sm" data-nv-ico="chevron_right"></i>
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span class="nv-tree-toggle is-leaf" aria-hidden="true"></span>
+                                }
+                                <span class="nv-treetable-label">
+                                    @if (df != null && (txt = df.GetLink(entity, page)) != null)
+                                    {
+                                        @Html.Raw(txt)
+                                    }
+                                    else if (df != null && (txt = df.GetText(entity, page)) != null)
+                                    {
+                                        @Html.Raw(txt)
+                                    }
+                                    else if (item.Name.EqualIgnoreCase("TreeNodeName", "TreeNodeText"))
+                                    {
+                                        @(entity.TreeNodeText?.TrimStart('\u3000', '　', ' ') ?? entity[item.Name])
+                                    }
+                                    else
+                                    {
+                                        @entity[item.Name]
+                                    }
+                                </span>
+                            </div>
+                        </td>
                     }
                     else if (df != null && (txt = df.GetLink(entity, page)) != null)
                     {

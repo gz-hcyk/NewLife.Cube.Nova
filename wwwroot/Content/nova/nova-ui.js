@@ -407,6 +407,28 @@
                     var isOpen = node.classList.toggle('is-open');
                     if (kids && kids.classList.contains('nv-tree-children')) kids.hidden = !isOpen;
                 }
+            } else if (act === 'treetable-toggle') {
+                var row = t.closest('tr');
+                if (row && window.nv && window.nv.treetable) window.nv.treetable.toggle(row);
+            } else if (act === 'treetable-expand-all') {
+                if (window.nv && window.nv.treetable) window.nv.treetable.expandAll(t.closest('.nv-card') || document);
+            } else if (act === 'treetable-collapse-all') {
+                if (window.nv && window.nv.treetable) window.nv.treetable.collapseAll(t.closest('.nv-card') || document);
+            } else if (act === 'treeselect-toggle') {
+                var ts = t.closest('.nv-treeselect');
+                if (ts && window.nv && window.nv.treeselect) window.nv.treeselect.toggle(ts);
+            } else if (act === 'treeselect-pick') {
+                var pickNode = t.closest('.nv-tree-node');
+                var pickTs = t.closest('.nv-treeselect');
+                if (pickNode && pickTs && window.nv && window.nv.treeselect) window.nv.treeselect.pick(pickTs, pickNode);
+            } else if (act === 'treeselect-check') {
+                /* checkbox change 单独处理 */
+            } else if (act === 'treeselect-clear') {
+                var clearTs = t.closest('.nv-treeselect');
+                if (clearTs && window.nv && window.nv.treeselect) window.nv.treeselect.clear(clearTs);
+            } else if (act === 'treeselect-ok') {
+                var okTs = t.closest('.nv-treeselect');
+                if (okTs && window.nv && window.nv.treeselect) window.nv.treeselect.commit(okTs, true);
             }
         });
 
@@ -695,6 +717,198 @@
         });
     }
 
+    /* ---------------------------------------------------------------- ④b 树形表格 */
+    var treetable = {
+        refresh: function (table) {
+            if (!table) return;
+            var collapsed = {};
+            $all('tbody tr[data-id]', table).forEach(function (tr) {
+                if (tr.getAttribute('data-has-child') === '1' && !tr.classList.contains('is-open')) {
+                    collapsed[tr.getAttribute('data-id')] = true;
+                }
+            });
+            $all('tbody tr[data-id]', table).forEach(function (tr) {
+                var pid = tr.getAttribute('data-pid');
+                var hide = false;
+                var guard = 0;
+                while (pid && pid !== '0' && pid !== '' && guard++ < 64) {
+                    if (collapsed[pid]) { hide = true; break; }
+                    var parent = table.querySelector('tbody tr[data-id="' + pid + '"]');
+                    if (!parent) break;
+                    pid = parent.getAttribute('data-pid');
+                }
+                tr.hidden = hide;
+            });
+        },
+        toggle: function (row) {
+            if (!row || row.getAttribute('data-has-child') !== '1') return;
+            row.classList.toggle('is-open');
+            var btn = row.querySelector('[data-nv-act="treetable-toggle"]');
+            if (btn) btn.setAttribute('aria-expanded', row.classList.contains('is-open') ? 'true' : 'false');
+            var table = row.closest('table');
+            treetable.refresh(table);
+        },
+        expandAll: function (root) {
+            $all('table.nv-treetable tbody tr.has-child', root || document).forEach(function (tr) {
+                tr.classList.add('is-open');
+            });
+            $all('table.nv-treetable', root || document).forEach(treetable.refresh);
+        },
+        collapseAll: function (root) {
+            $all('table.nv-treetable tbody tr.has-child', root || document).forEach(function (tr) {
+                tr.classList.remove('is-open');
+            });
+            $all('table.nv-treetable', root || document).forEach(treetable.refresh);
+        }
+    };
+
+    /* ---------------------------------------------------------------- ④c 树状下拉 */
+    var treeselect = {
+        open: function (el) {
+            $all('.nv-treeselect.is-open').forEach(function (x) {
+                if (x !== el) treeselect.close(x);
+            });
+            el.classList.add('is-open');
+            var panel = el.querySelector('.nv-treeselect-panel');
+            if (panel) panel.hidden = false;
+            var trigger = el.querySelector('.nv-treeselect-trigger');
+            if (trigger) trigger.setAttribute('aria-expanded', 'true');
+            var q = el.querySelector('.nv-treeselect-q');
+            if (q) { q.value = ''; treeselect.filter(el, ''); setTimeout(function () { q.focus(); }, 0); }
+        },
+        close: function (el) {
+            el.classList.remove('is-open');
+            var panel = el.querySelector('.nv-treeselect-panel');
+            if (panel) panel.hidden = true;
+            var trigger = el.querySelector('.nv-treeselect-trigger');
+            if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        },
+        toggle: function (el) {
+            if (el.classList.contains('is-open')) treeselect.close(el);
+            else treeselect.open(el);
+        },
+        filter: function (el, keyword) {
+            var kw = (keyword || '').trim().toLowerCase();
+            var nodes = $all('.nv-treeselect-tree .nv-tree-node', el);
+            if (!kw) {
+                nodes.forEach(function (n) { n.hidden = false; });
+                return;
+            }
+            var matched = {};
+            nodes.forEach(function (n) {
+                var label = (n.getAttribute('data-label') || '').toLowerCase();
+                if (label.indexOf(kw) >= 0) matched[n.getAttribute('data-id')] = true;
+            });
+            // 命中节点的祖先也显示
+            nodes.forEach(function (n) {
+                if (!matched[n.getAttribute('data-id')]) return;
+                var pid = n.getAttribute('data-pid');
+                var guard = 0;
+                while (pid && pid !== '0' && guard++ < 64) {
+                    matched[pid] = true;
+                    var p = el.querySelector('.nv-tree-node[data-id="' + pid + '"]');
+                    if (!p) break;
+                    pid = p.getAttribute('data-pid');
+                }
+            });
+            nodes.forEach(function (n) {
+                var id = n.getAttribute('data-id');
+                n.hidden = !(id === '' || matched[id]);
+            });
+        },
+        syncText: function (el, ids, labels) {
+            var text = el.querySelector('.nv-treeselect-text');
+            var ph = el.getAttribute('data-placeholder') || '请选择';
+            if (!ids.length) {
+                text.textContent = ph;
+                text.classList.add('is-placeholder');
+            } else {
+                text.textContent = labels.join('、');
+                text.classList.remove('is-placeholder');
+            }
+        },
+        pick: function (el, node) {
+            var multiple = el.getAttribute('data-multiple') === '1';
+            if (multiple) {
+                var cb = node.querySelector('.nv-tree-check');
+                if (cb) {
+                    cb.checked = !cb.checked;
+                    node.classList.toggle('is-active', cb.checked);
+                    node.setAttribute('aria-selected', cb.checked ? 'true' : 'false');
+                }
+                return;
+            }
+            $all('.nv-tree-node', el).forEach(function (n) {
+                n.classList.remove('is-active');
+                n.setAttribute('aria-selected', 'false');
+            });
+            node.classList.add('is-active');
+            node.setAttribute('aria-selected', 'true');
+            var id = node.getAttribute('data-id') || '';
+            var label = node.getAttribute('data-label') || '';
+            var input = el.querySelector('[data-nv-treeselect-value]');
+            if (input) {
+                input.value = id;
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            treeselect.syncText(el, id ? [id] : [], id ? [label] : []);
+            treeselect.close(el);
+        },
+        clear: function (el) {
+            $all('.nv-tree-check', el).forEach(function (c) { c.checked = false; });
+            $all('.nv-tree-node', el).forEach(function (n) {
+                n.classList.remove('is-active');
+                n.setAttribute('aria-selected', 'false');
+            });
+            treeselect.commit(el, false);
+        },
+        commit: function (el, closeAfter) {
+            var ids = [], labels = [];
+            $all('.nv-tree-node', el).forEach(function (n) {
+                var cb = n.querySelector('.nv-tree-check');
+                var on = cb ? cb.checked : n.classList.contains('is-active');
+                if (!on) return;
+                var id = n.getAttribute('data-id') || '';
+                if (!id && el.getAttribute('data-multiple') === '1') return;
+                ids.push(id);
+                labels.push(n.getAttribute('data-label') || id);
+                n.classList.add('is-active');
+            });
+            var input = el.querySelector('[data-nv-treeselect-value]');
+            if (input) {
+                input.value = ids.join(',');
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+            treeselect.syncText(el, ids.filter(Boolean), labels.filter(function (_, i) { return !!ids[i]; }));
+            if (closeAfter !== false) treeselect.close(el);
+        }
+    };
+
+    function initTreeSelect() {
+        document.addEventListener('input', function (e) {
+            var q = e.target;
+            if (!q || !q.classList || !q.classList.contains('nv-treeselect-q')) return;
+            var el = q.closest('.nv-treeselect');
+            if (el) treeselect.filter(el, q.value);
+        });
+        document.addEventListener('change', function (e) {
+            var cb = e.target;
+            if (!cb || !cb.classList || !cb.classList.contains('nv-tree-check')) return;
+            var node = cb.closest('.nv-tree-node');
+            if (node) {
+                node.classList.toggle('is-active', cb.checked);
+                node.setAttribute('aria-selected', cb.checked ? 'true' : 'false');
+            }
+        });
+        document.addEventListener('click', function (e) {
+            if (e.target.closest && e.target.closest('.nv-treeselect')) return;
+            $all('.nv-treeselect.is-open').forEach(treeselect.close);
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') $all('.nv-treeselect.is-open').forEach(treeselect.close);
+        });
+    }
+
     /* ---------------------------------------------------------------- ⑤ 启动 */
     function boot() {
         initNotice();
@@ -702,7 +916,14 @@
         initRowDoubleClick();
         initDatePicker();
         initCheckAll();
+        initTreeSelect();
+        $all('table.nv-treetable').forEach(treetable.refresh);
     }
+
+    // 导出给原型 click 委托与外部调用
+    window.nv = window.nv || {};
+    window.nv.treetable = treetable;
+    window.nv.treeselect = treeselect;
 
     migratePrefs();
 

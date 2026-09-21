@@ -2,6 +2,7 @@
 @using NewLife;
 @using NewLife.Cube
 @using NewLife.Data;
+@using NewLife.Reflection;
 @using XCode;
 @using XCode.Configuration;
 @using System.Collections;
@@ -20,8 +21,6 @@
     if (ViewData.ModelState.TryGetValue(item.Name, out var st) && st != null) { err = st.Errors.Count; }
 
     // 说明文字：去掉「显示名」前缀与分隔符。
-    // 注：不用 NewLife 的 TrimStart(string, params string[]) —— 该重载已过时（CS0618），
-    // 这里改为显式前缀判断，语义更明确。
     var des = item.Description;
     if (!des.IsNullOrEmpty() && !item.DisplayName.IsNullOrEmpty() && des.StartsWith(item.DisplayName))
     {
@@ -41,6 +40,64 @@
         {
             des = time.ToString("yyyy-MM-dd HH:mm:ss.fff");
         }
+    }
+
+    // —— 树状下拉判定 ——
+    // 1) ItemType 显式指定 tree / treeSelect / treeMultiple
+    // 2) 当前实体为 IEntityTree 且字段为 Parent 键
+    // 3) DataSource 首项为 IEntityTree
+    // 4) 字段名 ParentID 且实体含 ParentID
+    Boolean IsTreeEntityType(Type t)
+    {
+        if (t == null) return false;
+        if (typeof(IEntityTree).IsAssignableFrom(t)) return true;
+        try
+        {
+            var f = EntityFactory.CreateFactory(t);
+            return f?.Table?.FindByName("ParentID") != null;
+        }
+        catch { return false; }
+    }
+
+    Boolean IsTreeData(Object ds)
+    {
+        if (ds == null) return false;
+        if (ds is IEnumerable<SelectListItem> sl)
+            return sl.Any(e => (e.Text + "").IndexOf('\u3000') >= 0 || (e.Text + "").IndexOf('　') >= 0);
+        if (ds is IDictionary dic)
+        {
+            foreach (DictionaryEntry kv in dic)
+            {
+                var text = kv.Value + "";
+                if (text.IndexOf('\u3000') >= 0 || text.IndexOf('　') >= 0) return true;
+            }
+            return false;
+        }
+        if (ds is IEnumerable list)
+        {
+            foreach (var one in list)
+            {
+                if (one is IEntityTree) return true;
+                if (one is IEntity en && IsTreeEntityType(en.GetType())) return true;
+                break;
+            }
+        }
+        return false;
+    }
+
+    var forceTree = item.ItemType.EqualIgnoreCase("tree", "treeSelect", "treeMultiple", "multipleTree");
+    var forceMulti = item.ItemType.EqualIgnoreCase("multipleSelect", "treeMultiple", "multipleTree")
+        || (!item.ItemType.EqualIgnoreCase("singleSelect", "tree", "treeSelect") && item.Name.EndsWith("s"));
+    var isParentField = false;
+    IEntityTreeSetting entityTreeSet = null;
+    if (entity is IEntityTree)
+    {
+        entityTreeSet = entity.GetType().GetValue("Setting") as IEntityTreeSetting;
+        isParentField = entityTreeSet != null && entityTreeSet.Parent.EqualIgnoreCase(item.Name);
+    }
+    if (!isParentField && item.Name.EqualIgnoreCase("ParentID"))
+    {
+        isParentField = entity.GetType().AsFactory()?.Table?.FindByName("ParentID") != null;
     }
 }
 <div class="nv-field @(err > 0 ? "has-error" : "")">
@@ -66,14 +123,14 @@
                 }
             }
 
-            if (ds is IDictionary<Int32, String> dic)
+            if (ds is IDictionary<Int32, String>)
             {
                 if (!ds.Contains(-1))
                 {
                     ds.Add(-1, "<无>");
                 }
             }
-            else if (ds is IDictionary<String, String> dic2)
+            else if (ds is IDictionary<String, String>)
             {
                 if (!ds.Contains("-1"))
                 {
@@ -81,8 +138,15 @@
                 }
             }
 
-            // 数据字段以s结尾，表示多选，其它单选
-            if (item.ItemType.EqualIgnoreCase("singleSelect"))
+            var useTree = forceTree || IsTreeData(ds);
+            var multi = forceMulti || item.ItemType.EqualIgnoreCase("multipleSelect") || (!forceTree && item.Name.EndsWith("s") && !item.ItemType.EqualIgnoreCase("singleSelect"));
+
+            if (useTree)
+            {
+                Object htmlAtts = multi ? (Object)new { multiple = "multiple", data_multiple = "1" } : null;
+                @await Html.PartialAsync(itemView ?? "_Form_TreeSelect", new ListBoxModel(item.Name, ds, itemModel.Value, null, false, htmlAtts))
+            }
+            else if (item.ItemType.EqualIgnoreCase("singleSelect"))
             {
                 @await Html.PartialAsync(itemView ?? "_Form_DropDownList", new ListBoxModel(item.Name, ds, itemModel.Value))
             }
@@ -150,18 +214,19 @@
             }
             else if (entity is IEntityTree treeEntity)
             {
-                var set = entity.GetType().GetValue("Setting") as IEntityTreeSetting;
-                if (set == null || set.Parent != item.Name)
+                var set = entityTreeSet ?? entity.GetType().GetValue("Setting") as IEntityTreeSetting;
+                var isTreeParent = forceTree || (set != null && set.Parent.EqualIgnoreCase(item.Name)) || isParentField;
+                if (!isTreeParent)
                 {
                     @await Html.PartialAsync(itemView ?? "_Form_Editor", itemModel)
                 }
                 else
                 {
                     var root = entity.GetType().GetValue("Root") as IEntityTree;
-                    // 找到完整菜单树，但是排除当前节点这个分支
-                    var list = root.FindAllChildsExcept(treeEntity);
-                    var data = new SelectList(list, set.Key, "TreeNodeText", itemModel.Value);
-                    @Html.DropDownList(item.Name, data, new { @class = "nv-select" })
+                    // 完整树，排除当前节点分支（避免把节点挂到自己的子孙下）
+                    var list = root?.FindAllChildsExcept(treeEntity);
+                    var htmlAtts = forceMulti ? (Object)new { multiple = "multiple", data_multiple = "1" } : null;
+                    @await Html.PartialAsync(itemView ?? "_Form_TreeSelect", new ListBoxModel(item.Name, list, itemModel.Value, "<无>", false, htmlAtts))
                 }
             }
             else

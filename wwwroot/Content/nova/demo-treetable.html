@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN" data-bs-theme="light" data-nv-density="compact">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nova treeTable / TreeSelect 演示</title>
+  <link rel="stylesheet" href="../tabler/css/tabler.min.css" />
+  <link rel="stylesheet" href="nova-ui.css" />
+  <style>
+    body.nv { padding: 24px; background: var(--nv-bg); }
+    .demo-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 24px; }
+    @media (max-width: 960px) { .demo-grid { grid-template-columns: 1fr; } }
+    .demo-card { background: var(--nv-surface); border: 1px solid var(--nv-border); border-radius: var(--nv-r-md); padding: 16px; }
+    .demo-card h2 { margin: 0 0 12px; font-size: 16px; }
+    .demo-note { color: var(--nv-text-3); font-size: 12px; margin-top: 8px; }
+  </style>
+</head>
+<body class="nv">
+  <h1 class="nv-page-title" style="margin-bottom:16px">Nova · treeTable / 树状下拉</h1>
+  <div class="demo-grid">
+    <div class="demo-card nv-card">
+      <h2>treeTable 列表</h2>
+      <div class="nv-treetable-bar">
+        <button type="button" class="nv-btn nv-btn-sm" data-nv-act="treetable-expand-all">展开</button>
+        <button type="button" class="nv-btn nv-btn-sm" data-nv-act="treetable-collapse-all">折叠</button>
+      </div>
+      <div class="nv-table-wrap">
+        <table class="nv-table nv-treetable" data-nv-treetable="1">
+          <thead>
+            <tr>
+              <th class="nv-th">名称</th>
+              <th class="nv-th nv-td-mid">编码</th>
+              <th class="nv-th nv-td-mid">排序</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="is-open has-child" data-id="1" data-pid="0" data-depth="1" data-has-child="1">
+              <td class="nv-treetable-node" style="--nv-tree-depth:1">
+                <div class="nv-treetable-cell">
+                  <button type="button" class="nv-tree-toggle" data-nv-act="treetable-toggle" aria-expanded="true"><i class="nv-ico nv-ico-sm" data-nv-ico="chevron_right"></i></button>
+                  <span class="nv-treetable-label">总部</span>
+                </div>
+              </td>
+              <td class="nv-td-mid">HQ</td>
+              <td class="nv-td-mid">1</td>
+            </tr>
+            <tr class="is-open has-child" data-id="2" data-pid="1" data-depth="2" data-has-child="1">
+              <td class="nv-treetable-node" style="--nv-tree-depth:2">
+                <div class="nv-treetable-cell">
+                  <button type="button" class="nv-tree-toggle" data-nv-act="treetable-toggle" aria-expanded="true"><i class="nv-ico nv-ico-sm" data-nv-ico="chevron_right"></i></button>
+                  <span class="nv-treetable-label">研发中心</span>
+                </div>
+              </td>
+              <td class="nv-td-mid">RD</td>
+              <td class="nv-td-mid">10</td>
+            </tr>
+            <tr data-id="3" data-pid="2" data-depth="3" data-has-child="0">
+              <td class="nv-treetable-node" style="--nv-tree-depth:3">
+                <div class="nv-treetable-cell">
+                  <span class="nv-tree-toggle is-leaf" aria-hidden="true"></span>
+                  <span class="nv-treetable-label">平台组</span>
+                </div>
+              </td>
+              <td class="nv-td-mid">RD-P</td>
+              <td class="nv-td-mid">11</td>
+            </tr>
+            <tr data-id="4" data-pid="2" data-depth="3" data-has-child="0">
+              <td class="nv-treetable-node" style="--nv-tree-depth:3">
+                <div class="nv-treetable-cell">
+                  <span class="nv-tree-toggle is-leaf" aria-hidden="true"></span>
+                  <span class="nv-treetable-label">设备组</span>
+                </div>
+              </td>
+              <td class="nv-td-mid">RD-D</td>
+              <td class="nv-td-mid">12</td>
+            </tr>
+            <tr class="has-child is-open" data-id="5" data-pid="1" data-depth="2" data-has-child="1">
+              <td class="nv-treetable-node" style="--nv-tree-depth:2">
+                <div class="nv-treetable-cell">
+                  <button type="button" class="nv-tree-toggle" data-nv-act="treetable-toggle" aria-expanded="true"><i class="nv-ico nv-ico-sm" data-nv-ico="chevron_right"></i></button>
+                  <span class="nv-treetable-label">市场部</span>
+                </div>
+              </td>
+              <td class="nv-td-mid">MKT</td>
+              <td class="nv-td-mid">20</td>
+            </tr>
+            <tr data-id="6" data-pid="5" data-depth="3" data-has-child="0">
+              <td class="nv-treetable-node" style="--nv-tree-depth:3">
+                <div class="nv-treetable-cell">
+                  <span class="nv-tree-toggle is-leaf" aria-hidden="true"></span>
+                  <span class="nv-treetable-label">华南区</span>
+                </div>
+              </td>
+              <td class="nv-td-mid">MKT-S</td>
+              <td class="nv-td-mid">21</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="demo-note">点击行首箭头折叠/展开子节点；顶部按钮可一键展开或折叠。</p>
+    </div>
+
+    <div class="demo-card">
+      <h2>树状下拉 · 单选（可筛选）</h2>
+      <div class="nv-field">
+        <label class="nv-field-label">上级部门</label>
+        <div class="nv-field-ctl">
+          <div class="nv-treeselect is-single" data-multiple="0" data-placeholder="请选择">
+            <input type="hidden" name="ParentID" id="ParentID" value="2" data-nv-treeselect-value="1" />
+            <button type="button" class="nv-treeselect-trigger" data-nv-act="treeselect-toggle" aria-expanded="false">
+              <span class="nv-treeselect-text">研发中心</span>
+              <i class="nv-ico nv-ico-sm" data-nv-ico="chevron_down"></i>
+            </button>
+            <div class="nv-treeselect-panel" hidden>
+              <div class="nv-treeselect-filter">
+                <input type="search" class="nv-input nv-treeselect-q" placeholder="输入关键字筛选…" autocomplete="off" />
+              </div>
+              <div class="nv-tree nv-treeselect-tree" role="tree">
+                <div class="nv-tree-node is-pseudo" data-id="" data-label="请选择" data-depth="0"><span class="nv-tree-toggle is-leaf"></span><span class="nv-tree-label" data-nv-act="treeselect-pick">请选择</span></div>
+                <div class="nv-tree-node" data-id="1" data-pid="0" data-label="总部" data-depth="1" style="--nv-tree-depth:1"><span class="nv-tree-toggle is-leaf"></span><span class="nv-tree-label" data-nv-act="treeselect-pick">总部</span></div>
+                <div class="nv-tree-node is-active" data-id="2" data-pid="1" data-label="研发中心" data-depth="2" style="--nv-tree-depth:2" aria-selected="true"><span class="nv-tree-toggle is-leaf"></span><span class="nv-tree-label" data-nv-act="treeselect-pick">研发中心</span></div>
+                <div class="nv-tree-node" data-id="3" data-pid="2" data-label="平台组" data-depth="3" style="--nv-tree-depth:3"><span class="nv-tree-toggle is-leaf"></span><span class="nv-tree-label" data-nv-act="treeselect-pick">平台组</span></div>
+                <div class="nv-tree-node" data-id="4" data-pid="2" data-label="设备组" data-depth="3" style="--nv-tree-depth:3"><span class="nv-tree-toggle is-leaf"></span><span class="nv-tree-label" data-nv-act="treeselect-pick">设备组</span></div>
+                <div class="nv-tree-node" data-id="5" data-pid="1" data-label="市场部" data-depth="2" style="--nv-tree-depth:2"><span class="nv-tree-toggle is-leaf"></span><span class="nv-tree-label" data-nv-act="treeselect-pick">市场部</span></div>
+                <div class="nv-tree-node" data-id="6" data-pid="5" data-label="华南区" data-depth="3" style="--nv-tree-depth:3"><span class="nv-tree-toggle is-leaf"></span><span class="nv-tree-label" data-nv-act="treeselect-pick">华南区</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h2 style="margin-top:24px">树状下拉 · 多选</h2>
+      <div class="nv-field">
+        <label class="nv-field-label">可见部门</label>
+        <div class="nv-field-ctl">
+          <div class="nv-treeselect is-multiple" data-multiple="1" data-placeholder="请选择">
+            <input type="hidden" name="DeptIds" id="DeptIds" value="3,6" data-nv-treeselect-value="1" />
+            <button type="button" class="nv-treeselect-trigger" data-nv-act="treeselect-toggle" aria-expanded="false">
+              <span class="nv-treeselect-text">平台组、华南区</span>
+              <i class="nv-ico nv-ico-sm" data-nv-ico="chevron_down"></i>
+            </button>
+            <div class="nv-treeselect-panel" hidden>
+              <div class="nv-treeselect-filter">
+                <input type="search" class="nv-input nv-treeselect-q" placeholder="输入关键字筛选…" autocomplete="off" />
+              </div>
+              <div class="nv-tree nv-treeselect-tree" role="tree">
+                <div class="nv-tree-node" data-id="1" data-pid="0" data-label="总部" data-depth="1" style="--nv-tree-depth:1"><span class="nv-tree-toggle is-leaf"></span><input type="checkbox" class="nv-tree-check" data-nv-act="treeselect-check" value="1" /><span class="nv-tree-label" data-nv-act="treeselect-pick">总部</span></div>
+                <div class="nv-tree-node" data-id="2" data-pid="1" data-label="研发中心" data-depth="2" style="--nv-tree-depth:2"><span class="nv-tree-toggle is-leaf"></span><input type="checkbox" class="nv-tree-check" data-nv-act="treeselect-check" value="2" /><span class="nv-tree-label" data-nv-act="treeselect-pick">研发中心</span></div>
+                <div class="nv-tree-node is-active" data-id="3" data-pid="2" data-label="平台组" data-depth="3" style="--nv-tree-depth:3"><span class="nv-tree-toggle is-leaf"></span><input type="checkbox" class="nv-tree-check" data-nv-act="treeselect-check" value="3" checked /><span class="nv-tree-label" data-nv-act="treeselect-pick">平台组</span></div>
+                <div class="nv-tree-node" data-id="4" data-pid="2" data-label="设备组" data-depth="3" style="--nv-tree-depth:3"><span class="nv-tree-toggle is-leaf"></span><input type="checkbox" class="nv-tree-check" data-nv-act="treeselect-check" value="4" /><span class="nv-tree-label" data-nv-act="treeselect-pick">设备组</span></div>
+                <div class="nv-tree-node" data-id="5" data-pid="1" data-label="市场部" data-depth="2" style="--nv-tree-depth:2"><span class="nv-tree-toggle is-leaf"></span><input type="checkbox" class="nv-tree-check" data-nv-act="treeselect-check" value="5" /><span class="nv-tree-label" data-nv-act="treeselect-pick">市场部</span></div>
+                <div class="nv-tree-node is-active" data-id="6" data-pid="5" data-label="华南区" data-depth="3" style="--nv-tree-depth:3"><span class="nv-tree-toggle is-leaf"></span><input type="checkbox" class="nv-tree-check" data-nv-act="treeselect-check" value="6" checked /><span class="nv-tree-label" data-nv-act="treeselect-pick">华南区</span></div>
+              </div>
+              <div class="nv-treeselect-footer">
+                <button type="button" class="nv-btn nv-btn-sm" data-nv-act="treeselect-clear">清空</button>
+                <span class="nv-toolbar-spacer"></span>
+                <button type="button" class="nv-btn nv-btn-sm nv-btn-primary" data-nv-act="treeselect-ok">确定</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="demo-note">单选点选即回填；多选勾选后点确定。筛选会保留命中节点的祖先路径。</p>
+    </div>
+  </div>
+  <script src="nova-ui.js"></script>
+</body>
+</html>

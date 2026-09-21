@@ -1,8 +1,10 @@
 @model EntityField
 @using NewLife;
 @using NewLife.Cube
+@using NewLife.Reflection
 @using XCode;
 @using XCode.Configuration;
+@using System.Collections;
 @{
     var entity = Model.Entity;
     var field = Model.Field;
@@ -14,6 +16,13 @@
     // 如果没有外部关联，输出数字编辑框和标签
     // 如果映射目标列表项过多，不能使用下拉
     var fact = map == null ? null : EntityFactory.CreateFactory(map.EntityType);
+
+    Boolean IsTreeFactory(IEntityFactory f)
+    {
+        if (f == null) return false;
+        if (typeof(IEntityTree).IsAssignableFrom(f.EntityType)) return true;
+        return f.Table?.FindByName("ParentID") != null;
+    }
 }
 @if (map == null || fact != null && fact.Session.Count > set.MaxDropDownList)
 {
@@ -27,6 +36,29 @@
 
     @await Html.PartialAsync("_Form_Editor", new ItemModel(field.Name, entity[field.Name], field.Type) { Length = field.Length })
     <span class="nv-field-hint nv-d-inline">@label</span>
+}
+else if (IsTreeFactory(fact))
+{
+    // 映射目标带 ParentID → 树状下拉（可筛选；字段名以 s 结尾或多选 ItemType → 多选）
+    var root = map.EntityType.GetValue("Root") as IEntityTree;
+    IEnumerable list = root?.AllChilds;
+    if (list == null || list is ICollection col && col.Count == 0)
+        list = root?.FindAllChildsExcept(null);
+
+    var multi = field.MapField.EndsWith("s") || field.Name.EndsWith("s")
+        || field.ItemType.EqualIgnoreCase("multipleSelect", "treeMultiple", "multipleTree");
+    Object htmlAtts = multi ? (Object)new { multiple = "multiple", data_multiple = "1" } : null;
+
+    if (list != null)
+    {
+        @await Html.PartialAsync("_Form_TreeSelect", new ListBoxModel(field.MapField, list, entity[field.MapField], "<无>", false, htmlAtts))
+    }
+    else
+    {
+        var dicFallback = map.GetDataSource();
+        var dic3 = dicFallback?.ToDictionary(e => e.Key + "", e => e.Value);
+        @await Html.PartialAsync("_Form_TreeSelect", new ListBoxModel(field.MapField, dic3, entity[field.MapField] + "", "<无>", false, htmlAtts))
+    }
 }
 else
 {

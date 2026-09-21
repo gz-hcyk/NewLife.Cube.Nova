@@ -1,0 +1,162 @@
+@model ListBoxModel
+@using NewLife;
+@using NewLife.Cube
+@using NewLife.Reflection
+@using Microsoft.AspNetCore.Routing
+@using XCode;
+@using System.Collections;
+@{
+    // 树状下拉：支持筛选、单选/多选。数据可为 IEntityTree 列表、带全角缩进的字典、或普通字典。
+    var name = Model.Name;
+    var value = Model.Value;
+    var type = value?.GetType();
+    var selectedRaw = Model.SelectedValues + "";
+    var optionLabel = Model.OptionLabel;
+    if (optionLabel.IsNullOrEmpty()) optionLabel = "请选择";
+
+    // 多选：HtmlAttributes.multiple / data-multiple 由调用方指定
+    var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes) ?? new RouteValueDictionary();
+    var multiple = atts.ContainsKey("multiple")
+        || (atts.TryGetValue("data-multiple", out var dm) && (dm + "").EqualIgnoreCase("1", "true"));
+
+    var selectedSet = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
+    if (!selectedRaw.IsNullOrEmpty())
+    {
+        foreach (var s in selectedRaw.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
+        {
+            selectedSet.Add(s.Trim());
+        }
+    }
+
+    // 规范化节点：Id / Label / Depth / ParentId
+    var nodes = new List<(String Id, String Label, Int32 Depth, String Pid)>();
+
+    void AddNode(String id, String label, Int32 depth, String pid)
+    {
+        if (id.IsNullOrEmpty()) return;
+        var text = label ?? "";
+        // 从 TreeNodeText 全角空格推深度
+        if (depth <= 0)
+        {
+            var d = 0;
+            foreach (var ch in text)
+            {
+                if (ch == '\u3000' || ch == '　') d++;
+                else break;
+            }
+            if (d > 0) { depth = d; text = text.TrimStart('\u3000', '　', ' '); }
+        }
+        else
+        {
+            text = text.TrimStart('\u3000', '　', ' ');
+        }
+        nodes.Add((id, text, depth, pid ?? ""));
+    }
+
+    if (value is IEnumerable<SelectListItem> selectList)
+    {
+        foreach (var it in selectList)
+        {
+            AddNode(it.Value, it.Text, 0, "");
+            if (it.Selected) selectedSet.Add(it.Value + "");
+        }
+    }
+    else if (value is IEnumerable data && type != null && type.GetElementTypeEx().As(typeof(IEntity)))
+    {
+        IEntityTreeSetting treeSet = null;
+        foreach (IEntity entity in data)
+        {
+            if (treeSet == null)
+                treeSet = entity.GetType().GetValue("Setting") as IEntityTreeSetting;
+            var factory = entity.GetType().AsFactory();
+            var key = !(treeSet?.Key).IsNullOrEmpty() ? treeSet.Key : factory.Unique.Name;
+            var id = entity[key] + "";
+            var pid = treeSet != null && !treeSet.Parent.IsNullOrEmpty() ? entity[treeSet.Parent] + "" : "";
+            var depth = 0;
+            var label = entity + "";
+            if (entity is IEntityTree tree)
+            {
+                depth = tree.Deepth;
+                label = tree.TreeNodeText ?? label;
+            }
+            AddNode(id, label, depth, pid);
+        }
+    }
+    else if (value is IDictionary dic)
+    {
+        foreach (DictionaryEntry kv in dic)
+        {
+            AddNode(kv.Key + "", kv.Value + "", 0, "");
+        }
+    }
+    else if (value is IEnumerable items)
+    {
+        foreach (var it in items)
+        {
+            AddNode(it + "", it + "", 0, "");
+        }
+    }
+
+    // 选中文本
+    String selectedText;
+    if (selectedSet.Count == 0)
+    {
+        selectedText = optionLabel;
+    }
+    else
+    {
+        var labels = nodes.Where(n => selectedSet.Contains(n.Id)).Select(n => n.Label).ToList();
+        selectedText = labels.Count > 0 ? String.Join("、", labels) : String.Join("、", selectedSet);
+    }
+
+    var uid = "nvts_" + name + "_" + Math.Abs(name.GetHashCode()).ToString("x");
+    var selectedJoined = String.Join(",", selectedSet);
+}
+<div class="nv-treeselect @(multiple ? "is-multiple" : "is-single")" id="@uid" data-multiple="@(multiple ? "1" : "0")" data-placeholder="@optionLabel">
+    <input type="hidden" name="@name" id="@name" value="@selectedJoined" data-nv-treeselect-value="1" />
+    <button type="button" class="nv-treeselect-trigger" data-nv-act="treeselect-toggle" aria-haspopup="listbox" aria-expanded="false">
+        <span class="nv-treeselect-text @(selectedSet.Count == 0 ? "is-placeholder" : "")">@selectedText</span>
+        <i class="nv-ico nv-ico-sm" data-nv-ico="chevron_down"></i>
+    </button>
+    <div class="nv-treeselect-panel" hidden>
+        <div class="nv-treeselect-filter">
+            <input type="search" class="nv-input nv-treeselect-q" placeholder="输入关键字筛选…" autocomplete="off" />
+        </div>
+        <div class="nv-tree nv-treeselect-tree" role="tree">
+            @if (!multiple)
+            {
+                <div class="nv-tree-node is-pseudo @(selectedSet.Count == 0 ? "is-active" : "")" data-id="" data-label="@optionLabel" data-depth="0" role="treeitem">
+                    <span class="nv-tree-toggle is-leaf" aria-hidden="true"></span>
+                    <span class="nv-tree-label" data-nv-act="treeselect-pick">@optionLabel</span>
+                </div>
+            }
+            @foreach (var n in nodes)
+            {
+                var active = selectedSet.Contains(n.Id);
+                <div class="nv-tree-node @(active ? "is-active" : "")" data-id="@n.Id" data-pid="@n.Pid" data-label="@n.Label" data-depth="@n.Depth" style="--nv-tree-depth:@n.Depth" role="treeitem" aria-selected="@(active ? "true" : "false")">
+                    <span class="nv-tree-toggle is-leaf" aria-hidden="true"></span>
+                    @if (multiple)
+                    {
+                        if (active)
+                        {
+                            <input type="checkbox" class="nv-tree-check" data-nv-act="treeselect-check" value="@n.Id" checked="checked" />
+                        }
+                        else
+                        {
+                            <input type="checkbox" class="nv-tree-check" data-nv-act="treeselect-check" value="@n.Id" />
+                        }
+                    }
+                    <span class="nv-tree-label" data-nv-act="treeselect-pick">@n.Label</span>
+                </div>
+            }
+        </div>
+        @if (multiple)
+        {
+            <div class="nv-treeselect-footer">
+                <button type="button" class="nv-btn nv-btn-sm" data-nv-act="treeselect-clear">清空</button>
+                <span class="nv-toolbar-spacer"></span>
+                <button type="button" class="nv-btn nv-btn-sm nv-btn-primary" data-nv-act="treeselect-ok">确定</button>
+            </div>
+        }
+    </div>
+</div>

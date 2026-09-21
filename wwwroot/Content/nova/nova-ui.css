@@ -1151,6 +1151,63 @@ height:14px;}
 body.nv [data-bs-theme="dark"] .nv-chip .nv-chip-x:hover {
  background:rgba(255,255,255,.16); }
 /* ============================================================================
+ * 28a. 树形表格 treeTable + 树状下拉 TreeSelect
+ * ==========================================================================*/
+.nv-treetable-bar {
+ display:flex; align-items:center; gap:var(--nv-sp-2);
+ padding:var(--nv-sp-2) var(--nv-sp-3) 0; }
+.nv-treetable .nv-treetable-node {
+ text-align:left !important; }
+.nv-treetable-cell {
+ display:flex; align-items:center; gap:4px;
+ padding-left:calc(var(--nv-tree-depth, 0) * 18px); }
+.nv-treetable .nv-tree-toggle {
+ flex:0 0 auto; }
+.nv-treetable tr.has-child.is-open > td .nv-tree-toggle {
+ transform:rotate(90deg); }
+.nv-treetable-label {
+ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.nv-treetable tbody tr[hidden] {
+ display:none; }
+
+.nv-treeselect {
+ position:relative; width:100%; max-width:420px; }
+.nv-treeselect-trigger {
+ display:flex; align-items:center; justify-content:space-between; gap:var(--nv-sp-2);
+ width:100%; min-height:var(--nv-ctrl-h, 34px); padding:0 10px;
+ border:1px solid var(--nv-border); border-radius:var(--nv-r-sm);
+ background:var(--nv-surface); color:var(--nv-text); font-size:var(--nv-fs-13);
+ cursor:pointer; text-align:left; }
+.nv-treeselect-trigger:hover {
+ border-color:var(--nv-border-strong); }
+.nv-treeselect.is-open .nv-treeselect-trigger {
+ border-color:var(--nv-primary); box-shadow:0 0 0 3px var(--nv-primary-wash); }
+.nv-treeselect-text {
+ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.nv-treeselect-text.is-placeholder {
+ color:var(--nv-text-4); }
+.nv-treeselect-panel {
+ position:absolute; z-index:40; left:0; right:0; top:calc(100% + 4px);
+ display:flex; flex-direction:column; gap:var(--nv-sp-2);
+ padding:var(--nv-sp-2); background:var(--nv-surface);
+ border:1px solid var(--nv-border-strong); border-radius:var(--nv-r-md);
+ box-shadow:var(--nv-shadow-lg, 0 12px 28px rgba(15,23,42,.14)); }
+.nv-treeselect-panel[hidden] {
+ display:none !important; }
+.nv-treeselect-filter .nv-input {
+ width:100%; }
+.nv-treeselect .nv-tree {
+ max-height:280px; border:0; padding:0; background:transparent; }
+.nv-treeselect .nv-tree-node {
+ padding-left:calc(var(--nv-tree-depth, 0) * 16px); }
+.nv-treeselect .nv-tree-node[hidden] {
+ display:none; }
+.nv-treeselect-footer {
+ display:flex; align-items:center; gap:var(--nv-sp-2);
+ padding-top:var(--nv-sp-1); border-top:1px solid var(--nv-border); }
+.nv-field-ctl > .nv-treeselect {
+ max-width:100%; }
+/* ============================================================================
  * 28b. 深度优化 · 动效 / 骨架 / 图表 / 表单谱 / 场景组件
  * （v2 之上扩展；不改动既有 --nv-* 令牌名与契约类名）
  * ==========================================================================*//* ---- 入场动效（滚动揭示，配合 JS IntersectionObserver 加 .is-in） ---- */@keyframes nv-rise { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }@keyframes nv-fade { from { opacity:0; } to { opacity:1; } }.nv-reveal {
