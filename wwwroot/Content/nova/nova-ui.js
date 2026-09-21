@@ -668,6 +668,279 @@
         });
     }
 
+    /* ---------------------------------------------------------------- ④b 树表 / 树状下拉 */
+    var treeBound = false;
+
+    function treeParentMap(rows, idAttr, parentAttr) {
+        var parentOf = {};
+        rows.forEach(function (row) {
+            parentOf[row.getAttribute(idAttr) || ''] = row.getAttribute(parentAttr) || '';
+        });
+        return parentOf;
+    }
+    function buriedUnder(id, parentOf, collapsed) {
+        var seen = {};
+        var p = parentOf[id];
+        var guard = 0;
+        while (p && guard++ < 64 && !seen[p]) {
+            seen[p] = true;
+            if (collapsed[p]) return true;
+            p = parentOf[p];
+        }
+        return false;
+    }
+    function applyTreeTable(table) {
+        var rows = $all('tbody > tr[data-nv-tree-id]', table);
+        var collapsed = {};
+        rows.forEach(function (tr) {
+            if (tr.getAttribute('data-nv-collapsed') === '1') collapsed[tr.getAttribute('data-nv-tree-id')] = true;
+        });
+        var parentOf = treeParentMap(rows, 'data-nv-tree-id', 'data-nv-tree-parent');
+        rows.forEach(function (tr) {
+            tr.hidden = buriedUnder(tr.getAttribute('data-nv-tree-id'), parentOf, collapsed);
+        });
+    }
+    function enhanceTreeTable(table) {
+        if (table.getAttribute('data-nv-tree-ready') === '1') return;
+        table.setAttribute('data-nv-tree-ready', '1');
+        var rows = $all('tbody > tr[data-nv-tree-id]', table);
+        var min = 0;
+        var has = false;
+        rows.forEach(function (tr) {
+            var depth = parseInt(tr.getAttribute('data-nv-tree-depth') || '0', 10);
+            if (!has || depth < min) { min = depth; has = true; }
+        });
+        rows.forEach(function (tr) {
+            var cell = null;
+            for (var i = 0; i < tr.children.length; i++) {
+                var td = tr.children[i];
+                if (td.tagName !== 'TD') continue;
+                if (td.querySelector('input[type="checkbox"][name="keys"]')) continue;
+                cell = td;
+                break;
+            }
+            if (!cell || cell.querySelector('.nv-tree-toggle')) return;
+            cell.classList.add('nv-tree-cell');
+            var depth = parseInt(tr.getAttribute('data-nv-tree-depth') || '0', 10);
+            var indent = document.createElement('span');
+            indent.className = 'nv-tree-indent';
+            indent.style.width = (Math.max(0, depth - min) * 16) + 'px';
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'nv-tree-toggle';
+            btn.setAttribute('data-nv-tree-fold', '');
+            btn.setAttribute('aria-label', '展开或折叠');
+            if (tr.getAttribute('data-nv-tree-branch') === '1') btn.classList.add('is-open');
+            else btn.classList.add('is-leaf');
+            btn.innerHTML = window.nvIcon ? window.nvIcon.html('chevron_right') : '';
+            cell.insertBefore(btn, cell.firstChild);
+            cell.insertBefore(indent, cell.firstChild);
+        });
+    }
+    function setTreeExpanded(table, open) {
+        $all('tbody > tr[data-nv-tree-branch="1"]', table).forEach(function (tr) {
+            if (open) tr.removeAttribute('data-nv-collapsed');
+            else tr.setAttribute('data-nv-collapsed', '1');
+            var btn = tr.querySelector('.nv-tree-toggle');
+            if (btn) btn.classList.toggle('is-open', open);
+        });
+        applyTreeTable(table);
+    }
+    function initTreeTable() {
+        $all('table.nv-tree-table').forEach(enhanceTreeTable);
+    }
+
+    function selectedTreeOptions(sel) {
+        var list = [];
+        for (var i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].selected && sel.options[i].value !== '') list.push(sel.options[i]);
+        }
+        return list;
+    }
+    function paintTreeSelect(box) {
+        var sel = box.querySelector('select');
+        var label = box.querySelector('.nv-treeselect-value');
+        if (!sel || !label) return;
+        var multiple = box.getAttribute('data-multiple') === '1';
+        var placeholder = box.getAttribute('data-placeholder') || '请选择';
+        var picked = selectedTreeOptions(sel);
+        $all('.nv-tree-node', box).forEach(function (node) {
+            var id = node.getAttribute('data-nv-id') || '';
+            var on = false;
+            for (var i = 0; i < picked.length; i++) if (picked[i].value === id) on = true;
+            node.classList.toggle('is-active', !!id && on);
+            var cb = node.querySelector('.nv-tree-check');
+            if (cb) cb.checked = on;
+        });
+        if (!picked.length) {
+            label.textContent = placeholder;
+            label.classList.add('is-placeholder');
+        } else if (!multiple || picked.length <= 2) {
+            var names = [];
+            for (var n = 0; n < picked.length; n++) names.push(picked[n].text);
+            label.textContent = names.join('、');
+            label.classList.remove('is-placeholder');
+        } else {
+            label.textContent = '已选 ' + picked.length + ' 项';
+            label.classList.remove('is-placeholder');
+        }
+    }
+    function chooseTreeNode(box, id, on) {
+        var sel = box.querySelector('select');
+        if (!sel) return;
+        var multiple = box.getAttribute('data-multiple') === '1';
+        for (var i = 0; i < sel.options.length; i++) {
+            var op = sel.options[i];
+            if (!multiple) op.selected = op.value === id;
+            else if (op.value === id) op.selected = !!on;
+        }
+        paintTreeSelect(box);
+        var hidden = box.querySelector('.nv-treeselect-value-input');
+        if (hidden) {
+            var ids = [];
+            for (var n = 0; n < sel.options.length; n++) {
+                if (sel.options[n].selected && sel.options[n].value !== '') ids.push(sel.options[n].value);
+            }
+            hidden.value = ids.join(',');
+        }
+        try { sel.dispatchEvent(new Event('change', { bubbles: true })); } catch (err) { }
+        if (!multiple && box.getAttribute('data-autopost') === '1') {
+            var form = box.closest('form');
+            if (form) form.submit();
+        }
+    }
+    function applyTreeSelectFold(box) {
+        var nodes = $all('.nv-tree-node', box);
+        var collapsed = {};
+        nodes.forEach(function (node) {
+            var id = node.getAttribute('data-nv-id') || '';
+            if (id && node.getAttribute('data-nv-branch') === '1' && !node.classList.contains('is-open')) collapsed[id] = true;
+        });
+        var parentOf = treeParentMap(nodes, 'data-nv-id', 'data-nv-parent');
+        nodes.forEach(function (node) {
+            var id = node.getAttribute('data-nv-id') || '';
+            node.hidden = !!id && buriedUnder(id, parentOf, collapsed);
+        });
+    }
+    function filterTreeSelect(box, keyword) {
+        var q = (keyword || '').replace(/^\s+|\s+$/g, '').toLowerCase();
+        var nodes = $all('.nv-tree-node', box);
+        if (!q) {
+            nodes.forEach(function (node) { node.hidden = false; });
+            applyTreeSelectFold(box);
+            return;
+        }
+        var parentOf = treeParentMap(nodes, 'data-nv-id', 'data-nv-parent');
+        var hit = {};
+        nodes.forEach(function (node) {
+            var text = (node.getAttribute('data-nv-text') || '').toLowerCase();
+            if (text.indexOf(q) >= 0) hit[node.getAttribute('data-nv-id') || ''] = true;
+        });
+        Object.keys(hit).forEach(function (id) {
+            var p = parentOf[id];
+            var guard = 0;
+            while (p && guard++ < 64) { hit[p] = true; p = parentOf[p]; }
+        });
+        nodes.forEach(function (node) {
+            node.hidden = !hit[node.getAttribute('data-nv-id') || ''];
+        });
+    }
+    function closeTreeSelect(box) {
+        var pop = box.querySelector('.nv-treeselect-pop');
+        var btn = box.querySelector('.nv-treeselect-btn');
+        if (pop) pop.hidden = true;
+        box.classList.remove('is-open');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+        if (box.getAttribute('data-multiple') === '1' && box.getAttribute('data-nv-dirty') === '1' && box.getAttribute('data-autopost') === '1') {
+            box.removeAttribute('data-nv-dirty');
+            var form = box.closest('form');
+            if (form) form.submit();
+        }
+    }
+    function openTreeSelect(box) {
+        $all('.nv-treeselect.is-open').forEach(function (other) { if (other !== box) closeTreeSelect(other); });
+        var pop = box.querySelector('.nv-treeselect-pop');
+        var btn = box.querySelector('.nv-treeselect-btn');
+        box.classList.add('is-open');
+        if (pop) pop.hidden = false;
+        if (btn) btn.setAttribute('aria-expanded', 'true');
+        var input = box.querySelector('.nv-treeselect-filter');
+        if (input) {
+            input.value = '';
+            filterTreeSelect(box, '');
+            input.focus();
+        }
+    }
+    function initTreeSelect() {
+        $all('[data-nv-treeselect]').forEach(paintTreeSelect);
+        if (treeBound) return;
+        treeBound = true;
+        document.addEventListener('click', function (e) {
+            var expandBtn = e.target.closest ? e.target.closest('[data-nv-tree-expand]') : null;
+            if (expandBtn) {
+                var wrap = expandBtn.closest('.nv-table-wrap') || document;
+                var table = wrap.querySelector('table.nv-tree-table');
+                if (table) setTreeExpanded(table, expandBtn.getAttribute('data-nv-tree-expand') === 'all');
+                return;
+            }
+            var fold = e.target.closest ? e.target.closest('[data-nv-tree-fold]') : null;
+            if (fold && fold.closest('table.nv-tree-table')) {
+                e.preventDefault();
+                var tr = fold.closest('tr');
+                if (!tr || tr.getAttribute('data-nv-tree-branch') !== '1') return;
+                var willOpen = tr.getAttribute('data-nv-collapsed') === '1';
+                if (willOpen) tr.removeAttribute('data-nv-collapsed');
+                else tr.setAttribute('data-nv-collapsed', '1');
+                fold.classList.toggle('is-open', willOpen);
+                applyTreeTable(tr.closest('table'));
+                return;
+            }
+            var box = e.target.closest ? e.target.closest('[data-nv-treeselect]') : null;
+            if (!box) {
+                $all('.nv-treeselect.is-open').forEach(closeTreeSelect);
+                return;
+            }
+            if (e.target.closest('.nv-treeselect-btn')) {
+                if (box.classList.contains('is-open')) closeTreeSelect(box);
+                else openTreeSelect(box);
+                return;
+            }
+            var node = e.target.closest('.nv-tree-node');
+            if (!node || !box.contains(node)) return;
+            if (e.target.closest('[data-nv-tree-fold]')) {
+                e.preventDefault();
+                if (node.getAttribute('data-nv-branch') === '1') {
+                    node.classList.toggle('is-open');
+                    var typing = box.querySelector('.nv-treeselect-filter');
+                    if (!typing || !typing.value) applyTreeSelectFold(box);
+                }
+                return;
+            }
+            var id = node.getAttribute('data-nv-id') || '';
+            if (box.getAttribute('data-multiple') === '1') {
+                if (!id) return;
+                var cb = node.querySelector('.nv-tree-check');
+                var turnOn = cb && e.target === cb ? cb.checked : !node.classList.contains('is-active');
+                chooseTreeNode(box, id, turnOn);
+                box.setAttribute('data-nv-dirty', '1');
+                return;
+            }
+            chooseTreeNode(box, id, true);
+            closeTreeSelect(box);
+        });
+        document.addEventListener('input', function (e) {
+            if (!e.target.classList || !e.target.classList.contains('nv-treeselect-filter')) return;
+            filterTreeSelect(e.target.closest('[data-nv-treeselect]'), e.target.value);
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Escape' && e.key !== 'Enter') return;
+            var box = e.target.closest ? e.target.closest('[data-nv-treeselect]') : null;
+            if (!box || !box.classList.contains('is-open')) return;
+            if (e.key === 'Enter') e.preventDefault();
+            if (e.key === 'Escape' || (e.key === 'Enter' && e.target.classList.contains('nv-treeselect-filter'))) closeTreeSelect(box);
+        });
+    }
+
     function initDatePicker() {
         if (!window.Litepicker) return;
         $all('input[dateformat]').forEach(function (el) {
@@ -702,6 +975,8 @@
         initRowDoubleClick();
         initDatePicker();
         initCheckAll();
+        initTreeTable();
+        initTreeSelect();
     }
 
     migratePrefs();

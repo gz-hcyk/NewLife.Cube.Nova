@@ -18,18 +18,20 @@
         <form action="~/Admin/File" id="tool" method="post" class="nv-row">
             <div class="nv-field" style="margin-bottom:0">
                 <label class="nv-field-label">当前路径</label>
-                <input name="r" type="search" id="r" value="@r" class="nv-input" placeholder="当前路径" />
+                <div class="nv-field-ctl">
+                    <input name="r" type="search" id="r" value="@r" class="nv-input" placeholder="当前路径" />
+                </div>
             </div>
-            <button type="submit" class="nv-btn nv-btn-primary"><i class="ti ti-folder"></i>打开</button>
-            <label class="nv-btn" style="cursor:pointer">
-                <i class="ti ti-upload"></i>上传文件
-                <input name="file" type="file" id="file" data-action="upload" data-url="/Admin/File/Upload" data-fields="r" style="display:none" />
+            <button type="submit" class="nv-btn nv-btn-primary nv-btn-sm"><i class="nv-ico nv-ico-sm" data-nv-ico="folder"></i>打开</button>
+            <label class="nv-btn nv-btn-sm" style="cursor:pointer">
+                <i class="nv-ico nv-ico-sm" data-nv-ico="upload"></i>上传文件
+                <input name="file" type="file" id="file" data-action="upload" data-url="/Admin/File/Upload" data-fields="r" class="nv-file-hidden" />
             </label>
             @if (clips.Count > 0)
             {
-                <button type="button" class="nv-btn" onclick="location.href = '/Admin/File/Paste?r=@r';"><i class="ti ti-clipboard"></i>粘贴(@clips.Count)</button>
-                <button type="button" class="nv-btn" onclick="location.href = '/Admin/File/Move?r=@r';"><i class="ti ti-arrow-move"></i>移动</button>
-                <button type="button" class="nv-btn nv-btn-danger" onclick="location.href = '/Admin/File/ClearClipboard?r=@r';"><i class="ti ti-trash"></i>清空</button>
+                <button type="button" class="nv-btn nv-btn-sm" onclick="location.href = '/Admin/File/Paste?r=@r';"><i class="nv-ico nv-ico-sm" data-nv-ico="check"></i>粘贴(@clips.Count)</button>
+                <button type="button" class="nv-btn nv-btn-sm" onclick="location.href = '/Admin/File/Move?r=@r';"><i class="nv-ico nv-ico-sm" data-nv-ico="edit"></i>移动</button>
+                <button type="button" class="nv-btn nv-btn-sm nv-btn-danger" onclick="location.href = '/Admin/File/ClearClipboard?r=@r';"><i class="nv-ico nv-ico-sm" data-nv-ico="trash"></i>清空</button>
             }
         </form>
         <div style="height:var(--nv-sp-4)"></div>
@@ -79,7 +81,7 @@
                                 {
                                     <td class="nv-td-mid"><a class="nv-link" href="~/Admin/File/Compress?r=@item.FullName" title="压缩到当前目录，加上时间后缀">压缩</a></td>
                                 }
-                                <td class="nv-td-mid"><a class="nv-link" href="~/Admin/File/Delete?r=@item.FullName" onclick="return confirm('确认删除？');">删除</a></td>
+                                <td class="nv-td-mid"><a class="nv-link nv-link-danger" href="~/Admin/File/Delete?r=@item.FullName" data-action="action" data-confirm="确认删除？">删除</a></td>
                             }
                             else
                             {

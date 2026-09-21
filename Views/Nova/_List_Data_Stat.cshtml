@@ -102,7 +102,7 @@
                         <td class="@(tdClass ?? "nv-td-num")">@listField.GetValue(entity)</td>
                     }
                     //特殊处理枚举
-                    if (item.Type.IsEnum)
+                    else if (item.Type.IsEnum)
                     {
                         <td></td>
                     }

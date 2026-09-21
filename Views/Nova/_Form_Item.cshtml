@@ -158,10 +158,12 @@
                 else
                 {
                     var root = entity.GetType().GetValue("Root") as IEntityTree;
-                    // 找到完整菜单树，但是排除当前节点这个分支
+                    // 完整树，排除当前节点及其子孙，避免把自己选成父级
                     var list = root.FindAllChildsExcept(treeEntity);
-                    var data = new SelectList(list, set.Key, "TreeNodeText", itemModel.Value);
-                    @Html.DropDownList(item.Name, data, new { @class = "nv-select" })
+                    var treeMulti = item.ItemType.EqualIgnoreCase("multipleSelect", "treeMultiple", "trees") || item.Name.EndsWith("s");
+                    var treeVd = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData);
+                    treeVd["TreeMultiple"] = treeMulti;
+                    @await Html.PartialAsync("_TreeSelect", new ListBoxModel(item.Name, list, itemModel.Value), treeVd)
                 }
             }
             else

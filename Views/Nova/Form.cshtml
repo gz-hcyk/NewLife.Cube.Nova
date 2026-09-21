@@ -30,7 +30,10 @@
                 {
                     foreach (var error in item.Errors)
                     {
-                        <div class="nv-field-error">@error.ErrorMessage</div>
+                        <div class="nv-field-error">
+                            <i class="nv-ico nv-ico-sm" data-nv-ico="alert"></i>
+                            <span>@error.ErrorMessage</span>
+                        </div>
                     }
                 }
             </div>

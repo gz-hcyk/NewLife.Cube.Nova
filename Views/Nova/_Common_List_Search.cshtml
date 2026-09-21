@@ -61,6 +61,27 @@
     {
         @await Html.PartialAsync("_Area1", "")
     }
+    else if (fact != null && typeof(IEntityTree).IsAssignableFrom(fact.EntityType) && fact.EntityType.GetValue("Setting") is IEntityTreeSetting treeSet && field.Name.EqualIgnoreCase(treeSet.Parent))
+    {
+        var root = fact.EntityType.GetValue("Root") as IEntityTree;
+        var nodes = root?.AllChilds;
+        if (nodes != null)
+        {
+            var treeVd = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData);
+            treeVd["TreeMultiple"] = field.Multiple;
+            var box = new ListBoxModel(field.Name, nodes, page[field.Name])
+            {
+                OptionLabel = field.Multiple ? null : "全部",
+                AutoPostback = true
+            };
+            <div class="nv-field">
+                <label class="nv-field-label" for="@field.Name">@field.DisplayName</label>
+                <div class="nv-field-ctl">
+                    @await Html.PartialAsync("_TreeSelect", box, treeVd)
+                </div>
+            </div>
+        }
+    }
     else if (field.Type.IsInt())
     {
         // 枚举字段

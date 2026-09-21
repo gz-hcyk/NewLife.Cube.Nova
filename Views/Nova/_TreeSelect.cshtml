@@ -1,0 +1,113 @@
+@model ListBoxModel
+@using NewLife;
+@using NewLife.Cube.ViewModels
+@using XCode
+@{
+    var multiple = ViewData["TreeMultiple"] is Boolean flag && flag;
+    var nodes = new List<(String Id, String ParentId, String Text, Int32 Depth, Boolean Branch)>();
+    IEntityTreeSetting treeSet = null;
+    if (Model.Value != null)
+    {
+        foreach (var item in Model.Value)
+        {
+            if (item is not IEntityTree entity) continue;
+            treeSet ??= entity.GetType().GetValue("Setting") as IEntityTreeSetting;
+            if (treeSet == null || treeSet.Key.IsNullOrEmpty()) continue;
+
+            var raw = entity.TreeNodeText ?? "";
+            var text = raw.TrimStart('\u3000', ' ', '\t');
+            if (text.Length == 0) text = entity + "";
+            var branch = entity.Childs != null && entity.Childs.Count > 0;
+            nodes.Add((entity[treeSet.Key] + "", entity[treeSet.Parent] + "", text, entity.Deepth, branch));
+        }
+    }
+
+    var minDepth = 0;
+    var hasDepth = false;
+    foreach (var node in nodes)
+    {
+        if (!hasDepth || node.Depth < minDepth)
+        {
+            minDepth = node.Depth;
+            hasDepth = true;
+        }
+    }
+
+    var selected = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
+    if (Model.SelectedValues is String textValue)
+    {
+        foreach (var part in textValue.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries))
+            selected.Add(part.Trim());
+    }
+    else if (Model.SelectedValues is System.Collections.IEnumerable many && Model.SelectedValues is not String)
+    {
+        foreach (var item in many)
+        {
+            if (item != null) selected.Add(item.ToString());
+        }
+    }
+    else if (Model.SelectedValues != null)
+    {
+        selected.Add(Model.SelectedValues.ToString());
+    }
+
+    var placeholder = Model.OptionLabel.IsNullOrEmpty() ? "请选择" : Model.OptionLabel;
+}
+<div class="nv-treeselect" data-nv-treeselect data-multiple="@(multiple ? 1 : 0)" data-autopost="@(Model.AutoPostback ? 1 : 0)" data-placeholder="@placeholder">
+    <select class="nv-treeselect-native" aria-hidden="true" tabindex="-1" @(multiple ? "multiple" : null) name="@(multiple ? null : Model.Name)" id="@(multiple ? null : Model.Name)">
+        @if (!multiple && !Model.OptionLabel.IsNullOrEmpty())
+        {
+            <option value=""></option>
+        }
+        @foreach (var node in nodes)
+        {
+            if (selected.Contains(node.Id))
+            {
+                <option value="@node.Id" selected>@node.Text</option>
+            }
+            else
+            {
+                <option value="@node.Id">@node.Text</option>
+            }
+        }
+    </select>
+    @if (multiple)
+    {
+        var posted = new List<String>();
+        foreach (var node in nodes)
+        {
+            if (selected.Contains(node.Id)) posted.Add(node.Id);
+        }
+        <input type="hidden" id="@Model.Name" name="@Model.Name" class="nv-treeselect-value-input" value="@String.Join(",", posted)" />
+    }
+    <button type="button" class="nv-treeselect-btn" aria-haspopup="listbox" aria-expanded="false">
+        <span class="nv-treeselect-value is-placeholder">@placeholder</span>
+        <i class="nv-ico nv-ico-sm" data-nv-ico="chevron_down"></i>
+    </button>
+    <div class="nv-treeselect-pop" hidden>
+        <input type="search" class="nv-input nv-treeselect-filter" placeholder="筛选" autocomplete="off" aria-label="筛选" />
+        <div class="nv-tree" role="listbox" aria-multiselectable="@(multiple ? "true" : "false")">
+            @if (!multiple && !Model.OptionLabel.IsNullOrEmpty())
+            {
+                <div class="nv-tree-node is-pseudo" data-nv-id="" data-nv-parent="" data-nv-depth="0" data-nv-text="@placeholder" role="option">
+                    <button type="button" class="nv-tree-toggle is-leaf" tabindex="-1" aria-hidden="true"></button>
+                    <span class="nv-tree-label">@placeholder</span>
+                </div>
+            }
+            @foreach (var node in nodes)
+            {
+                var pad = (node.Depth - minDepth) * 16;
+                <div class="nv-tree-node @(node.Branch ? "is-open" : null) @(selected.Contains(node.Id) ? "is-active" : null)" data-nv-id="@node.Id" data-nv-parent="@node.ParentId" data-nv-depth="@node.Depth" data-nv-text="@node.Text" data-nv-branch="@(node.Branch ? 1 : 0)" role="option" style="padding-left:@(pad)px">
+                    <button type="button" class="nv-tree-toggle @(node.Branch ? null : "is-leaf")" data-nv-tree-fold tabindex="-1" aria-label="展开或折叠">
+                        <i class="nv-ico nv-ico-sm" data-nv-ico="chevron_right"></i>
+                    </button>
+                    @if (multiple)
+                    {
+                        <input type="checkbox" class="nv-tree-check" tabindex="-1" @(selected.Contains(node.Id) ? "checked" : null) />
+                    }
+                    <span class="nv-tree-label">@node.Text</span>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -1,14 +1,22 @@
 @using NewLife.Cube.Extensions
 @{
     var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+    // 地址栏带任意参数（筛选/分页/排序）时给出「重置」入口，一键回到干净列表
+    var hasQuery = Context.Request.QueryString.HasValue;
 }
 @if (set.EnableKey)
 {
     <span class="nv-search-box">
         <i class="nv-ico" data-nv-ico="search"></i>
-        <input class="nv-input" name="q" type="search" id="q" value="@Context.Request.GetRequestValue("q")" placeholder="搜索关键字" aria-label="搜索关键字" />
+        <input class="nv-input" name="q" type="search" id="q" value="@Context.Request.GetRequestValue("q")" placeholder="搜索关键字" autocomplete="off" aria-label="搜索关键字" />
     </span>
 }
 <button type="submit" class="nv-btn nv-btn-primary nv-btn-sm">
     <i class="nv-ico nv-ico-sm" data-nv-ico="search"></i>查询
 </button>
+@if (hasQuery)
+{
+    <a class="nv-btn nv-btn-sm" href="@Context.Request.Path.Value" title="清空全部筛选与分页条件">
+        <i class="nv-ico nv-ico-sm" data-nv-ico="refresh"></i>重置
+    </a>
+}

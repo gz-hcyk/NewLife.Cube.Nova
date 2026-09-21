@@ -39,7 +39,7 @@
                                 <tr>
                                     <td>@field.Name</td>
                                     <td>@field.DisplayName</td>
-                                    <td class="nv-td-mid">@(field.Type?.FullName.TrimStart("System."))</td>
+                                    <td class="nv-td-mid">@(field.Type?.FullName != null && field.Type.FullName.StartsWith("System.") ? field.Type.FullName.Substring(8) : field.Type?.FullName)</td>
                                     <td class="nv-td-mid">@(field.Length > 0 ? field.Length.ToString() : "")</td>
                                     <td class="nv-td-mid">@(column.Precision > 0 || column.Scale > 0 ? $"({column.Precision}, {column.Scale})" : "")</td>
                                     <td class="nv-td-mid">
@@ -57,7 +57,7 @@
                                         }
                                     </td>
                                     <td class="nv-td-mid">@(column.Nullable ? "" : "N")</td>
-                                    <td>@(column.Description?.TrimStart(column.DisplayName).TrimStart("。", "，"))</td>
+                                    <td>@(column.Description != null && column.DisplayName != null && column.Description.StartsWith(column.DisplayName) ? column.Description.Substring(column.DisplayName.Length).TrimStart('。', '，', ' ', '\r', '\n') : column.Description)</td>
                                 </tr>
                             }
                         </tbody>

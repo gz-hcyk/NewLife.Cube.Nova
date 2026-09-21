@@ -26,73 +26,107 @@
         @using (Html.BeginForm("Info", null, new { id = Model[fact.Unique.Name] }, FormMethod.Post, null, new { enctype = "multipart/form-data" }))
         {
             @Html.ValidationSummary()
-            if (!user.Avatar.IsNullOrEmpty())
-            {
+            <div class="nv-form-grid">
+                @if (!user.Avatar.IsNullOrEmpty())
+                {
+                    <div class="nv-field">
+                        <label class="nv-field-label">头像</label>
+                        <div class="nv-field-ctl">
+                            <img src="@user.GetAvatarUrl()" style="max-width:120px;max-height:120px;border-radius:var(--nv-r-md);object-fit:cover" />
+                        </div>
+                    </div>
+                }
+                <div class="nv-field">
+                    <label class="nv-field-label">名称</label>
+                    <div class="nv-field-ctl">
+                        <input class="nv-input" value="@user.Name" disabled="disabled" />
+                    </div>
+                </div>
+                <div class="nv-field">
+                    <label class="nv-field-label">显示名</label>
+                    <div class="nv-field-ctl">
+                        @Html.ForEditor("DisplayName")
+                    </div>
+                </div>
+                <div class="nv-field">
+                    <label class="nv-field-label">性别</label>
+                    <div class="nv-field-ctl">
+                        @Html.ForEditor("Sex", user.Sex)
+                    </div>
+                </div>
+                <div class="nv-field">
+                    <label class="nv-field-label">邮件</label>
+                    <div class="nv-field-ctl">
+                        @Html.ForEditor("Mail")
+                    </div>
+                </div>
+                <div class="nv-field">
+                    <label class="nv-field-label">手机</label>
+                    <div class="nv-field-ctl">
+                        @Html.ForEditor("Mobile")
+                    </div>
+                </div>
+                <div class="nv-field">
+                    <label class="nv-field-label">代码</label>
+                    <div class="nv-field-ctl">
+                        @Html.ForEditor("Code")
+                    </div>
+                    <div class="nv-field-hint">@Html.ForDescription("Code")</div>
+                </div>
+                <div class="nv-field">
+                    <label class="nv-field-label">生日</label>
+                    <div class="nv-field-ctl">
+                        @Html.ForEditor("Birthday")
+                    </div>
+                </div>
+                <div class="nv-field">
+                    <label class="nv-field-label">角色</label>
+                    <div class="nv-field-ctl">
+                        <div>@String.Join("、", user.Roles.Select(r => r + ""))</div>
+                    </div>
+                </div>
+                <div class="nv-field">
+                    <label class="nv-field-label">部门</label>
+                    <div class="nv-field-ctl">
+                        <div>@((user as User).DepartmentName)</div>
+                    </div>
+                </div>
                 <div class="nv-field">
                     <label class="nv-field-label">头像</label>
-                    <img src="@user.GetAvatarUrl()" style="max-width:200px;max-height:200px;border-radius:var(--nv-r-md)" />
+                    <div class="nv-field-ctl">
+                        <input accept="image/*" id="Avatar" name="Avatar" type="file" class="nv-input" />
+                    </div>
                 </div>
-            }
-            <div class="nv-field">
-                <label class="nv-field-label">名称</label>
-                <input class="nv-input" value="@user.Name" disabled="disabled" />
-            </div>
-            <div class="nv-field">
-                <label class="nv-field-label">显示名</label>
-                @Html.ForEditor("DisplayName")
-            </div>
-            <div class="nv-field">
-                <label class="nv-field-label">性别</label>
-                @Html.ForEditor("Sex", user.Sex)
-            </div>
-            <div class="nv-field">
-                <label class="nv-field-label">邮件</label>
-                @Html.ForEditor("Mail")
-            </div>
-            <div class="nv-field">
-                <label class="nv-field-label">手机</label>
-                @Html.ForEditor("Mobile")
-            </div>
-            <div class="nv-field">
-                <label class="nv-field-label">代码</label>
-                @Html.ForEditor("Code")
-                <div class="nv-field-hint">@Html.ForDescription("Code")</div>
-            </div>
-            <div class="nv-field">
-                <label class="nv-field-label">生日</label>
-                @Html.ForEditor("Birthday")
-            </div>
-            <div class="nv-field">
-                <label class="nv-field-label">角色</label>
-                <div>@String.Join(",", user.Roles.Select(r => r + ""))</div>
-            </div>
-            <div class="nv-field">
-                <label class="nv-field-label">部门</label>
-                <div>@((user as User).DepartmentName)</div>
-            </div>
-            <div class="nv-field">
-                <label class="nv-field-label">头像</label>
-                <input accept="image/*" id="Avatar" name="Avatar" type="file" class="nv-input" />
-            </div>
-            <div class="nv-field">
-                <label class="nv-field-label">登录次数</label>
-                <div>@user.Logins</div>
-            </div>
-            <div class="nv-field">
-                <label class="nv-field-label">最后登录</label>
-                <div>@user.LastLogin.ToFullString("")</div>
-            </div>
-            <div class="nv-field">
-                <label class="nv-field-label">最后登录IP</label>
-                <div>@user.LastLoginIP</div>
-            </div>
-            <div class="nv-field">
-                <label class="nv-field-label">备注</label>
-                @Html.ForEditor("Remark")
+                <div class="nv-field">
+                    <label class="nv-field-label">登录次数</label>
+                    <div class="nv-field-ctl">
+                        <div>@user.Logins</div>
+                    </div>
+                </div>
+                <div class="nv-field">
+                    <label class="nv-field-label">最后登录</label>
+                    <div class="nv-field-ctl">
+                        <div>@user.LastLogin.ToFullString("")</div>
+                    </div>
+                </div>
+                <div class="nv-field">
+                    <label class="nv-field-label">最后登录IP</label>
+                    <div class="nv-field-ctl">
+                        <div>@user.LastLoginIP</div>
+                    </div>
+                </div>
+                <div class="nv-col-full">
+                    <div class="nv-field">
+                        <label class="nv-field-label">备注</label>
+                        <div class="nv-field-ctl">
+                            @Html.ForEditor("Remark")
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="nv-form-actions">
-                <button type="submit" class="nv-btn nv-btn-primary"><i class="ti ti-device-floppy"></i>保存</button>
-                <button type="button" class="nv-btn nv-btn-danger" onclick="history.go(-1);"><i class="ti ti-x"></i>取消</button>
+                <button type="submit" class="nv-btn nv-btn-primary"><i class="nv-ico nv-ico-sm" data-nv-ico="save"></i>保存</button>
+                <button type="button" class="nv-btn" onclick="history.go(-1);"><i class="nv-ico nv-ico-sm" data-nv-ico="x"></i>取消</button>
             </div>
         }
     </div>

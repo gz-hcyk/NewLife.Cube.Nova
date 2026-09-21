@@ -10,8 +10,15 @@
     var fields = ViewBag.Fields as FieldCollection;
     var fk = fact.Unique;
     var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+    var treeSet = fact?.EntityType.GetValue("Setting") as IEntityTreeSetting;
+    var keyField = treeSet != null && !treeSet.Key.IsNullOrEmpty() ? treeSet.Key : fk?.Name;
+    var parentField = treeSet?.Parent;
 }
-<table class="nv-table">
+<div class="nv-tree-tools">
+    <button type="button" class="nv-btn nv-btn-sm" data-nv-tree-expand="all">全部展开</button>
+    <button type="button" class="nv-btn nv-btn-sm" data-nv-tree-expand="none">全部折叠</button>
+</div>
+<table class="nv-table nv-tree-table">
     <thead>
         <tr>
             @if (set.EnableSelect)
@@ -55,8 +62,10 @@
             {
                 p = fact.EntityType.GetValue("Root") as IEntityTree;
             }
-            var id = entity[fk.Name];
-            <tr class="@(fields.GetRowClass?.Invoke(entity))">
+            var id = !keyField.IsNullOrEmpty() ? entity[keyField] : entity[fk.Name];
+            var parentId = !parentField.IsNullOrEmpty() ? entity[parentField] : entity.Parent?[keyField];
+            var branch = entity.Childs != null && entity.Childs.Count > 0;
+            <tr class="@(fields.GetRowClass?.Invoke(entity))" data-nv-tree-id="@id" data-nv-tree-parent="@parentId" data-nv-tree-depth="@entity.Deepth" data-nv-tree-branch="@(branch ? 1 : 0)">
                 @if (set.EnableSelect)
                 {
                     <td class="nv-td-sticky nv-td-mid"><input type="checkbox" name="keys" value="@entity[fk.Name]" /></td>

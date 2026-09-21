@@ -11,37 +11,42 @@
         <i class="nv-ico nv-ico-sm" data-nv-ico="chevron_down"></i>
     </button>
     <div class="dropdown-menu dropdown-menu-end nv-usermenu">
-        <a class="dropdown-item" href="@Url.Action("ExportExcel", new { _query = queryData })" title="导出Csv格式，中文表头，含扩展属性，用于Excel查看数据">导出Excel</a>
-        <a class="dropdown-item" href="@Url.Action("ExportCsv", new { _query = queryData })" title="导出Csv格式，英文表头，不含扩展属性，快速导出，用于数据传输">导出Csv</a>
-        <a class="dropdown-item" href="@Url.Action("ExportXml", new { _query = queryData })">导出Xml</a>
-        <a class="dropdown-item" href="@Url.Action("ExportJson", new { _query = queryData })">导出Json</a>
-        <a class="dropdown-item" href="@Url.Action("ExportZip", new { _query = queryData })">导出Zip</a>
-        <a class="dropdown-item" href="javascript:;" onclick="var f=document.getElementById('importFile'); if(f) f.click();" title="从Exce/Csv/Json/Zip文件导入数据">导入Excel/Json/Zip</a>
-        <input type="file" id="importFile" name="file" accept=".xlsx,xls,.csv,.json,.zip" style="display:none;" data-action="upload" data-method="POST" data-url="@Url.Action("ImportFile", new { _query = queryData })" />
+        <div class="dropdown-header">导出</div>
+        <a class="dropdown-item" href="@Url.Action("ExportExcel", new { _query = queryData })" title="导出Csv格式，中文表头，含扩展属性，用于Excel查看数据"><i class="nv-ico nv-ico-sm" data-nv-ico="download"></i>导出Excel</a>
+        <a class="dropdown-item" href="@Url.Action("ExportCsv", new { _query = queryData })" title="导出Csv格式，英文表头，不含扩展属性，快速导出，用于数据传输"><i class="nv-ico nv-ico-sm" data-nv-ico="download"></i>导出Csv</a>
+        <a class="dropdown-item" href="@Url.Action("ExportXml", new { _query = queryData })"><i class="nv-ico nv-ico-sm" data-nv-ico="download"></i>导出Xml</a>
+        <a class="dropdown-item" href="@Url.Action("ExportJson", new { _query = queryData })"><i class="nv-ico nv-ico-sm" data-nv-ico="download"></i>导出Json</a>
+        <a class="dropdown-item" href="@Url.Action("ExportZip", new { _query = queryData })"><i class="nv-ico nv-ico-sm" data-nv-ico="download"></i>导出Zip</a>
         <div class="dropdown-divider"></div>
-        <a class="dropdown-item" href="@Url.Action("Develop", new { act = "Share" })" title="把当前页数据分享给其他人">分享</a>
-        <a class="dropdown-item" href="@Url.Action("Develop", new { act = "Sync" })" data-action="action" data-confirm="该操作将清空数据并不可恢复！确认同步？" title="清空并从主服务器同步数据">同步</a>
+        <div class="dropdown-header">导入</div>
+        <a class="dropdown-item" href="javascript:;" onclick="var f=document.getElementById('importFile'); if(f) f.click();" title="从Exce/Csv/Json/Zip文件导入数据"><i class="nv-ico nv-ico-sm" data-nv-ico="upload"></i>导入Excel/Json/Zip</a>
+        <input type="file" id="importFile" name="file" accept=".xlsx,xls,.csv,.json,.zip" class="nv-file-hidden" data-action="upload" data-method="POST" data-url="@Url.Action("ImportFile", new { _query = queryData })" />
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-header">数据维护</div>
+        <a class="dropdown-item" href="@Url.Action("Develop", new { act = "Share" })" title="把当前页数据分享给其他人"><i class="nv-ico nv-ico-sm" data-nv-ico="send"></i>分享</a>
+        <a class="dropdown-item" href="@Url.Action("Develop", new { act = "Sync" })" data-action="action" data-confirm="该操作将清空数据并不可恢复！确认同步？" title="清空并从主服务器同步数据"><i class="nv-ico nv-ico-sm" data-nv-ico="refresh"></i>同步</a>
         @if (this.Has(PermissionFlags.Delete))
         {
             <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="@Url.Action("DeleteSelect")" data-action="action" data-fields="keys" data-confirm="该操作将删除选中数据并不可恢复！确认删除？" title="删除选中数据">删除选中</a>
-            <a class="dropdown-item" href="@Url.Action("DeleteAll", new { _query = queryData })" data-action="action" data-confirm="该操作将删除当前查询的所有数据并不可恢复！确认删除？" title="删除当前查询的所有数据">删除全部</a>
+            <a class="dropdown-item" href="@Url.Action("DeleteSelect")" data-action="action" data-fields="keys" data-confirm="该操作将删除选中数据并不可恢复！确认删除？" title="删除选中数据"><i class="nv-ico nv-ico-sm" data-nv-ico="trash"></i>删除选中</a>
+            <a class="dropdown-item nv-link-danger" href="@Url.Action("DeleteAll", new { _query = queryData })" data-action="action" data-confirm="该操作将删除当前查询的所有数据并不可恢复！确认删除？" title="删除当前查询的所有数据"><i class="nv-ico nv-ico-sm" data-nv-ico="trash"></i>删除全部</a>
         }
         @if (SysConfig.Current.Develop && user != null && user.Roles.Any(e => e.IsSystem))
         {
             <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="@Url.Action("Develop", new { act = "Backup" })" data-action="action" title="备份全表到服务器本地目录">备份</a>
-            <a class="dropdown-item" href="@Url.Action("Develop", new { act = "Restore" })" data-action="action" title="从服务器本地目录还原">还原</a>
-            <a class="dropdown-item" href="@Url.Action("Develop", new { act = "BackupAndExport" })" title="备份全表并下载">备份导出</a>
+            <div class="dropdown-header">开发者</div>
+            <a class="dropdown-item" href="@Url.Action("Develop", new { act = "Backup" })" data-action="action" title="备份全表到服务器本地目录"><i class="nv-ico nv-ico-sm" data-nv-ico="save"></i>备份</a>
+            <a class="dropdown-item" href="@Url.Action("Develop", new { act = "Restore" })" data-action="action" title="从服务器本地目录还原"><i class="nv-ico nv-ico-sm" data-nv-ico="refresh"></i>还原</a>
+            <a class="dropdown-item" href="@Url.Action("Develop", new { act = "BackupAndExport" })" title="备份全表并下载"><i class="nv-ico nv-ico-sm" data-nv-ico="download"></i>备份导出</a>
             <div class="dropdown-divider"></div>
             if (page == null || page.Params.Count == 0)
             {
-                <a class="dropdown-item" href="@Url.Action("Develop", new { act = "Clear" })" data-action="action" data-confirm="该操作将删除数据表所有数据并不可恢复！确认清空？" title="删除数据表所有数据">清空数据表</a>
+                <a class="dropdown-item nv-link-danger" href="@Url.Action("Develop", new { act = "Clear" })" data-action="action" data-confirm="该操作将删除数据表所有数据并不可恢复！确认清空？" title="删除数据表所有数据"><i class="nv-ico nv-ico-sm" data-nv-ico="trash"></i>清空数据表</a>
             }
-            <a class="dropdown-item" href="@Url.Action("Develop", new { act = "MakeList" })">生成列表</a>
-            <a class="dropdown-item" href="@Url.Action("Develop", new { act = "MakeForm" })">生成表单</a>
-            <a class="dropdown-item" href="@Url.Action("Develop", new { act = "MakeSearch" })">生成搜索</a>
-            <a class="dropdown-item" href="@Url.Action("Develop", new { act = "MakeBatch" })">生成批处理</a>
+            <a class="dropdown-item" href="@Url.Action("Develop", new { act = "MakeList" })"><i class="nv-ico nv-ico-sm" data-nv-ico="list"></i>生成列表</a>
+            <a class="dropdown-item" href="@Url.Action("Develop", new { act = "MakeForm" })"><i class="nv-ico nv-ico-sm" data-nv-ico="form"></i>生成表单</a>
+            <a class="dropdown-item" href="@Url.Action("Develop", new { act = "MakeSearch" })"><i class="nv-ico nv-ico-sm" data-nv-ico="search"></i>生成搜索</a>
+            <a class="dropdown-item" href="@Url.Action("Develop", new { act = "MakeBatch" })"><i class="nv-ico nv-ico-sm" data-nv-ico="settings"></i>生成批处理</a>
         }
     </div>
 </div>

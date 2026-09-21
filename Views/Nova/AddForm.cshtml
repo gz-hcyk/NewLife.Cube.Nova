@@ -29,13 +29,18 @@
         if (ViewData.ModelState.Values.Any(st => st.Errors.Count > 0))
         {
             <div class="nv-card-body nv-pt-0">
-                @foreach (var item in ViewData.ModelState.Values)
-                {
-                    foreach (var error in item.Errors)
-                    {
-                        <div class="nv-field-error">@error.ErrorMessage</div>
-                    }
-                }
+                <div class="nv-notice nv-notice-danger">
+                    <i class="nv-ico nv-notice-ico" data-nv-ico="alert"></i>
+                    <div class="nv-notice-body">
+                        @foreach (var item in ViewData.ModelState.Values)
+                        {
+                            foreach (var error in item.Errors)
+                            {
+                                <div class="nv-notice-text">@error.ErrorMessage</div>
+                            }
+                        }
+                    </div>
+                </div>
             </div>
         }
         @await Html.PartialAsync("_Form_Body", entity)

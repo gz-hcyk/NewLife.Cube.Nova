@@ -2011,3 +2011,117 @@ body.nv .form-horizontal .form-group > .input-group, body.nv .form-horizontal .f
  flex: 1; min-width: 0; }
 /* 保存/取消操作行（_Form_Action 等区域局部视图） */body.nv .clearfix.form-actions, body.nv .form-actions {
  display: flex; gap: 8px; margin-top: var(--nv-sp-4); flex-wrap: wrap; align-items: center; }
+/* ============================================================
+   K. 树表 / 树状下拉
+   树表：扁平行带 data-nv-tree-* ，脚本补缩进与折叠。
+   树状下拉：原生 select 负责提交，面板负责筛选与单选/多选。
+   ============================================================ */.nv-tree-tools {
+ display:flex; gap:var(--nv-sp-2); padding:var(--nv-sp-2) var(--nv-sp-4) 0; }
+.nv-tree-table .nv-tree-cell {
+ white-space:nowrap; }
+.nv-tree-table .nv-tree-indent {
+ display:inline-block; height:1px; vertical-align:middle; }
+.nv-tree-table .nv-tree-toggle {
+ display:inline-grid; vertical-align:middle; margin-right:4px; }
+.nv-tree-table tr[hidden] {
+ display:none; }
+.nv-tree-toggle.is-open {
+ transform:rotate(90deg); }
+.nv-field-ctl > .nv-treeselect {
+ flex:1 1 auto; min-width:0; }
+.nv-toolbar .nv-treeselect {
+ width:220px; flex:0 0 auto; }
+.nv-treeselect {
+ position:relative; display:block; width:100%; }
+.nv-treeselect-native {
+ position:absolute !important; width:1px; height:1px; padding:0; margin:-1px;
+ overflow:hidden; clip:rect(0,0,0,0); border:0; white-space:nowrap; }
+.nv-treeselect-btn {
+ width:100%; height:var(--nv-ctrl-h); padding:0 11px;
+ display:flex; align-items:center; justify-content:space-between; gap:8px;
+ font-family:inherit; font-size:var(--nv-fs-13); color:var(--nv-text); text-align:left;
+ background:var(--nv-surface); border:1px solid var(--nv-border-strong);
+ border-radius:var(--nv-r-sm); cursor:pointer; }
+.nv-treeselect-btn:focus, .nv-treeselect.is-open .nv-treeselect-btn {
+ outline:none; border-color:var(--nv-border-focus); box-shadow:var(--nv-sh-focus); }
+.nv-treeselect-value {
+ flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.nv-treeselect-value.is-placeholder {
+ color:var(--nv-text-4); }
+.nv-treeselect-pop {
+ position:absolute; z-index:30; left:0; right:0; top:calc(100% + 4px);
+ padding:8px; background:var(--nv-surface); border:1px solid var(--nv-border);
+ border-radius:var(--nv-r-md); box-shadow:var(--nv-sh-3); }
+.nv-treeselect-pop[hidden] {
+ display:none; }
+.nv-treeselect-filter {
+ height:32px; margin-bottom:8px; }
+.nv-treeselect-pop .nv-tree {
+ border:0; padding:0; max-height:260px; }
+.nv-treeselect-pop .nv-tree-node[hidden] {
+ display:none; }
+/* ============================================================
+   L. 设置页选项卡（分段控件）+ 列表搜索栏精细化
+   选项卡：保留 nav nav-tabs 结构与 data-bs-toggle="tab" 行为（Tabler 内置
+   Bootstrap Tab 负责切换），仅按 Nova 令牌重塑外观。
+   ============================================================ *//* L1. 分段选项卡 */body.nv .nv-tabs-host {
+ padding:var(--nv-sp-4) var(--nv-sp-4) 0; }
+body.nv .nv-tabs-host .nav-tabs {
+ display:inline-flex; flex-wrap:wrap; gap:2px; padding:3px; margin:0;
+ background:var(--nv-surface-2); border:1px solid var(--nv-border); border-radius:var(--nv-r-md);
+}
+body.nv .nv-tabs-host .nav-tabs .nav-item {
+ margin:0; }
+body.nv .nv-tabs-host .nav-tabs .nav-link {
+ display:inline-flex; align-items:center; gap:6px; margin:0; padding:7px 18px;
+ border:0; border-radius:var(--nv-r-sm); background:transparent;
+ font-size:var(--nv-fs-13); font-weight:var(--nv-fw-medium); color:var(--nv-text-2);
+ transition:background var(--nv-dur-fast) var(--nv-ease),color var(--nv-dur-fast) var(--nv-ease),box-shadow var(--nv-dur-fast) var(--nv-ease);
+}
+body.nv .nv-tabs-host .nav-tabs .nav-link:hover {
+ color:var(--nv-primary); background:var(--nv-primary-wash); }
+body.nv .nv-tabs-host .nav-tabs .nav-link.active {
+ background:var(--nv-surface); color:var(--nv-primary); font-weight:var(--nv-fw-semi);
+ box-shadow:var(--nv-sh-1);
+}
+body.nv .nv-tabs-host .nav-tabs .nav-link:focus-visible {
+ outline:2px solid var(--nv-primary); outline-offset:1px; }
+/* L2. 列表搜索栏：标签内联、控件等宽、垂直居中对齐 */.nv-toolbar .nv-field {
+ display:flex; align-items:center; gap:6px; margin:0; }
+.nv-toolbar .nv-field-label {
+ margin:0; font-size:var(--nv-fs-12); font-weight:var(--nv-fw-normal); color:var(--nv-text-3); white-space:nowrap; }
+.nv-toolbar .nv-field-ctl {
+ gap:6px; }
+.nv-toolbar .nv-field-ctl > .nv-input, .nv-toolbar .nv-field-ctl > .nv-select {
+ flex:0 0 auto; width:auto; min-width:118px; padding:0 9px; }
+.nv-toolbar .nv-field select[multiple].nv-select {
+ min-width:132px; height:auto; min-height:var(--nv-ctrl-h); max-height:104px; padding:5px 9px; background-image:none; }
+.nv-toolbar .nv-daterange > .nv-input {
+ flex:0 0 auto; width:126px; text-align:center; }
+.nv-toolbar .nv-daterange-sep {
+ color:var(--nv-text-4); }
+/* M. 生产级优化补充：文件隐藏输入 / 行内复选框 / 危险链接 / 权限树表 */.nv-file-hidden {
+ position:absolute !important; width:1px; height:1px; padding:0; margin:-1px;
+ overflow:hidden; clip:rect(0,0,0,0); border:0; white-space:nowrap; }
+.nv-chk-inline {
+ display:inline-flex; align-items:center; gap:4px; margin-right:12px;
+ font-size:var(--nv-fs-13); color:var(--nv-text-2); cursor:pointer; white-space:nowrap; }
+.nv-chk-inline input[type="checkbox"] {
+ accent-color:var(--nv-primary); cursor:pointer; }
+.nv-link-danger {
+ color:var(--nv-danger) !important; }
+.nv-link-danger:hover {
+ color:var(--nv-red-600,var(--nv-danger)) !important; text-decoration:underline; }
+.nv-tree-perm td {
+ white-space:nowrap; }
+.nv-tree-perm td.childpf {
+ white-space:normal; line-height:2; }
+body.nv .dropdown-header {
+ padding:4px 12px; font-size:var(--nv-fs-12); font-weight:var(--nv-fw-semi);
+ color:var(--nv-text-3); text-transform:uppercase; letter-spacing:.5px; }
+body.nv .dropdown-item .nv-ico {
+ margin-right:6px; color:var(--nv-text-3); }
+body.nv .dropdown-item:hover .nv-ico {
+ color:var(--nv-primary); }
+body.nv .dropdown-item.nv-link-danger .nv-ico {
+ color:var(--nv-danger); }

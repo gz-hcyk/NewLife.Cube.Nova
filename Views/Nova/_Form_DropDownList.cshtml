@@ -21,8 +21,24 @@
     var optionLabel = Model.OptionLabel;
 
     var selectedValue = Model.SelectedValues;
+
+    IEntityTree treeSample = null;
+    if (value is IEnumerable probe)
+    {
+        foreach (var item in probe)
+        {
+            treeSample = item as IEntityTree;
+            break;
+        }
+    }
 }
-@if (value is IEnumerable<SelectListItem> selectList)
+@if (treeSample != null)
+{
+    var treeVd = new Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary(ViewData);
+    treeVd["TreeMultiple"] = false;
+    @await Html.PartialAsync("_TreeSelect", Model, treeVd)
+}
+else if (value is IEnumerable<SelectListItem> selectList)
 {
     @Html.DropDownList(name, selectList, atts)
 }
