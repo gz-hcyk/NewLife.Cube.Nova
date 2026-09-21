@@ -1,0 +1,57 @@
+@model ErrorModel;
+@using NewLife.Cube.ViewModels;
+@using Microsoft.AspNetCore.Mvc.Filters
+@{
+    // 错误页走内容页布局（无导航），与 ACE 一致；不要指向外壳 _Frame，避免双重导航。
+    Layout = "_Layout.cshtml";
+    ViewBag.Title = "处理你的请求时出错";
+
+    var error = "没有捕捉到异常信息";
+
+    var ex = Model?.Exception;
+    if (ex != null)
+    {
+        if (NewLife.Cube.CubeSetting.Current.Debug)
+        {
+            error = ex + "";
+        }
+        else
+        {
+            error = "内部错误：" + ex.GetTrue().GetType().FullName;
+        }
+        error = error?.Replace("--->", "--->" + Environment.NewLine);
+    }
+}
+<div class="nv-card">
+    <div class="nv-card-body">
+        <div class="nv-empty">
+            <div class="nv-empty-ico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="9" /><path d="M12 8v5M12 16.5v.01" />
+                </svg>
+            </div>
+            <div class="nv-empty-title">处理你的请求时出错</div>
+            <div class="nv-empty-desc">
+                请求标识：@Model?.RequestId<br />
+                地址：@Model?.Uri
+            </div>
+        </div>
+
+        @if (!String.IsNullOrEmpty(error))
+        {
+            <div class="nv-notice nv-notice-danger" style="margin-top:var(--nv-sp-4)">
+                <i class="nv-ico nv-notice-ico" data-nv-ico="alert"></i>
+                <div class="nv-notice-body">
+                    <div class="nv-notice-title">异常信息</div>
+                    <pre class="nv-notice-text" style="margin:0;white-space:pre-wrap;word-break:break-all">@error</pre>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="nv-card-foot">
+        <div class="nv-form-actions">
+            <a class="nv-btn" href="javascript: history.go(-1);">返回上一页</a>
+            <a class="nv-btn nv-btn-primary" href="~/" target="_top">回到首页</a>
+        </div>
+    </div>
+</div>

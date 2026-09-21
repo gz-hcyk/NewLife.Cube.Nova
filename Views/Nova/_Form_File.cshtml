@@ -1,0 +1,44 @@
+@model EntityField
+@using NewLife;
+@using NewLife.Cube
+@using System.Text;
+@using XCode;
+@using XCode.Configuration;
+@{
+    var entity = Model.Entity;
+    var field = Model.Field;
+
+    var value = entity[field.Name] as String;
+
+    var list = new List<String>();
+    var its = (field.ItemType + "").Split('-', StringSplitOptions.RemoveEmptyEntries);
+    foreach (var item in its)
+    {
+        var at = item.ToLower() switch
+        {
+            "image" => "image/*",
+            "jpg" or "jpeg" => "image/jpeg",
+            "png" => "image/png",
+            "zip" => "application/zip,application/x-zip,application/x-zip-compressed",
+            "doc" or "docx" => "application/msword",
+            "xls" or "xlsx" => "application/vnd.ms-excel",
+            "ppt" or "pptx" => "application/vnd.ms-powerpoint",
+            "pdf" => "application/pdf",
+            "xml" => "text/xml, application/xml",
+            "json" => "application/json",
+            _ => "",
+        };
+        if (!at.IsNullOrEmpty() && !list.Contains(at)) list.Add(at);
+    }
+
+    var accept = "";
+    if (list.Count > 0) accept = list.Join(",");
+}
+@Html.TextBox(field.Name, entity[field.Name], new { @class = "nv-input" })
+<input type="file" class="nv-input" name="@(field.Name)_attachment" accept="@accept" />
+@if (!value.IsNullOrEmpty())
+{
+    <a class="nv-btn nv-btn-sm" href="@value" target="_blank" rel="noopener">
+        <i class="nv-ico nv-ico-sm" data-nv-ico="download"></i>下载
+    </a>
+}

@@ -1,0 +1,45 @@
+@using NewLife;
+@{
+    Layout = "_Layout.cshtml";
+
+    var res = ViewBag.Resource;
+    var permission = (PermissionFlags)ViewBag.Permission;
+    var pm = permission.GetDescription();
+    var menu = ViewBag.Menu as IMenu;
+
+    ViewBag.Title = String.Format("没有访问资源[{0}]的权限[{1}]", res, pm);
+}
+<div class="nv-card">
+    <div class="nv-card-body">
+        <div class="nv-empty">
+            <div class="nv-empty-ico">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="10" width="16" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                </svg>
+            </div>
+            <div class="nv-empty-title">没有访问权限</div>
+            <div class="nv-empty-desc">
+                访问资源 <strong>@res</strong> 需要 <strong>@pm</strong> 权限
+                @if (menu != null && !menu.FullName.IsNullOrEmpty())
+                {
+                    <br /><span>（@menu.FullName）</span>
+                }
+            </div>
+        </div>
+
+        <div class="nv-notice nv-notice-warning" style="margin-top:var(--nv-sp-4)">
+            <i class="nv-ico nv-notice-ico" data-nv-ico="shield"></i>
+            <div class="nv-notice-body">
+                <div class="nv-notice-title">可切换有权限的账号</div>
+                <div class="nv-notice-text">联系管理员为当前角色授予「@pm」权限，或以其它身份重新登录。</div>
+            </div>
+            <a class="nv-btn nv-btn-sm" href="~/Admin/User/Logout" target="_top">以其它身份登录</a>
+        </div>
+    </div>
+    <div class="nv-card-foot">
+        <div class="nv-form-actions">
+            <a class="nv-btn" href="javascript: history.go(-1);">返回上一页</a>
+            <a class="nv-btn nv-btn-primary" href="~/" target="_top">回到首页</a>
+        </div>
+    </div>
+</div>

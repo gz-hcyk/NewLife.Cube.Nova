@@ -1,0 +1,43 @@
+@* 对象表单（ObjectForm）的单个字段：与 _Form_Item 同构（.nv-field），
+   区别只是取值来源是普通对象的属性而非实体字段。 *@
+@model Tuple<Object, DataField>
+@using NewLife;
+@using NewLife.Cube
+@using NewLife.Reflection;
+@{
+    var obj = Model.Item1;
+    var pi = Model.Item2;
+
+    var name = pi.Name;
+    var val = obj.GetValue(name);
+    var dis = pi.DisplayName;
+    var des = pi.Description;
+    var dataSource = pi.DataSource;
+
+    var err = 0;
+    if (ViewData.ModelState.TryGetValue(name, out var st) && st != null) { err = st.Errors.Count; }
+}
+<div class="nv-field @(err > 0 ? "has-error" : "")">
+    <label class="nv-field-label" for="@name" title="@dis">@dis</label>
+    <div class="nv-field-ctl">
+        @if (dataSource != null)
+        {
+            @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(name, dataSource(obj), val))
+        }
+        else
+        {
+            @await Html.PartialAsync("_Form_Editor", new ItemModel(name, val, pi.Type))
+        }
+    </div>
+    @if (err > 0)
+    {
+        <div class="nv-field-error">
+            <i class="nv-ico nv-ico-sm" data-nv-ico="alert"></i>
+            <span>@Html.ValidationMessage(name)</span>
+        </div>
+    }
+    else if (!des.IsNullOrEmpty())
+    {
+        <div class="nv-field-hint" title="@des">@des</div>
+    }
+</div>

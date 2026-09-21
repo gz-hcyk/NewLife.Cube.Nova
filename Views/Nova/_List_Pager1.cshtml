@@ -1,0 +1,60 @@
+@using NewLife.Web;
+@{
+    var pager = ViewBag.Page as Pager;
+    pager.PageUrlTemplate = Url.Action("Index") + "{链接}";
+    // 没有总记录数的时候不显示分页，可以认为不启用分页
+}
+@if (pager.TotalCount > 0)
+{
+    <div class="nv-pager">
+        <div class="nv-pager-meta">
+            <span>共 <b>@pager.TotalCount</b> 条记录</span>
+            <span>当前第 <b>@pager.PageIndex</b>/@pager.PageCount 页</span>
+        </div>
+        <div class="nv-pager-nums">
+            <div class="nv-pages">
+                @{
+                    var len = 8;
+                    int left = (len - 1) / 2, right = len - left - 1;
+                    int start = pager.PageIndex - left;//开始页数
+                    Int64 end = pager.PageIndex + right;//结束页数
+                    start = start < 1 ? 1 : start;
+                    end = end > pager.PageCount ? pager.PageCount : end;
+                    if (pager.PageIndex <= 1)
+                    {
+                        <button class="nv-page" disabled>&Iota;&lt;</button>
+                        <button class="nv-page" disabled>&lt;</button>
+                    }
+                    else
+                    {
+                        <a class="nv-page" href="@pager.GetPageUrl("首页", 1)">&Iota;&lt;</a>
+                        <a class="nv-page" href="@pager.GetPageUrl("上一页", pager.PageIndex - 1)">&lt;</a>
+                    }
+
+                    for (int i = start; i <= end; i++)
+                    {
+                        if (i == pager.PageIndex)
+                        {
+                            <span class="nv-page is-on">@i</span>
+                        }
+                        else
+                        {
+                            <a class="nv-page" href="@pager.GetPageUrl(i.ToString(), i)">@i</a>
+                        }
+                    }
+
+                    if (pager.PageIndex >= pager.PageCount)
+                    {
+                        <button class="nv-page" disabled>&gt;</button>
+                        <button class="nv-page" disabled>&gt;|</button>
+                    }
+                    else
+                    {
+                        <a class="nv-page" href="@pager.GetPageUrl("下一页", pager.PageIndex + 1)">&gt;</a>
+                        <a class="nv-page" href="@pager.GetPageUrl("未页", pager.PageCount)">&gt;|</a>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+}

@@ -1,0 +1,77 @@
+@using NewLife;
+@using XCode;
+@using XCode.Configuration;
+@{
+    var entity = Model as IEntity;
+    var fields = ViewBag.Fields as FieldCollection;
+    var groupFields = fields.GroupByCategory(entity);
+}
+@* 字段渲染条件在「分组 / 不分组」两条分支里各写一遍：
+   GroupByCategory 的返回类型随框架版本不同，与其再抽一层带模型的分部页去赌类型，不如就地复用同一段条件。 *@
+@if (groupFields.Count > 1)
+{
+    @* 多分组走选项卡：用 Tabler/Bootstrap5 的 tab 组件（data-bs-toggle），
+       避免自造切换逻辑与深浅主题不同步。 *@
+    var i = 0;
+    var j = 0;
+    <div class="nv-card-body nv-pb-0">
+        <ul class="nav nav-tabs" role="tablist">
+            @foreach (var item in groupFields)
+            {
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(i == 0 ? "active" : "")" type="button" data-bs-toggle="tab" data-bs-target="#nvItem@(i)" role="tab">@item.Key</button>
+                </li>
+                i++;
+            }
+        </ul>
+    </div>
+    <div class="tab-content">
+        @foreach (var group in groupFields)
+        {
+            <div class="tab-pane fade @(j == 0 ? "show active" : "")" id="nvItem@(j)" role="tabpanel">
+                <div class="nv-card-body">
+                    <div class="nv-form-grid">
+                        @foreach (var item in group.Value)
+                        {
+                            // 表单页显示非主键或非自增字段
+                            if ((!item.PrimaryKey || item.Field != null && !item.Field.IsIdentity) && (item.DataVisible == null || item.DataVisible(entity)))
+                            {
+                                if (item is FormField formField && !formField.GroupView.IsNullOrEmpty())
+                                {
+                                    @await Html.PartialAsync(formField.GroupView, new EntityField(entity, item))
+                                }
+                                else
+                                {
+                                    @await Html.PartialAsync("_Form_Group", new EntityField(entity, item))
+                                }
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+            j++;
+        }
+    </div>
+}
+else
+{
+    <div class="nv-card-body">
+        <div class="nv-form-grid">
+            @foreach (var item in fields)
+            {
+                // 表单页显示非主键或非自增字段
+                if ((!item.PrimaryKey || item.Field != null && !item.Field.IsIdentity) && (item.DataVisible == null || item.DataVisible(entity)))
+                {
+                    if (item is FormField formField && !formField.GroupView.IsNullOrEmpty())
+                    {
+                        @await Html.PartialAsync(formField.GroupView, new EntityField(entity, item))
+                    }
+                    else
+                    {
+                        @await Html.PartialAsync("_Form_Group", new EntityField(entity, item))
+                    }
+                }
+            }
+        </div>
+    </div>
+}

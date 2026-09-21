@@ -1,0 +1,17 @@
+@* 侧边导航根。沿用 ACE 的 _Left 命名，保证框架任何对 "_Left" 的引用都落到本皮肤版本。
+   结构对齐原型 index.html：nav.nv-menu > div.nv-menu-item > a.nv-menu-link。
+   菜单项由 _Left_Item 递归渲染。 *@
+@{
+    var menus = ViewBag.Menus as IList<MenuTree> ?? new List<MenuTree>();
+}
+<div class="nv-menu-item">
+    @* 首页要重载整个外层框架页，故 target="_top"；若指向 iframe 会把框架页嵌套进自己 *@
+    <a class="nv-menu-link" href="~/" target="_top" data-nav="/">
+        <span class="nv-menu-ico nv-ico" data-nv-ico="dashboard"></span>
+        <span class="nv-menu-label">首页</span>
+    </a>
+</div>
+@foreach (var m in menus.Where(w => w.Visible))
+{
+    @await Html.PartialAsync("_Left_Item", m)
+}

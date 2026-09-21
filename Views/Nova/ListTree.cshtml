@@ -1,0 +1,28 @@
+@using NewLife.Web;
+@using XCode;
+@{
+    var theme = NewLife.Cube.CubeSetting.Current.Theme;
+    if (String.IsNullOrEmpty(theme)) theme = "ACE";
+
+    Layout = "~/Views/" + theme + "/_Layout.cshtml";
+
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+}
+@if (!set.NavView.IsNullOrEmpty())
+{
+    <div class="nv-mb-3">
+        @await Html.PartialAsync(set.NavView)
+    </div>
+}
+<div class="nv-card">
+    @if (set.EnableToolbar)
+    {
+        @await Html.PartialAsync("_List_Toolbar")
+    }
+    <div class="nv-table-wrap">
+        @await Html.PartialAsync("_ListTree_Data")
+    </div>
+    @await Html.PartialAsync("_List_Pager")
+</div>

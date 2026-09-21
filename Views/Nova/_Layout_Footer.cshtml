@@ -1,0 +1,10 @@
+@* 内容页页脚（_Layout.cshtml 底部） *@
+@{
+    var ver = typeof(CubeSetting).Assembly.GetName().Version;
+}
+<footer class="nv-footer">
+    <div class="nv-container nv-footer-inner">
+        <span>&copy; @DateTime.Now.Year NewLife.Cube @ver · Nova 皮肤</span>
+        <span>Nova 设计令牌 v2 · 零 CDN · 零 jQuery</span>
+    </div>
+</footer>

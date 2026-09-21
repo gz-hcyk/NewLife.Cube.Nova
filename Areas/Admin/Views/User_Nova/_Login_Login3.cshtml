@@ -1,0 +1,108 @@
+@model LoginViewModel
+@using NewLife
+@using System.Web
+@using NewLife.Cube
+@using NewLife.Cube.Areas.Admin.Models
+@{
+    // 第三方登录面板（Nova 观感）。站点级分部视图，供 Login.cshtml / MLogin.cshtml 渲染。
+    //
+    // 与框架内置版一致：仅在 OAuthItems 非空时输出，避免无第三方登录时留下空分隔线。
+    // 未再使用 glyphicon / ace-icon（登录页已不加载 bootstrap.css 与 Cube.css），改用内联 SVG 与文字兜底。
+
+    var set = Model;
+    var items = set.OAuthItems;
+}
+@if (items != null && items.Count > 0)
+{
+    <div class="nv-login-oauth">
+        <div class="nv-oauth-sep"><span>第三方登录</span></div>
+        <div class="nv-oauth-list">
+            @foreach (var mi in items)
+            {
+                var nickName = !mi.NickName.IsNullOrEmpty() ? mi.NickName : mi.Name;
+
+                var url = "/Sso/Login?name=" + mi.Name;
+                if (!set.ReturnUrl.IsNullOrEmpty())
+                {
+                    url += "&r=" + HttpUtility.UrlEncode(set.ReturnUrl);
+                }
+
+                var logo = !mi.Logo.IsNullOrEmpty() ? mi.Logo : ViewHelper.GetLogo(mi.Name);
+
+                <a class="nv-oauth-item" href="@url" title="@nickName">
+                    @if (!logo.IsNullOrEmpty())
+                    {
+                        <img src="@logo" alt="@nickName" />
+                    }
+                    else
+                    {
+                        <span class="nv-oauth-name">@nickName</span>
+                    }
+                </a>
+            }
+        </div>
+    </div>
+}
+
+<style>
+    .nv-login-oauth {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 400px;
+        margin: 16px auto 0;
+        padding: 18px 28px 20px;
+        background: var(--nv-surface, #fff);
+        border: 1px solid var(--nv-border, #e6e8eb);
+        border-radius: var(--nv-r-lg, 14px);
+        box-shadow: var(--nv-shadow-card, 0 1px 3px rgba(16,24,40,.08));
+        font-family: var(--nv-font, system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif);
+        color: var(--nv-text, #1f2937);
+    }
+
+    .nv-oauth-sep {
+        position: relative;
+        text-align: center;
+        font-size: var(--nv-fs-13, 13px);
+        color: var(--nv-text-3, #6b7280);
+        margin-bottom: 14px;
+    }
+    .nv-oauth-sep::before,
+    .nv-oauth-sep::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        width: 28%;
+        height: 1px;
+        background: var(--nv-border, #e6e8eb);
+    }
+    .nv-oauth-sep::before { left: 0; }
+    .nv-oauth-sep::after { right: 0; }
+
+    .nv-oauth-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+
+    .nv-oauth-item {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 56px;
+        height: 56px;
+        border: 1px solid var(--nv-border, #e6e8eb);
+        border-radius: var(--nv-r-md, 10px);
+        background: var(--nv-surface, #fff);
+        text-decoration: none;
+        transition: border-color .15s, box-shadow .15s;
+    }
+    .nv-oauth-item:hover {
+        border-color: var(--nv-primary, #206bc4);
+        box-shadow: 0 0 0 3px var(--nv-primary-wash, rgba(32,107,196,.15));
+    }
+    .nv-oauth-item img { width: 32px; height: 32px; object-fit: contain; }
+    .nv-oauth-name {
+        font-size: var(--nv-fs-13, 13px);
+        color: var(--nv-text-2, #4b5563);
+        max-width: 52px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+</style>

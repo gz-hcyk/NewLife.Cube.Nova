@@ -1,0 +1,35 @@
+@model EntityField
+@using NewLife;
+@using NewLife.Cube.ViewModels
+@using XCode;
+@using XCode.Configuration;
+@{
+    var entity = Model.Entity;
+    var field = Model.Field;
+
+    // 富文本/大文本占满整行（.nv-col-full 在 .nv-form-grid 里跨列）
+    var full = field.ItemType.EqualIgnoreCase("html")
+            || field.ItemType.EqualIgnoreCase("markdown")
+            || field.IsBigText();
+}
+@if (full)
+{
+    <div class="nv-col-full">
+        @if (field.ItemType.EqualIgnoreCase("html"))
+        {
+            @await Html.PartialAsync("_Form_Html", Model)
+        }
+        else if (field.ItemType.EqualIgnoreCase("markdown"))
+        {
+            @await Html.PartialAsync("_Form_Markdown", Model)
+        }
+        else
+        {
+            @await Html.PartialAsync("_Form_BigText", Model)
+        }
+    </div>
+}
+else
+{
+    @await Html.PartialAsync("_Form_Item", Model)
+}

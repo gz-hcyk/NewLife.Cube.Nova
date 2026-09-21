@@ -1,0 +1,60 @@
+@{
+    ViewBag.Title = "数据库管理";
+}
+@using NewLife.Common;
+@using NewLife.Cube.Areas.Admin;
+@using XCode.DataAccessLayer;
+@{
+    var dbs = Model as IList<DbItem>;
+}
+<div class="nv-card">
+    <div class="nv-card-head">
+        <div class="nv-card-title">数据库管理</div>
+    </div>
+    <div class="nv-card-body">
+        <div style="overflow-x:auto">
+            <table class="nv-table">
+                <thead>
+                    <tr>
+                        <th class="nv-td-mid">名称</th>
+                        <th class="nv-td-mid">类型</th>
+                        <th>连接字符串</th>
+                        <th class="nv-td-mid">数据库版本</th>
+                        <th class="nv-td-mid">驱动</th>
+                        <th class="nv-td-mid">驱动版本</th>
+                        <th class="nv-td-mid">实体个数</th>
+                        <th class="nv-td-mid">表个数</th>
+                        <th class="nv-td-mid">备份</th>
+                        <th class="nv-td-mid">备份并压缩</th>
+                        <th class="nv-td-mid">下载表结构</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in dbs)
+                    {
+                        var dal = DAL.Create(item.Name);
+                        var pk = dal.ProtectedKey;
+
+                        // 密码需要保密
+                        var str = pk.Hide(item.ConnStr);
+                        var str2 = pk.Hide(dal.Db.ConnectionString);
+
+                        <tr>
+                            <td>@item.Name</td>
+                            <td>@item.Type</td>
+                            <td style="max-width:600px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;" title="@str2">@str</td>
+                            <td class="nv-td-mid">@item.Version</td>
+                            <td class="nv-td-mid">@item.Driver</td>
+                            <td class="nv-td-mid">@item.DriverVersion</td>
+                            <td class="nv-td-mid">@Html.ActionLink(item.Entities + "", "ShowEntities", new { Name = item.Name }, new { @class = "nv-link" })</td>
+                            <td class="nv-td-mid">@Html.ActionLink(item.Tables + "", "ShowTables", new { Name = item.Name }, new { @class = "nv-link" })</td>
+                            <td class="nv-td-mid">@Html.ActionLink("备份", "Backup", new { Name = item.Name }, new { @class = "nv-link" })，共 @item.Backups.ToString("n0")个</td>
+                            <td class="nv-td-mid">@Html.ActionLink("备份并压缩", "BackupAndCompress", new { Name = item.Name }, new { @class = "nv-link" })</td>
+                            <td class="nv-td-mid">@Html.ActionLink("下载", "Download", new { Name = item.Name }, new { @class = "nv-link" })</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

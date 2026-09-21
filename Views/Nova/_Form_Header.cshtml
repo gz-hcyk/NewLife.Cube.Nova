@@ -1,0 +1,17 @@
+@using NewLife;
+@{
+    var msg = ViewBag.StatusMessage as String;
+}
+@if (!msg.IsNullOrEmpty())
+{
+    // 状态提示条：与通用通知条（.nv-notice）同构，但只做「就地关闭」，
+    // 不走 24h 免打扰（表单提示每次提交都可能不同，缓存会误伤）。
+    var bad = ViewData.ModelState.Values.Any(st => st.Errors.Count > 0);
+    <div class="nv-notice @(bad ? "nv-notice-danger" : "nv-notice-success")" style="margin-bottom:var(--nv-sp-3)">
+        <i class="nv-ico nv-notice-ico" data-nv-ico="@(bad ? "alert" : "check")"></i>
+        <div class="nv-notice-body">
+            <div class="nv-notice-title">@msg</div>
+        </div>
+        <button type="button" class="nv-notice-close" onclick="var n=this.closest('.nv-notice'); if(n) n.remove();" aria-label="关闭">&times;</button>
+    </div>
+}

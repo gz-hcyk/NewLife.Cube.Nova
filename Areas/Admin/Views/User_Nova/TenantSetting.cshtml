@@ -1,0 +1,41 @@
+@model TenantSettingModel
+@{
+    ViewBag.Title = "租户信息";
+}
+@using System.Linq;
+@using System.Reflection;
+@using NewLife;
+@using XCode;
+@using XCode.Configuration;
+@using NewLife.Cube.Entity;
+@using NewLife.Cube.Areas.Admin.Models;
+@{
+    var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(null);
+    atts.Add("class", "nv-select");
+    atts.Add("id", "Tenants");
+
+    var tenantId = ViewData["TenantId"]?.ToInt();
+}
+<div class="nv-card">
+    <div class="nv-card-head">
+        <div class="nv-card-title">租户信息</div>
+    </div>
+    <div class="nv-card-body">
+        @await Html.PartialAsync("_User_Nav")
+        @using (Html.BeginForm("TenantSetting", "User"))
+        {
+            <div class="nv-field">
+                <label class="nv-field-label">用户名</label>
+                <input class="nv-input" value="@Model.UserName" disabled="disabled" />
+            </div>
+            <div class="nv-field">
+                <label class="nv-field-label">当前租户</label>
+                @Html.DropDownList("TagTenantId", new SelectList(Model.Tenants, "Key", "Value", tenantId), "请选择", atts)
+            </div>
+            <div class="nv-form-actions">
+                <button type="submit" class="nv-btn nv-btn-primary"><i class="ti ti-device-floppy"></i>保存</button>
+                <button type="button" class="nv-btn nv-btn-danger" onclick="history.go(-1);"><i class="ti ti-x"></i>取消</button>
+            </div>
+        }
+    </div>
+</div>

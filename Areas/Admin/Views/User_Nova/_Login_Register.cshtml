@@ -1,0 +1,67 @@
+@model LoginViewModel
+@using NewLife
+@using NewLife.Common
+@using NewLife.Cube.Areas.Admin.Models
+@{
+    // 注册面板（Nova 观感）。站点级分部视图，供 Login.cshtml / MLogin.cshtml 渲染。
+    //
+    // 说明：框架内置 Login.cshtml 会渲染 _Login_Register，但该分部视图只存在于历史部署目录、
+    // 不在站点源码中，运行时解析不到会抛 InvalidOperationException。因此在站点层补齐本文件。
+    //
+    // 提交契约与框架 UserController.Register 一致（字段名不可改）：email / username / password / password2。
+    // 与框架版一致，注册不启用 RSA 加密（仅登录走 RSA），故密码为明文提交。
+
+    var set = Model;
+}
+<div class="tab-pane fade" id="Register">
+    <div class="nv-login">
+        <div class="nv-login-title">@set.DisplayName 注册</div>
+
+        <form action="@Url.Action("Register", "User", new { r = set.ReturnUrl })" class="nv-login-form" method="post" id="cube-register">
+            @Html.ValidationSummary()
+
+            <div class="nv-field">
+                <label class="nv-field-label" for="reg_email">邮箱</label>
+                <div class="nv-field-ctl">
+                    <input type="email" class="nv-input" id="reg_email" name="email" placeholder="输入你的邮箱地址" autocomplete="email">
+                </div>
+            </div>
+
+            <div class="nv-field">
+                <label class="nv-field-label" for="reg_username">用户名</label>
+                <div class="nv-field-ctl">
+                    <input type="text" class="nv-input" id="reg_username" name="username" placeholder="用户名" autocomplete="username">
+                </div>
+            </div>
+
+            <div class="nv-field">
+                <label class="nv-field-label" for="reg_password">密码</label>
+                <div class="nv-field-ctl">
+                    <input type="password" class="nv-input" id="reg_password" name="password" placeholder="密码" autocomplete="new-password">
+                </div>
+            </div>
+
+            <div class="nv-field">
+                <label class="nv-field-label" for="reg_password2">确认密码</label>
+                <div class="nv-field-ctl">
+                    <input type="password" class="nv-input" id="reg_password2" name="password2" placeholder="重复密码" autocomplete="new-password">
+                </div>
+            </div>
+
+            <button type="submit" class="nv-btn nv-btn-primary nv-login-submit">注册</button>
+
+            <div class="nv-login-back">
+                <a href="#Login" data-toggle="tab" class="nv-login-link">回到登录</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* 返回登录链接：与登录卡片共用令牌，fallback 保证外壳未加载 nova-ui.css 时不塌 */
+    .nv-login .nv-login-back {
+        margin-top: 14px;
+        text-align: center;
+        font-size: var(--nv-fs-13, 13px);
+    }
+</style>

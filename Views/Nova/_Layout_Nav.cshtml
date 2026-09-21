@@ -1,0 +1,12 @@
+@* 面包屑：首页 / 当前菜单。
+   说明：不向上回溯菜单树，避免依赖 IMenu.Parent 的版本差异；多级路径由侧栏高亮体现。
+   外壳顶栏另有一个 #crumbTail 槽（由 postMessage 回填当前内容页标题），与本处互补。 *@
+@{
+    var menu = ViewBag.Menu as IMenu;
+}
+<span class="nv-crumb-item"><a href="~/" target="_top">首页</a></span>
+@if (menu != null && !String.IsNullOrEmpty(menu.DisplayName))
+{
+    <span class="nv-crumb-sep">/</span>
+    <span class="nv-crumb-item">@menu.DisplayName</span>
+}

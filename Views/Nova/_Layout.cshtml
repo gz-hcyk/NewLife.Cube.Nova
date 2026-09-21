@@ -1,0 +1,118 @@
+@* Nova 皮肤「内容页布局」——只提供 head + 内容容器 + 页脚 + 脚本，**不含左侧菜单与顶栏**。
+   与上游 ACE 的分层保持一致：
+     · 外层整页（顶栏 + 侧栏 + 承载内容页的 iframe）由 Views/Nova/CubeIndex.cshtml → _Frame.cshtml 负责；
+     · 本布局服务于 iframe 内部的内容页（列表/表单/详情/自定义页）。
+   因此这里必须保持「无导航」，否则菜单会在外层与 iframe 内各出现一次（双重菜单）。
+   契约仍与 ACE 布局一致（PageSetting / ViewBag.Charts / ViewBag.HeaderContent），
+   可在 CubeSetting.Theme 之间自由切换而不改任何业务代码。
+   内容区结构与原型 pages/*.html 一致：.nv-body > .nv-container > .nv-page-head。 *@
+@{
+    var set = CubeSetting.Current;
+    var pageSetting = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+
+    var title = ViewBag.Title + "";
+    if (set.TitlePrefix && title != "" && !title.Contains(" - "))
+    {
+        title += " - " + SysConfig.Current.DisplayName;
+    }
+
+    var res = set.ResourceUrl;
+    if (String.IsNullOrEmpty(res)) res = "/Content";
+    res = res.TrimEnd('/');
+
+    var charts = ViewBag.Charts as IList<ECharts>;
+    var charts2 = ViewBag.Charts2 as IList<ECharts>;
+    var hasChart = (charts != null && charts.Count > 0) || (charts2 != null && charts2.Count > 0);
+
+    var remark = ViewBag.HeaderContent as String;
+
+    // 供外壳按路径高亮菜单：nova-ui.js 的 ready 消息会把本值带给外层
+    var pagePath = Context.Request.Path.Value ?? "";
+
+    // 通用通知槽的 ViewData 键：与业务侧（Web/Services/LicenseNoticeHelper.cs）约定的松契约
+    const String NoticeSlot = "NoticeBarHtml";
+}
+<!doctype html>
+<html lang="zh-CN" data-bs-theme="light" data-nv-density="compact">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="本系统由广州明佳实业控股有限公司开发" />
+    <title>@title</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+    <!-- Tabler v1.5.1 (Bootstrap 5.3.8, bundled) + Tabler Icons 2.22.0 -->
+    <link rel="stylesheet" href="@res/tabler/css/tabler.min.css" />
+    <link rel="stylesheet" href="@res/tabler/css/tabler-icons.min.css" />
+    <!-- Nova 主题层：原型设计体系原样落地 + MVC 落地适配层（见文件末尾） -->
+    <link rel="stylesheet" href="@res/nova/nova-ui.css" />
+
+    <!-- 页面内联样式 -->
+    @RenderSection("css", required: false)
+
+    <!-- 遗留页面仍在用 jQuery 插件（bootstrap-treeview 等）。
+         此处统一提供当前维护中的 3.7.1；新页面禁止新增 jQuery 依赖，一律使用原生 API 或 nova-ui.js。 -->
+    <script src="@res/js/jquery-3.7.1.min.js"></script>
+
+    @if (hasChart)
+    {
+        <script src="@res/echarts/echarts.min.js"></script>
+        var themeName = set.EChartsTheme;
+        if (themeName.EqualIgnoreCase("Default")) themeName = "";
+        if (!themeName.IsNullOrEmpty())
+        {
+            <script src="@res/echarts/theme/@(themeName).js"></script>
+        }
+    }
+</head>
+<body class="nv" data-nv-page="@pagePath" data-nv-dblclick="@(pageSetting.EnableTableDoubleClick ? "1" : "0")">
+    <div class="nv-body">
+
+        @* 通用通知槽（内容页）。与整页外壳 _Frame.cshtml 的同名槽互补：
+             · 本槽带 data-nv-notice-when="top"，nova-ui.js 在本页被 iframe 嵌套（即外壳可达）时自动移除，
+               避免与外层横幅重复；外壳不可达时（如未授权被 302 到授权页、或直接打开内容页 URL）由本槽兜底。
+             · 只有 ViewResult 会被业务过滤器注入，故本槽在非注入场景下不产生任何输出。 *@
+        @if (ViewData[NoticeSlot] is IHtmlContent pageNotice)
+        {
+            <div class="nv-notice-host" data-nv-notice-when="top">@pageNotice</div>
+        }
+
+        <div class="nv-container">
+            @if (pageSetting.EnableNavbar)
+            {
+                <div class="nv-page-head">
+                    <div>
+                        <nav class="nv-crumb">
+                            @await Html.PartialAsync("_Layout_Nav")
+                        </nav>
+                        <h1 class="nv-page-title">@ViewBag.Title</h1>
+                        @if (!remark.IsNullOrEmpty())
+                        {
+                            <div class="nv-page-desc">@remark</div>
+                        }
+                    </div>
+                </div>
+            }
+            @RenderBody()
+        </div>
+    </div>
+
+    @if (pageSetting.EnableFooter)
+    {
+        @await Html.PartialAsync("_Layout_Footer")
+    }
+
+    <div class="nv-toast-host"></div>
+
+    <!-- Tabler v1.5.1：Bootstrap 5.3.8 的 JS 已内置进 tabler.min.js（含 Popper），
+         供下拉菜单/模态等 data-bs-* 组件使用；1.5 不再单独提供 bootstrap.bundle.min.js -->
+    <script src="@res/tabler/js/tabler.min.js"></script>
+    <!-- 日期控件：替代已停维护的 bootstrap-datetimepicker -->
+    <script src="@res/tabler/js/litepicker.js"></script>
+    <!-- Nova 交互层（零 jQuery）：图标注入 / 主题 / 密度 / 批量条 / 通知槽 / 列表增强 -->
+    <script src="@res/nova/nova-ui.js"></script>
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,73 @@
+@using NewLife;
+@using NewLife.Web;
+@{
+    var pager = ViewBag.Page as Pager;
+    var act = Context.Request.Path + "";
+    if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
+}
+@if (pager != null && pager.TotalCount > 0)
+{
+    <div class="nv-pager">
+        <div class="nv-pager-meta">
+            <span>共 <b>@pager.TotalCount.ToString("n0")</b> 条</span>
+            <span>当前第 <b>@pager.PageIndex.ToString("n0")</b>/@pager.PageCount.ToString("n0") 页</span>
+            <span class="nv-pager-size">
+                每页
+                <select class="nv-select" id="PageSize" name="PageSize" aria-label="每页条数">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="500">500</option>
+                    <option value="1000">1000</option>
+                </select>
+            </span>
+        </div>
+        <div class="nv-pager-nums">
+            <form action="@act?@pager.GetBaseUrl(true, true, false)" method="post" role="form" class="nv-pager-form">
+                <div class="nv-pages">
+                    @Html.Raw(pager.GetPage("首页"))
+                    @Html.Raw(pager.GetPage("上一页"))
+                    @Html.Raw(pager.GetPage("下一页"))
+                    @Html.Raw(pager.GetPage("尾页"))
+                </div>
+                <span class="nv-pager-jump">
+                    跳至 <input class="nv-input" name="PageIndex" type="text" value="@pager.PageIndex" aria-label="跳转到第几页" /> 页
+                    <button type="submit" class="nv-btn nv-btn-sm">GO</button>
+                </span>
+            </form>
+        </div>
+    </div>
+    <script>
+        (function () {
+            'use strict';
+            // 页大小：回显当前值 + 改变即提交（原实现依赖 jQuery，这里改为原生）
+            var sel = document.getElementById('PageSize');
+            if (!sel) return;
+            sel.value = '@pager.PageSize';
+            sel.addEventListener('change', function () {
+                var form = sel.closest('form');
+                if (!form) {
+                    form = document.createElement('form');
+                    form.method = 'post';
+                    form.action = '@Html.Raw(act)?@pager.GetBaseUrl(true, true, false)';
+                    form.appendChild(sel.cloneNode(true));
+                    document.body.appendChild(form);
+                } else {
+                    // 所在表单内补一个隐藏域，确保 PageSize 被提交
+                    var hid = form.querySelector('input[name=PageSize]');
+                    if (!hid) {
+                        hid = document.createElement('input');
+                        hid.type = 'hidden';
+                        hid.name = 'PageSize';
+                        form.appendChild(hid);
+                    }
+                    hid.value = sel.value;
+                }
+                form.submit();
+            });
+        })();
+    </script>
+}

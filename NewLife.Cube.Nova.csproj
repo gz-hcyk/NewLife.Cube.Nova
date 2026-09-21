@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyTitle>魔方Nova主题</AssemblyTitle>
+    <Description>IoT 平台 Nova 皮肤包（基于 Tabler v1.0.0-beta19 / Bootstrap 5），提供 Razor 视图与静态资源，支持视图覆写与主题切换。作为 Razor Class Library 被 IoT.Web 引用。</Description>
+    <Company>明佳</Company>
+    <Copyright>©2026 明佳</Copyright>
+    <VersionPrefix>1.0</VersionPrefix>
+    <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>
+    <Version>$(VersionPrefix).$(VersionSuffix)</Version>
+    <FileVersion>$(Version)</FileVersion>
+    <AssemblyVersion>$(VersionPrefix).*</AssemblyVersion>
+    <Deterministic>false</Deterministic>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>NewLife.Cube.Nova</RootNamespace>
+    <NoWarn>1701;1702;NU5104;NETSDK1138;CS7035;CS1591</NoWarn>
+    <!-- 输出/发布目录：上两级目录的 Bin 下以项目名命名的文件夹 -->
+    <OutputPath>..\..\Bin\$(MSBuildProjectName)\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <PublishDir>..\..\Bin\$(MSBuildProjectName)\</PublishDir>
+  </PropertyGroup>
+
+  <!-- 静态资源（tabler / nova / jquery）作为嵌入资源打包进程序集。
+       运行时由 IoT.Web 用 NewLife.Cube.Extensions.CubeEmbeddedFileProvider 以 /Content/... 对外提供，
+       与 NewLife.Cube.Tabler 皮肤项目完全一致的机制。 -->
+  <ItemGroup>
+    <EmbeddedResource Include="wwwroot\**\*" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NewLife.Cube.Core" Version="6.15.2026.901" />
+  </ItemGroup>
+
+</Project>

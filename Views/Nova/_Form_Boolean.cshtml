@@ -1,0 +1,16 @@
+@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@{
+    var name = Model.Name;
+    var value = (Boolean)Model.Value;
+}
+@* Nova 开关：保留 MVC 的「隐藏 false 域 + checkbox」约定，
+   使未勾选时仍能提交 false（与 Html.CheckBox 行为一致）。 *@
+<label class="nv-switch">
+    <input type="checkbox" id="@name" name="@name" value="true" @(value ? "checked" : "") />
+    <span class="nv-switch-track" aria-hidden="true"></span>
+</label>
+<input type="hidden" name="@name" value="false" />

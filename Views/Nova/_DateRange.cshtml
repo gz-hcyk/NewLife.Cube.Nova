@@ -1,0 +1,76 @@
+@using NewLife;
+@{
+    var fmt = Model as String;
+    var formatStr = !fmt.IsNullOrEmpty() ? fmt : "yyyy-MM-dd";
+    var p = ViewBag.Page as Pager;
+
+    var dtStart = p["dtStart"].ToDateTime();
+    var dtEnd = p["dtEnd"].ToDateTime();
+    var step = (Int32)(dtEnd - dtStart).TotalDays + 1;
+
+    var isEmpty = dtStart.Year < 2000 && dtEnd.Year < 2000;
+
+    var hasRange = formatStr == "yyyy-MM-dd" && (dtStart.Year > 2000 || dtEnd.Year > 2000);
+
+    // 前后一段的跳转链接（日历图标点击直达，省一次查询提交）
+    var prevUrl = "";
+    var nextUrl = "";
+    if (hasRange && dtStart.Year > 2000 && dtEnd.Year > 2000)
+    {
+        var u1 = p.GetBaseUrl(true, true, true, new[] { "dtStart", "dtEnd" });
+        u1.UrlParam("dtStart", dtStart.AddDays(-step).ToString("yyyy-MM-dd"));
+        u1.UrlParam("dtEnd", dtEnd.AddDays(-step).ToString("yyyy-MM-dd"));
+        prevUrl = "?" + u1;
+
+        var u2 = p.GetBaseUrl(true, true, true, new[] { "dtStart", "dtEnd" });
+        u2.UrlParam("dtStart", dtStart.AddDays(step).ToString("yyyy-MM-dd"));
+        u2.UrlParam("dtEnd", dtEnd.AddDays(step).ToString("yyyy-MM-dd"));
+        nextUrl = "?" + u2;
+    }
+}
+<div class="nv-field">
+    <label class="nv-field-label" for="dtStart">时间范围</label>
+    <div class="nv-field-ctl nv-daterange">
+        @if (!prevUrl.IsNullOrEmpty())
+        {
+            <a class="nv-input-affix" href="@Html.Raw(prevUrl)" title="前一段"><i class="nv-ico nv-ico-sm" data-nv-ico="chevron_left"></i></a>
+        }
+        else
+        {
+            <span class="nv-input-affix" title="点击日历图标可填入今日"><i class="nv-ico nv-ico-sm" data-nv-ico="calendar"></i></span>
+        }
+        <input class="nv-input" name="dtStart" id="dtStart" value="@p["dtStart"]" dateformat="@formatStr" autocomplete="off" aria-label="开始时间" />
+        <span class="nv-daterange-sep">~</span>
+        <input class="nv-input" name="dtEnd" id="dtEnd" value="@p["dtEnd"]" dateformat="@formatStr" autocomplete="off" aria-label="结束时间" />
+        @if (!nextUrl.IsNullOrEmpty())
+        {
+            <a class="nv-input-affix" href="@Html.Raw(nextUrl)" title="后一段"><i class="nv-ico nv-ico-sm" data-nv-ico="chevron_right"></i></a>
+        }
+    </div>
+</div>
+@if (isEmpty)
+{
+    @* 未填时间范围时，点日历图标直接填入今日（原实现依赖 jQuery，这里改为原生） *@
+    <script>
+        (function () {
+            'use strict';
+            var box = document.querySelector('.nv-daterange');
+            if (!box) return;
+            var ico = box.querySelector('.nv-input-affix');
+            if (!ico) return;
+            ico.style.cursor = 'pointer';
+            ico.addEventListener('click', function (e) {
+                if (ico.tagName === 'A') return; // 有「前一段」链接时优先跳转
+                e.preventDefault();
+                var now = new Date();
+                var today = now.getFullYear() + '-' +
+                    String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(now.getDate()).padStart(2, '0');
+                var s = document.getElementById('dtStart');
+                var t = document.getElementById('dtEnd');
+                if (s) s.value = today;
+                if (t) t.value = today;
+            });
+        })();
+    </script>
+}

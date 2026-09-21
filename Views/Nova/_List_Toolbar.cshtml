@@ -1,0 +1,80 @@
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+
+    var act = Context.Request.Path + "";
+    if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
+
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+}
+<div class="nv-toolbar">
+    <form action="@Html.Raw(page.GetFormAction(act))" method="post" role="form" class="nv-toolbar-form">
+        @if (set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert))
+        {
+            var rv = page.GetRouteValue();
+            @Html.ActionLink("添加", "Add", rv, new { @class = "nv-btn nv-btn-primary nv-btn-sm" }.ToDictionary())
+        }
+        @if (set.EnableSelect)
+        {
+            <div class="nv-toolbar-batch">
+                @await Html.PartialAsync("_List_Toolbar_Batch")
+                @{
+                    // 未被子级重载且实体含 Boolean 类型 Enable 字段时，自动注入批量启用/禁用
+                    var hasEnableField = Context.Items.ContainsKey("IsDefaultBatch")
+                        && fact?.Table?.FindByName("Enable") is FieldItem enableFi
+                        && enableFi.Type == typeof(Boolean);
+                }
+                @if (hasEnableField)
+                {
+                    <button type="button" class="nv-btn nv-btn-sm" data-action="action" data-url="@Url.Action("EnableSelect")" data-fields="keys" disabled>批量启用</button>
+                    <button type="button" class="nv-btn nv-btn-sm" data-action="action" data-url="@Url.Action("DisableSelect")" data-fields="keys" disabled>批量禁用</button>
+                }
+            </div>
+        }
+        @await Html.PartialAsync("_List_Toolbar_Custom")
+        <span class="nv-toolbar-spacer"></span>
+        @await Html.PartialAsync("_List_Search")
+        @await Html.PartialAsync("_List_Toolbar_Search")
+        @await Html.PartialAsync("_List_Toolbar_Adv")
+    </form>
+</div>
+@if (set.EnableSelect)
+{
+    @* 批量操作区：全选 / 选中计数 / 按钮启停。
+       与 ACE 版的 jQuery 实现行为一致，这里改为零 jQuery 实现（沿用 data-action="action" 契约）。 *@
+    <script>
+        (function () {
+            'use strict';
+            var table = document.querySelector('.nv-table');
+            if (!table) return;
+            var btns = document.querySelectorAll('[data-action="action"][data-fields]');
+            var chkAll = document.getElementById('chkAll');
+
+            function keys() { return table.querySelectorAll('tbody input[name="keys"]'); }
+
+            function sync() {
+                var all = keys(), n = 0;
+                for (var i = 0; i < all.length; i++) if (all[i].checked) n++;
+                for (var j = 0; j < btns.length; j++) btns[j].disabled = (n === 0);
+                if (chkAll) chkAll.checked = all.length > 0 && n === all.length;
+                if (window.nv && window.nv.refreshBulk) window.nv.refreshBulk();
+            }
+
+            if (chkAll) {
+                chkAll.addEventListener('change', function () {
+                    var all = keys();
+                    for (var i = 0; i < all.length; i++) all[i].checked = chkAll.checked;
+                    sync();
+                });
+            }
+            table.addEventListener('change', function (e) {
+                if (e.target && e.target.name === 'keys') sync();
+            });
+            sync();
+        })();
+    </script>
+}

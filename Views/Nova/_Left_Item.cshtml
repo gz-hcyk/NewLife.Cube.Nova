@@ -1,0 +1,45 @@
+@* 单个菜单节点，有子级时递归自身。
+   整页外壳里的导航约定（与上游 ACE 的 _Left_Item 一致）：
+     · 叶子项一律把内容送进 iframe（target="main"），否则点击菜单会整体替换外层整页、把导航一起冲掉；
+     · 外链仍走新窗口（_blank）；父级项只作展开开关（data-nv-act="menu"）。
+   data-nav 供 nova-ui.js 按 iframe 实际地址做最长前缀命中高亮（覆盖深链与后退/前进）。 *@
+@model MenuTree
+@{
+    var m = Model;
+    if (m == null) { return; }
+    var childs = (m.Children ?? new List<MenuTree>()).Where(w => w.Visible).ToList();
+    var hasChild = childs.Count > 0;
+    var url = m.Url;
+    if (String.IsNullOrEmpty(url)) url = "javascript:;";
+
+    String target = null;
+    String nav = null;
+    if (!hasChild && url != "javascript:;")
+    {
+        target = url.StartsWithIgnoreCase("http://", "https://") ? "_blank" : "main";
+        nav = Url.Content(url);
+    }
+}
+<div class="nv-menu-item">
+    @if (hasChild)
+    {
+        <button class="nv-menu-link" type="button" data-nv-act="menu" aria-expanded="false">
+            @await Html.PartialAsync("_Menu_Icon", m)
+            <span class="nv-menu-label">@m.DisplayName</span>
+            <span class="nv-menu-arrow nv-ico nv-ico-sm" data-nv-ico="chevron_right"></span>
+        </button>
+        <div class="nv-submenu">
+            @foreach (var c in childs)
+            {
+                @await Html.PartialAsync("_Left_Item", c)
+            }
+        </div>
+    }
+    else
+    {
+        <a class="nv-menu-link" href="@url" target="@target" data-nav="@nav">
+            @await Html.PartialAsync("_Menu_Icon", m)
+            <span class="nv-menu-label">@m.DisplayName</span>
+        </a>
+    }
+</div>

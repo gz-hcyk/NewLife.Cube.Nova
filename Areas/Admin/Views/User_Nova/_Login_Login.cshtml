@@ -1,0 +1,275 @@
+﻿@model LoginViewModel
+@using NewLife
+@using NewLife.Common
+@using NewLife.Cube.Areas.Admin.Models
+@{
+    // 登录表单（Nova 观感）。PC（Login.cshtml）与移动端（MLogin.cshtml）共用本局部视图，改一处两端生效。
+    //
+    // 提交链路契约（与框架 UserController.Login 一致，元素 id 不可改名）：
+    //   #username        用户名，可见输入框，带 name，直接提交
+    //   #password        密码「可见」输入框，无 name，不参与提交（仅用于取值加密）
+    //   #pwd             真正提交的字段（name=password），值为 RSA 密文；后端未下发公钥时退化为明文
+    //   #pkey_container  RSA 公钥；为空表示后端未启用加密
+    //   #remember        记住我；#login-btn 登录按钮（type=button，避免回车误提交未加密的表单）
+    //
+    // 明文/密文切换只改 #password 的 type，不改变提交内容，因此不影响 RSA 加密链路。
+
+    var set = Model;
+
+    var pDic = ViewData["pKey"] == null ? new KeyValuePair<string, string>() : (KeyValuePair<String, String>)ViewData["pKey"];
+    var key = pDic.Key;
+    var value = pDic.Value;
+}
+<div class="tab-pane fade in active" id="Login">
+    <div class="nv-login">
+        <div class="nv-login-brand">
+            @if (!set.Logo.IsNullOrEmpty())
+            {
+                <img src="@set.Logo" alt="@set.DisplayName" />
+            }
+            else
+            {
+                <img src="/logo.png" alt="@set.DisplayName" />
+            }
+        </div>
+        <div class="nv-login-eyebrow">账号密码登录</div>
+        <div class="nv-login-title">登录到 @set.DisplayName</div>
+
+        <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" class="cube-login nv-login-form" method="post" id="cube-login">
+            <input type="hidden" id="pkey_container" value="@value" />
+            @Html.ValidationSummary()
+            @if (set.AllowLogin)
+            {
+                <input type="hidden" name="pubKey" />
+                <input type="hidden" name="pkey" value="@key" />
+
+                <div class="nv-field">
+                    <label class="nv-field-label" for="username">用户名</label>
+                    <div class="nv-field-ctl">
+                        <span class="nv-affix nv-affix-left" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
+                                <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+                            </svg>
+                        </span>
+                        <input type="text" class="nv-input nv-input-affix-l" id="username" name="username" placeholder="用户名 / 邮箱 / 手机 / 编码" autocomplete="username" autofocus>
+                    </div>
+                </div>
+
+                <div class="nv-field">
+                    <label class="nv-field-label" for="password">密码</label>
+                    <div class="nv-field-ctl">
+                        <span class="nv-affix nv-affix-left" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2z" />
+                                <path d="M8 11v-4a4 4 0 0 1 8 0v4" />
+                            </svg>
+                        </span>
+                        <input type="password" class="nv-input nv-input-affix-l nv-input-affix-r" id="password" placeholder="密码" autocomplete="current-password">
+                        @* 明文/密文切换：type=button 不会触发提交；aria-pressed 供读屏软件识别状态 *@
+                        <button type="button" class="nv-eye" id="pwd-eye" aria-controls="password" aria-pressed="false" aria-label="显示密码" title="显示密码">
+                            <svg class="nv-eye-ico nv-eye-show" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+                                <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
+                            </svg>
+                            <svg class="nv-eye-ico nv-eye-hide" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M3 3l18 18" />
+                                <path d="M10.6 5.6c1.1 -.2 2.2 -.3 3.4 -.3c3.6 0 6.6 2 9 6c-.7 1.2 -1.5 2.2 -2.4 3" />
+                                <path d="M6.3 6.3c-1.6 1.2 -3 2.9 -3.8 4.7c2.4 4 5.4 6 9 6c1.3 0 2.5 -.2 3.6 -.6" />
+                                <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <input type="hidden" id="pwd" name="password" />
+
+                <div class="nv-login-row">
+                    <label class="nv-remember" for="remember">
+                        <input type="checkbox" id="remember" name="remember" value="true" />
+                        <span>记住我</span>
+                    </label>
+                    @if (set.AllowRegister)
+                    {
+                        <a href="#Register" data-toggle="tab" class="nv-login-link">我要注册</a>
+                    }
+                </div>
+
+                <button type="button" id="login-btn" class="nv-btn nv-btn-primary nv-login-submit">登录</button>
+
+                @if (!set.LoginTip.IsNullOrEmpty())
+                {
+                    <div class="nv-notice nv-notice-warning nv-login-tip" role="alert">
+                        @Html.Raw(set.LoginTip)
+                    </div>
+                }
+            }
+        </form>
+    </div>
+</div>
+
+@*
+   登录卡片样式内联在本局部视图中，使其自包含：即使外壳未提供 nova-ui.css，
+   令牌也有 fallback（取 Nova 规范的明色值），不会退化成无样式裸表单。
+*@
+<style>
+    .nv-login {
+        box-sizing: border-box;
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 32px 28px 28px;
+        background: var(--nv-surface, #fff);
+        border: 1px solid var(--nv-border, #e6e8eb);
+        border-radius: var(--nv-r-lg, 14px);
+        box-shadow: var(--nv-shadow-card, 0 1px 3px rgba(16,24,40,.08), 0 8px 24px rgba(16,24,40,.06));
+        font-family: var(--nv-font, system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif);
+        color: var(--nv-text, #1f2937);
+    }
+
+    .nv-login-brand { text-align: center; margin-bottom: 18px; }
+    .nv-login-brand img { max-height: 56px; max-width: 100%; object-fit: contain; }
+
+    .nv-login-eyebrow {
+        text-align: center;
+        font-size: var(--nv-fs-12, 12px);
+        font-weight: var(--nv-fw-semi, 600);
+        letter-spacing: .4px;
+        color: var(--nv-primary, #206bc4);
+        margin-bottom: 6px;
+    }
+    .nv-login-title {
+        text-align: center;
+        font-size: var(--nv-fs-20, 20px);
+        font-weight: var(--nv-fw-bold, 700);
+        color: var(--nv-text, #1f2937);
+        margin: 0 0 22px;
+    }
+
+    .nv-login-form { margin: 0; }
+
+    /* 框架 ValidationSummary 输出 .validation-summary-errors，这里收敛到 Nova 观感 */
+    .nv-login .validation-summary-errors {
+        margin: 0 0 16px;
+        padding: 10px 12px;
+        border-left: 3px solid var(--nv-danger, #d63939);
+        border-radius: var(--nv-r-sm, 8px);
+        background: var(--nv-danger-wash, #fff5f5);
+        color: var(--nv-danger-text, #b42318);
+        font-size: var(--nv-fs-13, 13px);
+        line-height: 1.6;
+    }
+    .nv-login .validation-summary-errors ul { margin: 0; padding-left: 18px; }
+
+    .nv-login .nv-field { margin-bottom: 16px; }
+    .nv-login .nv-field-label {
+        display: block;
+        margin-bottom: 6px;
+        font-size: var(--nv-fs-13, 13px);
+        font-weight: var(--nv-fw-semi, 600);
+        color: var(--nv-text-2, #4b5563);
+    }
+    .nv-login .nv-field-ctl { position: relative; display: block; }
+
+    .nv-login .nv-affix {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: inline-flex;
+        color: var(--nv-text-3, #6b7280);
+        pointer-events: none;
+    }
+
+    .nv-login .nv-input {
+        box-sizing: border-box;
+        width: 100%;
+        height: 42px;
+        padding: 0 12px;
+        border: 1px solid var(--nv-border, #e6e8eb);
+        border-radius: var(--nv-r-md, 10px);
+        background: var(--nv-surface, #fff);
+        color: var(--nv-text, #1f2937);
+        font-size: var(--nv-fs-14, 14px);
+        font-family: inherit;
+        transition: border-color .15s, box-shadow .15s;
+    }
+    .nv-login .nv-input-affix-l { padding-left: 38px; }
+    .nv-login .nv-input-affix-r { padding-right: 44px; }
+    .nv-login .nv-input::placeholder { color: var(--nv-text-4, #9ca3af); }
+    .nv-login .nv-input:focus {
+        outline: 0;
+        border-color: var(--nv-primary, #206bc4);
+        box-shadow: 0 0 0 3px var(--nv-primary-wash, rgba(32,107,196,.15));
+    }
+
+    /* 明文 / 密文切换按钮 */
+    .nv-login .nv-eye {
+        position: absolute;
+        right: 6px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        border: 0;
+        border-radius: var(--nv-r-sm, 8px);
+        background: transparent;
+        color: var(--nv-text-3, #6b7280);
+        cursor: pointer;
+        transition: background .15s, color .15s;
+    }
+    .nv-login .nv-eye:hover { background: var(--nv-surface-hover, #f3f4f6); color: var(--nv-primary, #206bc4); }
+    .nv-login .nv-eye:focus-visible { outline: 2px solid var(--nv-primary, #206bc4); outline-offset: 1px; }
+    .nv-login .nv-eye .nv-eye-hide { display: none; }
+    .nv-login .nv-eye.is-on .nv-eye-show { display: none; }
+    .nv-login .nv-eye.is-on .nv-eye-hide { display: inline-flex; }
+    .nv-login .nv-eye.is-on { color: var(--nv-primary, #206bc4); }
+
+    .nv-login-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: 4px 0 18px;
+        font-size: var(--nv-fs-13, 13px);
+    }
+    .nv-login .nv-remember {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--nv-text-2, #4b5563);
+        cursor: pointer;
+        user-select: none;
+    }
+    .nv-login .nv-remember input { width: 15px; height: 15px; margin: 0; accent-color: var(--nv-primary, #206bc4); cursor: pointer; }
+    .nv-login .nv-login-link { color: var(--nv-primary, #206bc4); text-decoration: none; }
+    .nv-login .nv-login-link:hover { text-decoration: underline; }
+
+    .nv-login .nv-login-submit {
+        width: 100%;
+        height: 42px;
+        border: 0;
+        border-radius: var(--nv-r-md, 10px);
+        font-size: var(--nv-fs-14, 14px);
+        font-weight: var(--nv-fw-semi, 600);
+        cursor: pointer;
+    }
+
+    .nv-login .nv-login-tip {
+        margin: 16px 0 0;
+        padding: 10px 12px;
+        font-size: var(--nv-fs-13, 13px);
+        line-height: 1.6;
+        border: 1px solid var(--nv-border, #e6e8eb);
+        border-left: 3px solid var(--nv-warning, #f59e0b);
+        border-radius: var(--nv-r-sm, 8px);
+        background: var(--nv-surface-2, #f8f9fa);
+        color: var(--nv-text-2, #4b5563);
+    }
+
+    @@media (max-width: 420px) {
+        .nv-login { padding: 24px 18px 22px; }
+    }
+</style>

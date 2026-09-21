@@ -1,0 +1,67 @@
+@model DbTablesModel
+@{
+    ViewBag.Title = "数据表列表";
+}
+@using System.Diagnostics;
+@using System.Collections;
+@using System.Reflection;
+@using System.Runtime.Versioning;
+@using NewLife.Common;
+@using XCode.DataAccessLayer;
+@{
+    foreach (var item in Model.Tables)
+    {
+        var table = item.Table;
+        <div class="nv-card">
+            <div class="nv-card-head">
+                <div class="nv-card-title">@table.DisplayName（@table.TableName）<span class="nv-card-sub">[@item.Count]</span></div>
+            </div>
+            <div class="nv-card-body">
+                <div style="overflow-x:auto">
+                    <table class="nv-table">
+                        <thead>
+                            <tr>
+                                <th class="nv-td-mid">名称</th>
+                                <th class="nv-td-mid">显示名</th>
+                                <th class="nv-td-mid">类型</th>
+                                <th class="nv-td-mid">长度</th>
+                                <th class="nv-td-mid">精度</th>
+                                <th class="nv-td-mid">主键</th>
+                                <th class="nv-td-mid">允许空</th>
+                                <th>备注</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var column in table.Columns)
+                            {
+                                <tr>
+                                    <td>@column.ColumnName</td>
+                                    <td>@column.DisplayName</td>
+                                    <td class="nv-td-mid">@(column.RawType ?? column.DataType?.FullName.TrimStart("System."))</td>
+                                    <td class="nv-td-mid">@(column.Length > 0 ? column.Length.ToString() : "")</td>
+                                    <td class="nv-td-mid">@(column.Precision > 0 || column.Scale > 0 ? $"({column.Precision}, {column.Scale})" : "")</td>
+                                    <td class="nv-td-mid">
+                                        @if (column.Identity)
+                                        {
+                                            <span title="自增">AI</span>
+                                        }
+                                        else if (column.PrimaryKey)
+                                        {
+                                            <span title="主键">PK</span>
+                                        }
+                                        else if (table.Indexes.Any(e => e.Unique && e.Columns.Length == 1 && e.Columns[0].EqualIgnoreCase(column.Name, column.ColumnName)))
+                                        {
+                                            <span title="唯一索引">UQ</span>
+                                        }
+                                    </td>
+                                    <td class="nv-td-mid">@(column.Nullable ? "" : "N")</td>
+                                    <td>@(column.Description?.TrimStart(column.DisplayName).TrimStart("。", "，"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+}

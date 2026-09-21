@@ -1,0 +1,38 @@
+@using NewLife;
+@using NewLife.Cube;
+@{
+    var path = Context.Request.Path + "";
+
+    var user = ManageProvider.User;
+    var currentId = user?.ID ?? 0;
+    var userId = Context.Request.Query["userId"].ToInt(0);
+    if (userId == 0 && path.StartsWithIgnoreCase("/Admin/User/Detail", "/Admin/User/Edit"))
+    {
+        userId = Context.Request.Query["Id"].ToInt(0);
+    }
+    if (userId == 0) userId = currentId;
+
+    var dic = new Dictionary<String, Object>();
+    if (userId == currentId)
+    {
+        dic["基本信息"] = "/Admin/User/Info";
+        dic["修改密码"] = "/Admin/User/ChangePassword";
+        dic["第三方授权"] = "/Admin/User/Binds";
+        dic["租户信息"] = "/Admin/User/TenantSetting";
+    }
+    dic[user + ""] = $"/Admin/User/Edit?Id={userId}";
+    dic["三方链接"] = $"/Admin/UserConnect?userId={userId}";
+    dic["令牌"] = $"/Admin/UserToken?userId={userId}";
+    dic["OAuth日志"] = $"/Admin/OAuthLog?userId={userId}";
+    dic["日志"] = $"/Admin/Log?userId={userId}";
+    dic["通知记录"] = $"/Admin/NotificationRecord?userId={userId}";
+}
+<div class="nv-tabnav">
+    @foreach (var item in dic)
+    {
+        var url = item.Value + "";
+        var p = url.IndexOf('?');
+        var v = p > 0 ? url.Substring(0, p) : url;
+        <a class="nv-tabnav-item @(path.EqualIgnoreCase(v) ? "is-active" : "")" href="@url">@item.Key</a>
+    }
+</div>

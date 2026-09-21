@@ -1,0 +1,22 @@
+@model EntityField
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@{
+    var entity = Model.Entity;
+    var field = Model.Field;
+
+    var value = entity[field.Name] as String;
+
+    var accept = "";
+    if (field.ItemType.EqualIgnoreCase("image") || field.ItemType.StartsWithIgnoreCase("image-")) accept = "image/*";
+}
+@Html.TextBox(field.Name, entity[field.Name], new { @class = "nv-input" })
+<input type="file" class="nv-input" name="@(field.Name)_attachment" accept="@accept" />
+@if (!value.IsNullOrEmpty())
+{
+    <a class="nv-thumb-link" href="@value" target="_blank" rel="noopener" title="查看原图">
+        <img class="nv-thumb" src="@value" alt="@field.DisplayName" />
+    </a>
+}

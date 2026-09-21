@@ -1,0 +1,106 @@
+@{
+    ViewBag.Title = "文件管理";
+}
+@using System.Diagnostics;
+@using System.Collections.Generic;
+@using NewLife.Common;
+@using NewLife.Cube.Areas.Admin;
+@{
+    var fs = Model as List<FileItem>;
+    var r = ViewBag.Current as String;
+    var clips = ViewBag.Clip as ICollection<FileItem>;
+}
+<div class="nv-card">
+    <div class="nv-card-head">
+        <div class="nv-card-title">文件管理</div>
+    </div>
+    <div class="nv-card-body">
+        <form action="~/Admin/File" id="tool" method="post" class="nv-row">
+            <div class="nv-field" style="margin-bottom:0">
+                <label class="nv-field-label">当前路径</label>
+                <input name="r" type="search" id="r" value="@r" class="nv-input" placeholder="当前路径" />
+            </div>
+            <button type="submit" class="nv-btn nv-btn-primary"><i class="ti ti-folder"></i>打开</button>
+            <label class="nv-btn" style="cursor:pointer">
+                <i class="ti ti-upload"></i>上传文件
+                <input name="file" type="file" id="file" data-action="upload" data-url="/Admin/File/Upload" data-fields="r" style="display:none" />
+            </label>
+            @if (clips.Count > 0)
+            {
+                <button type="button" class="nv-btn" onclick="location.href = '/Admin/File/Paste?r=@r';"><i class="ti ti-clipboard"></i>粘贴(@clips.Count)</button>
+                <button type="button" class="nv-btn" onclick="location.href = '/Admin/File/Move?r=@r';"><i class="ti ti-arrow-move"></i>移动</button>
+                <button type="button" class="nv-btn nv-btn-danger" onclick="location.href = '/Admin/File/ClearClipboard?r=@r';"><i class="ti ti-trash"></i>清空</button>
+            }
+        </form>
+        <div style="height:var(--nv-sp-4)"></div>
+        <div style="overflow-x:auto">
+            <table class="nv-table">
+                <thead>
+                    <tr>
+                        <th class="nv-td-mid"><a class="nv-link" href="~/Admin/File?r=@r&sort=name">名称</a></th>
+                        <th class="nv-td-mid"><a class="nv-link" href="~/Admin/File?r=@r&sort=size">大小</a></th>
+                        <th class="nv-td-mid"><a class="nv-link" href="~/Admin/File?r=@r&sort=lastwrite">修改时间</a></th>
+                        <th class="nv-td-mid">复制</th>
+                        <th class="nv-td-mid">压缩</th>
+                        <th class="nv-td-mid">删除</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in fs)
+                    {
+                        <tr>
+                            @if (item.LastWrite.Year > 2000)
+                            {
+                                if (item.Directory)
+                                {
+                                    <td><a class="nv-link" href="~/Admin/File?r=@item.FullName" title="进入目录">@item.Name</a></td>
+                                }
+                                else
+                                {
+                                    <td><a class="nv-link" href="~/Admin/File/Download?r=@item.FullName" title="下载文件">@item.Name</a></td>
+                                }
+                                <td class="nv-td-num">@item.Size</td>
+                                <td class="nv-td-mid">@item.LastWrite.ToFullString("")</td>
+                                <td class="nv-td-mid">
+                                    @if (!clips.Any(e => e.FullName == item.FullName))
+                                    {
+                                        <a class="nv-link" href="~/Admin/File/Copy?r=@r&f=@item.FullName" title="复制到剪切板，然后去目标目录粘贴">复制</a>
+                                    }
+                                    else
+                                    {
+                                        <a class="nv-link" href="~/Admin/File/CancelCopy?r=@r&f=@item.FullName" title="从剪切板移除">取消复制</a>
+                                    }
+                                </td>
+                                @if (item.Name.EndsWithIgnoreCase(".zip"))
+                                {
+                                    <td class="nv-td-mid"><a class="nv-link" href="~/Admin/File/Decompress?r=@item.FullName" title="解压缩到当前目录">解压缩</a></td>
+                                }
+                                else
+                                {
+                                    <td class="nv-td-mid"><a class="nv-link" href="~/Admin/File/Compress?r=@item.FullName" title="压缩到当前目录，加上时间后缀">压缩</a></td>
+                                }
+                                <td class="nv-td-mid"><a class="nv-link" href="~/Admin/File/Delete?r=@item.FullName" onclick="return confirm('确认删除？');">删除</a></td>
+                            }
+                            else
+                            {
+                                if (item.Directory)
+                                {
+                                    <td><a class="nv-link" href="~/Admin/File?r=@item.FullName" title="进入目录">@item.Name</a></td>
+                                }
+                                else
+                                {
+                                    <td>@item.Name</td>
+                                }
+                                <td class="nv-td-num">@item.Size</td>
+                                <td class="nv-td-mid">@item.LastWrite.ToFullString("")</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

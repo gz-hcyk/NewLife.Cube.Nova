@@ -1,0 +1,6 @@
+@* 列表布尔列图标：ACE 用 glyphicon，这里改为 Nova 内联 SVG（无图标字体依赖） *@
+@model Boolean
+@{
+    var flag = Model;
+}
+<span class="nv-ico nv-ico-sm" data-nv-ico="@(flag ? "check" : "x")" style="color:@(flag ? "var(--nv-success)" : "var(--nv-gray-400)")"></span>

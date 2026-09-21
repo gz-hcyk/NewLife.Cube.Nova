@@ -1,0 +1,3 @@
+@* ACE 的 _Navbar 等价于 Nova 的顶栏，这里委托给 _Layout_Header，
+   保证框架任何对 "_Navbar" 的引用都落到本皮肤版本，而不是回退到框架自带的 Bootstrap3 实现。 *@
+@await Html.PartialAsync("_Layout_Header")

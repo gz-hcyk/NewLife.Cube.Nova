@@ -1,0 +1,59 @@
+@model SuggestModel
+@using NewLife;
+@using NewLife.Serialization;
+@using NewLife.Web;
+@using XCode;
+@using System.Linq;
+@using NewLife.Cube.ViewModels;
+@{
+    var id = Model.Id;
+    var page = ViewBag.Page as Pager;
+
+    var val = Model.Value;
+    if (val.IsNullOrEmpty()) val = page[id];
+
+    var set = NewLife.Cube.CubeSetting.Current;
+    var res = set.ResourceUrl;
+    if (String.IsNullOrEmpty(res)) res = "/Content";
+    res = res.TrimEnd('/');
+}
+<div class="nv-field">
+    <label class="nv-field-label" for="@(id)_select">@(Model.PlaceHolder ?? "搜索")</label>
+    <div class="nv-field-ctl">
+        <i class="nv-ico nv-ico-sm nv-input-affix" data-nv-ico="search"></i>
+        <input type="hidden" name="@id" id="@id" value="@val" />
+        <input type="text" class="nv-input" id="@(id)_select" placeholder="@Model.PlaceHolder" value="@Model.ShowValue" autocomplete="off" />
+    </div>
+</div>
+<script src="@res/bootstrap-suggest.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $("#@(id)_select").bsSuggest({
+            url: "@Model.Url",
+            getDataMethod:"url",
+            effectiveFieldsAlias: @Html.Raw(Model.Fields.ToJson()),
+            ignorecase: true,
+            showHeader: true,
+            delayUntilKeyup: true,
+            hideOnSelect: true,
+            idField: "@Model.IdField",
+            showBtn: false,
+            keyField: "@Model.NameField",
+            clearable: true,
+            searchingTip: '搜索中...',
+            allowNoKeyword: true,
+            delay: 500,
+            emptyTip: '无数据',
+            containerValueId: '@id',
+            fnProcessData: function (result) {
+                dt = {};
+                dt.value = result.data;
+                return dt;
+            }
+        }).on('onSetSelectValue', function (e, keyword, data) {
+            $('#@id').val(keyword.id);
+        }).on('onUnsetSelectValue', function () {
+            $('#@id').val('');
+        });
+    });
+</script>

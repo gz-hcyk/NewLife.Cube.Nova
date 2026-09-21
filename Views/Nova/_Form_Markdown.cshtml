@@ -1,0 +1,46 @@
+@model EntityField
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@{
+    var entity = Model.Entity;
+    var field = Model.Field;
+
+    var err = 0;
+    if (ViewData.ModelState.TryGetValue(field.Name, out var st) && st != null) { err = st.Errors.Count; }
+
+    var des = field.Description;
+    if (!des.IsNullOrEmpty() && !field.DisplayName.IsNullOrEmpty() && des.StartsWith(field.DisplayName))
+    {
+        des = des.Substring(field.DisplayName.Length);
+    }
+    if (!des.IsNullOrEmpty())
+    {
+        des = des.TrimStart(',', '.', '，', '。', ' ', '\r', '\n');
+    }
+}
+<div class="nv-field @(err > 0 ? "has-error" : "")">
+    <label class="nv-field-label" for="@field.Name" title="@field.DisplayName">@field.DisplayName</label>
+    <div class="nv-field-ctl">
+        @if (field.ReadOnly)
+        {
+            <textarea class="nv-textarea" id="@field.Name" rows="8" readonly>@(entity[field.Name] + "")</textarea>
+        }
+        else
+        {
+            @await Html.PartialAsync("_MarkdownEditor", new ItemModel(field.Name, entity[field.Name], field.Type))
+        }
+    </div>
+    @if (err > 0)
+    {
+        <div class="nv-field-error">
+            <i class="nv-ico nv-ico-sm" data-nv-ico="alert"></i>
+            <span>@Html.ValidationMessage(field.Name)</span>
+        </div>
+    }
+    else if (!des.IsNullOrEmpty())
+    {
+        <div class="nv-field-hint" title="@des">@des</div>
+    }
+</div>

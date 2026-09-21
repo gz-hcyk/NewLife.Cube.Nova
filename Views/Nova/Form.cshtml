@@ -1,0 +1,42 @@
+@using NewLife;
+@using System.Reflection
+@using XCode
+@using XCode.Configuration
+@using Microsoft.AspNetCore.Mvc.Rendering;
+@{
+    // 强制设置Layout，因为最终项目可能给前端设置Layout，会覆盖影响魔方内部页面
+    var theme = NewLife.Cube.CubeSetting.Current.Theme;
+    if (String.IsNullOrEmpty(theme)) theme = "ACE";
+
+    Layout = "~/Views/" + theme + "/_Layout.cshtml";
+
+    var entity = Model as IEntity;
+    var isNew = entity.IsNullKey;
+    var fields = ViewBag.Fields as FieldCollection;
+
+    var rv = entity.GetRouteKey();
+
+    Object htmlAttributes = null;
+    if (fields != null && fields.Any(e => e.IsAttachment())) htmlAttributes = new { enctype = "multipart/form-data" };
+}
+<div class="nv-card">
+    @using (Html.BeginForm((isNew ? "Add" : "Edit"), null, isNew ? null : rv, FormMethod.Post, null, htmlAttributes))
+    {
+        @await Html.PartialAsync("_Form_Header", entity)
+        if (ViewData.ModelState.Values.Any(st => st.Errors.Count > 0))
+        {
+            <div class="nv-card-body nv-pt-0">
+                @foreach (var item in ViewData.ModelState.Values)
+                {
+                    foreach (var error in item.Errors)
+                    {
+                        <div class="nv-field-error">@error.ErrorMessage</div>
+                    }
+                }
+            </div>
+        }
+        @await Html.PartialAsync("_Form_Body", entity)
+        @await Html.PartialAsync("_Form_Footer", entity)
+        @await Html.PartialAsync("_Form_Action", entity)
+    }
+</div>

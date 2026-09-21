@@ -1,0 +1,53 @@
+@using NewLife.Web;
+@using XCode;
+@using NewLife.Cube.Charts;
+@{
+    // 强制设置 Layout，因为最终项目可能给前端设置 Layout，会覆盖影响魔方内部页面
+    var theme = NewLife.Cube.CubeSetting.Current.Theme;
+    if (String.IsNullOrEmpty(theme)) theme = "ACE";
+
+    Layout = "~/Views/" + theme + "/_Layout.cshtml";
+
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+
+    var charts = ViewBag.Charts as IList<ECharts>;
+    var charts2 = ViewBag.Charts2 as IList<ECharts>;
+}
+@if (!set.NavView.IsNullOrEmpty())
+{
+    <div class="nv-mb-3">
+        @await Html.PartialAsync(set.NavView)
+    </div>
+}
+<div class="nv-card">
+    @if (set.EnableToolbar)
+    {
+        @await Html.PartialAsync("_List_Toolbar")
+    }
+    @if (charts != null && charts.Count > 0)
+    {
+        <div class="nv-card-body">
+            @foreach (var item in charts)
+            {
+                @await Html.PartialAsync("_ECharts", item)
+            }
+        </div>
+    }
+    <div class="nv-table-wrap">
+        @await Html.PartialAsync("_List_Data")
+    </div>
+    @await Html.PartialAsync("_List_Pager")
+</div>
+@if (charts2 != null && charts2.Count > 0)
+{
+    <div class="nv-card nv-mt-3">
+        <div class="nv-card-body">
+            @foreach (var item in charts2)
+            {
+                @await Html.PartialAsync("_ECharts", item)
+            }
+        </div>
+    </div>
+}

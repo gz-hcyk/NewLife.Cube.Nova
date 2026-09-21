@@ -1,0 +1,8 @@
+@{
+    // Nova 首页/工作台入口（移动端，框架按 User-Agent 选择本视图）。
+    // Nova 外壳本身已做响应式：窄屏时侧栏变抽屉、顶栏出现汉堡按钮（见 nova-ui.css 第 29 节响应式），
+    // 因此移动端与桌面端共用同一套整页外壳，无需另写一份移动专用标记。
+    // 与 CubeIndex.cshtml 一样必须关闭 Layout。
+    Layout = null;
+}
+@await Html.PartialAsync("_Frame")

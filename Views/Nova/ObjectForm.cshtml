@@ -1,0 +1,87 @@
+@using NewLife;
+@using System.ComponentModel;
+@using System.Reflection;
+@using NewLife.Reflection;
+@{
+    // 强制设置Layout，因为最终项目可能给前端设置Layout，会覆盖影响魔方内部页面
+    var theme = NewLife.Cube.CubeSetting.Current.Theme;
+    if (String.IsNullOrEmpty(theme)) theme = "ACE";
+
+    Layout = "~/Views/" + theme + "/_Layout.cshtml";
+
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+
+    var obj = (Object)Model;
+    var list = ViewBag.Fields as IList<DataField>;
+    var dic = list
+        .GroupBy(e => e.Category + "")
+        .ToDictionary(e => e.Key.IsNullOrEmpty() ? "默认" : e.Key, e => e.ToList());
+}
+@if (!set.NavView.IsNullOrEmpty())
+{
+    <div class="nv-mb-3">
+        @await Html.PartialAsync(set.NavView)
+    </div>
+}
+<div class="nv-card">
+    @using (Html.BeginForm("Update", null))
+    {
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true)
+        if (dic.Count > 1)
+        {
+            var i = 0;
+            var j = 0;
+            <div class="nv-card-body nv-pb-0">
+                <ul class="nav nav-tabs" role="tablist">
+                    @foreach (var item in dic)
+                    {
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link @(i == 0 ? "active" : "")" type="button" data-bs-toggle="tab" data-bs-target="#nvObj@(i)" role="tab">@item.Key</button>
+                        </li>
+                        i++;
+                    }
+                </ul>
+            </div>
+            <div class="tab-content">
+                @foreach (var group in dic)
+                {
+                    <div class="tab-pane fade @(j == 0 ? "show active" : "")" id="nvObj@(j)" role="tabpanel">
+                        <div class="nv-card-body">
+                            <div class="nv-form-grid">
+                                @foreach (var pi in group.Value)
+                                {
+                                    @await Html.PartialAsync("_ObjectForm_Field", new Tuple<Object, DataField>(obj, pi))
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    j++;
+                }
+            </div>
+        }
+        else
+        {
+            <div class="nv-card-body">
+                <div class="nv-form-grid">
+                    @foreach (var item in dic)
+                    {
+                        foreach (var pi in item.Value)
+                        {
+                            @await Html.PartialAsync("_ObjectForm_Field", new Tuple<Object, DataField>(obj, pi))
+                        }
+                    }
+                </div>
+            </div>
+        }
+        if (this.Has(PermissionFlags.Update))
+        {
+            <div class="nv-card-foot">
+                <div class="nv-form-actions">
+                    <button type="submit" class="nv-btn nv-btn-primary"><i class="nv-ico nv-ico-sm" data-nv-ico="save"></i>保存</button>
+                    <button type="button" class="nv-btn" onclick="history.go(-1);"><i class="nv-ico nv-ico-sm" data-nv-ico="x"></i>取消</button>
+                </div>
+            </div>
+        }
+    }
+</div>

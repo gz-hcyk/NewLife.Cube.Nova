@@ -1,0 +1,52 @@
+@* 菜单图标：把 ACE 遗留的 fa-* / ti-* 图标名映射到 Nova 内联 SVG 图标字典。
+   优先 Tabler Icons（配置形如 "ti ti-home" 或 "ti-home"）；
+   其次按 fa-* 名字查映射表；都没有时回退到 grid 方块，避免出现空白。
+   内联 SVG 由 nova-ui.js 的 hydrateIcons 注入（当前色描边，天然适配深浅主题）。 *@
+@model MenuTree
+@{
+    var m = Model;
+    var ic = (m == null ? "" : (m.Icon ?? "")).Trim();
+
+    // Tabler Icons 直接放行（本皮肤仍加载 tabler-icons 字体）
+    var ti = "";
+    if (ic.StartsWithIgnoreCase("ti ")) ti = ic;
+    else if (ic.StartsWithIgnoreCase("ti-")) ti = "ti " + ic;
+
+    // fa-* → Nova 图标字典键（nova-ui.js 的 var P）
+    var nv = "grid";
+    if (!ic.StartsWithIgnoreCase("ti"))
+    {
+        var k = ic.TrimStart('.').Replace("fa-", "").ToLower();
+        var map = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["desktop"] = "dashboard", ["home"] = "dashboard", ["tachometer"] = "dashboard", ["dashboard"] = "dashboard",
+            ["cog"] = "settings", ["gear"] = "settings", ["cogs"] = "settings", ["wrench"] = "settings", ["sliders"] = "settings",
+            ["user"] = "users", ["users"] = "users", ["user-circle"] = "users", ["group"] = "users",
+            ["list"] = "list", ["th-list"] = "list", ["table"] = "list", ["bars"] = "list", ["reorder"] = "list",
+            ["key"] = "key", ["database"] = "cpu", ["server"] = "cpu", ["microchip"] = "cpu", ["cpu"] = "cpu",
+            ["lock"] = "lock", ["unlock"] = "lock", ["shield"] = "shield", ["bell"] = "bell",
+            ["chart"] = "chart", ["chart-bar"] = "chart", ["bar-chart"] = "chart", ["signal"] = "chart", ["area-chart"] = "chart",
+            ["sitemap"] = "building", ["building"] = "building", ["plug"] = "zap", ["bolt"] = "zap", ["zap"] = "zap",
+            ["folder"] = "folder", ["folder-open"] = "folder", ["file"] = "form", ["file-text"] = "form",
+            ["edit"] = "edit", ["pencil"] = "edit",
+            ["clock"] = "clock", ["history"] = "clock", ["wifi"] = "wifi", ["door-open"] = "door", ["door-closed"] = "door",
+            ["battery"] = "battery", ["battery-half"] = "battery", ["battery-low"] = "battery_low",
+            ["map-marker"] = "pin", ["map-pin"] = "pin", ["location-arrow"] = "pin", ["pin"] = "pin",
+            ["print"] = "printer", ["link"] = "link", ["eye"] = "eye", ["send"] = "send", ["paper-plane"] = "send",
+            ["save"] = "save", ["floppy"] = "save", ["calendar"] = "calendar",
+            ["download"] = "download", ["upload"] = "upload", ["filter"] = "filter", ["refresh"] = "refresh",
+            ["plus"] = "plus", ["trash"] = "trash", ["exclamation-triangle"] = "alert", ["warning"] = "alert", ["exclamation"] = "alert",
+            ["info"] = "info", ["info-circle"] = "info", ["check"] = "check", ["search"] = "search",
+            ["envelope"] = "send", ["comment"] = "send", ["comments"] = "send"
+        };
+        if (!String.IsNullOrEmpty(k) && map.ContainsKey(k)) nv = map[k];
+    }
+}
+@if (!String.IsNullOrEmpty(ti))
+{
+    <span class="nv-menu-ico"><i class="@ti"></i></span>
+}
+else
+{
+    <span class="nv-menu-ico nv-ico" data-nv-ico="@nv"></span>
+}

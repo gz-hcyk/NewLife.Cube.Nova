@@ -1,0 +1,134 @@
+@* Nova 首页/工作台「整页外壳」：侧栏 + 顶栏 + 承载内容页的 iframe。
+   与原型 index.html 一一对应（docs/66-Nova界面原型/index.html），落地时只把演示数据换成真实数据：
+     · 导航（侧栏 _Left + 顶栏 _Layout_Header）只在这里出现一次；
+     · iframe 内加载的内容页走无导航的 _Layout.cshtml，因此菜单不会重复出现；
+     · 框架 Index 动作会把起始页放到 ViewBag.Main。
+   复刻上游 ACE 的分层（NewLife.CubeNC/Views/ACE/CubeIndex.cshtml 同为 Layout=null 的独立整页），
+   由 CubeIndex.cshtml（桌面）与 MCubeIndex.cshtml（移动）共同引用 —— 两侧共用此文件，勿各自复制一份。 *@
+@{
+    var set = CubeSetting.Current;
+    var res = set.ResourceUrl;
+    if (String.IsNullOrEmpty(res)) res = "/Content";
+    res = res.TrimEnd('/');
+
+    var main = ViewBag.Main as String;
+    if (String.IsNullOrEmpty(main)) main = set.StartPage;
+    if (String.IsNullOrEmpty(main)) main = "~/Admin/Index/Main";
+
+    var title = ViewBag.Title + "";
+    if (set.TitlePrefix && title != "" && !title.Contains(" - "))
+    {
+        title += " - " + SysConfig.Current.DisplayName;
+    }
+
+    var cfg = SysConfig.Current;
+    var sysName = cfg == null ? "" : cfg.DisplayName;
+    var ver = typeof(CubeSetting).Assembly.GetName().Version;
+
+    // 通用通知槽的 ViewData 键：与业务侧（Web/Services/LicenseNoticeHelper.cs）约定的松契约
+    const String NoticeSlot = "NoticeBarHtml";
+}
+<!doctype html>
+<html lang="zh-CN" data-bs-theme="light" data-nv-density="compact">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="新生命团队,NewLife,魔方,Cube,XCode" />
+    <title>@title</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+    <!-- Tabler v1.5.1 (Bootstrap 5.3.8, bundled) + Tabler Icons 2.22.0 -->
+    <link rel="stylesheet" href="@res/tabler/css/tabler.min.css" />
+    <link rel="stylesheet" href="@res/tabler/css/tabler-icons.min.css" />
+    <!-- Nova 主题层：原型设计体系原样落地 + MVC 落地适配层（见文件末尾） -->
+    <link rel="stylesheet" href="@res/nova/nova-ui.css" />
+</head>
+<body class="nv nv-frame-page">
+
+    <div class="nv-loadbar" id="loadbar" aria-hidden="true"></div>
+
+    <div class="nv-shell" id="shell">
+
+        <!-- ============ 侧边导航（整页外壳内只出现一次） ============ -->
+        <aside class="nv-sidebar" aria-label="主导航">
+            <a class="nv-brand" href="~/" target="_top">
+                <span class="nv-brand-logo nv-ico" data-nv-ico="zap" aria-hidden="true"></span>
+                <span class="nv-brand-text">
+                    @sysName
+                    <span class="nv-brand-sub">Nova · @ver</span>
+                </span>
+            </a>
+
+            <nav class="nv-menu" aria-label="菜单">
+                @await Html.PartialAsync("_Left")
+            </nav>
+
+            <div class="nv-sidebar-foot">
+                <span>NewLife.Cube.Nova</span>
+                <span>Nova 设计令牌 v2 · 零 CDN · 零 jQuery</span>
+            </div>
+        </aside>
+
+        <div class="nv-sidebar-mask" data-nv-act="drawer-close" aria-hidden="true"></div>
+
+        <!-- ============ 主区：顶栏 + 内容帧 ============ -->
+        <div class="nv-main">
+            @await Html.PartialAsync("_Layout_Header")
+
+            @* 通用通知槽（业务无关）：由业务在 ViewData["NoticeBarHtml"] 注入 IHtmlContent 横幅，
+               键名为松契约（皮肤不引用业务程序集），详见 Web/Services/LicenseNoticeHelper.cs。
+               位于顶栏之下、iframe 之上 —— 与内容页滚动解耦，切换菜单时不重复渲染。
+               内容页 _Layout.cshtml 另有一个带 data-nv-notice-when="top" 的槽，
+               被 iframe 嵌套时由 nova-ui.js 自动移除，二者互斥不重复（铁律 8）。 *@
+            @if (ViewData[NoticeSlot] is IHtmlContent frameNotice)
+            {
+                <div class="nv-notice-host">@frameNotice</div>
+            }
+
+            <iframe id="main" name="main" class="nv-frame" src="@main" title="内容区"></iframe>
+        </div>
+    </div>
+
+    <div class="nv-toast-host"></div>
+
+    <!-- Tabler v1.5.1：Bootstrap 5.3.8 的 JS 已内置进 tabler.min.js（含 Popper） -->
+    <script src="@res/tabler/js/tabler.min.js"></script>
+    <!-- Nova 交互层（零 jQuery）：图标注入 / 主题 / 密度 / 侧栏 / 抽屉 / Toast / 批量条 -->
+    <script src="@res/nova/nova-ui.js"></script>
+
+    <script>
+        (function () {
+            'use strict';
+
+            /* 被其它页面嵌套时强制跳出（ACE CubeIndex 的同款保护） */
+            if (window !== top) { top.location.href = location.href; }
+
+            /* 顶部加载条：iframe 换页时点亮，缓解「点了没反应」的观感（与原型外壳一致） */
+            var bar = document.getElementById('loadbar');
+            var frm = document.getElementById('main');
+            if (!bar || !frm) return;
+            var timer = null;
+            function start() {
+                clearTimeout(timer);
+                bar.classList.add('is-on');
+                bar.style.width = '18%';
+                timer = setTimeout(function () { bar.style.width = '72%'; }, 120);
+            }
+            function done() {
+                clearTimeout(timer);
+                bar.style.width = '100%';
+                setTimeout(function () {
+                    bar.classList.remove('is-on');
+                    setTimeout(function () { bar.style.width = '0'; }, 200);
+                }, 160);
+            }
+            frm.addEventListener('load', done);
+            document.addEventListener('click', function (e) {
+                var a = e.target.closest ? e.target.closest('a[target=main],button[data-nv-act=nav]') : null;
+                if (a) start();
+            });
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+@using NewLife.Cube.Extensions
+@{
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+}
+@if (set.EnableKey)
+{
+    <span class="nv-search-box">
+        <i class="nv-ico" data-nv-ico="search"></i>
+        <input class="nv-input" name="q" type="search" id="q" value="@Context.Request.GetRequestValue("q")" placeholder="搜索关键字" aria-label="搜索关键字" />
+    </span>
+}
+<button type="submit" class="nv-btn nv-btn-primary nv-btn-sm">
+    <i class="nv-ico nv-ico-sm" data-nv-ico="search"></i>查询
+</button>

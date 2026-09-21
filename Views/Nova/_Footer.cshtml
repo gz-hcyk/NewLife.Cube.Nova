@@ -1,0 +1,18 @@
+@* 通用页脚（部分框架视图按名引用 "_Footer"，保留以维持皮肤目录自洽） *@
+@using NewLife;
+@{
+    var set = NewLife.Cube.CubeSetting.Current;
+    var copyright = set.GetCopyright();
+}
+<footer class="nv-footer">
+    <div class="nv-container nv-footer-inner">
+        @if (!copyright.IsNullOrEmpty())
+        {
+            <span>@Html.Raw(copyright)</span>
+        }
+        @if (!set.Registration.IsNullOrEmpty())
+        {
+            <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener">@set.Registration</a>
+        }
+    </div>
+</footer>

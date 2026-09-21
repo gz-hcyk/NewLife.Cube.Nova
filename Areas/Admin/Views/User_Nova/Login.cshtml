@@ -1,0 +1,300 @@
+@model LoginViewModel
+@using NewLife;
+@using NewLife.Common;
+@using NewLife.Cube.Areas.Admin.Models;
+@{
+    // Nova 化登录页外壳（覆盖框架内置 Login.cshtml）。
+    // 站点级 Areas 视图优先于框架内置视图，因此本文件一旦存在即生效。
+    //
+    // 与框架版的三点差异：
+    //   1. 样式：改用 Nova 设计体系（nova-ui.css 令牌 + 卡片内联样式），
+    //      不再引入 Cube.css；bootstrap.min.js 仍保留，以免破坏注册/找回密码等 tab 的原有行为。
+    //   2. 布局：左右分栏（品牌展示区 + 登录卡片），移动端自动折叠为单栏卡片。
+    //   3. 新增密码明文 / 密文切换（#pwd-eye），只改可见输入框 type，提交链路不变。
+    //   4. 主题跟随皮肤偏好（localStorage nova-theme），避免登录页与站内观感割裂。
+    Layout = null;
+    ViewBag.Title = "登录";
+
+    var res = Model.ResourceUrl;
+    var brand = Model.DisplayName;
+    var year = DateTime.Now.Year;
+}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>@ViewBag.Title - @SysConfig.Current.DisplayName</title>
+    <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
+
+    <!-- Nova 设计体系令牌与组件（卡片与品牌区样式在本页及 _Login_Login.cshtml 内自包含） -->
+    <link href="@Url.Content("~/Content/nova/nova-ui.css")" rel="stylesheet" />
+
+    <script>
+        // 主题预设：与皮肤共用 nova-theme 键；必须在样式渲染前同步执行，避免刷新时白闪。
+        // 未设置过偏好时跟随系统深色模式。
+        (function () {
+            try {
+                var t = localStorage.getItem('nova-theme');
+                var dark = t === 'dark' ||
+                    (t === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (dark) document.documentElement.setAttribute('data-bs-theme', 'dark');
+            } catch (e) { /* 隐私模式下 localStorage 不可用，忽略 */ }
+        })();
+    </script>
+
+    <style>
+        html, body { height: 100%; }
+        body {
+            margin: 0;
+            background: var(--nv-bg, #f5f7fa);
+            font-family: var(--nv-font, system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif);
+            color: var(--nv-text, #1f2937);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===== 分栏外壳 ===== */
+        .nv-login-page {
+            min-height: 100vh;
+            display: flex;
+            align-items: stretch;
+        }
+
+        /* 左：品牌展示区（桌面端显示，移动端隐藏） */
+        .nv-login-aside {
+            position: relative;
+            flex: 0 0 44%;
+            max-width: 520px;
+            overflow: hidden;
+            color: #fff;
+            background:
+                radial-gradient(120% 80% at 12% 0%, rgba(255,255,255,.16) 0%, rgba(255,255,255,0) 55%),
+                radial-gradient(90% 70% at 100% 100%, rgba(0,0,0,.18) 0%, rgba(0,0,0,0) 60%),
+                linear-gradient(150deg, var(--nv-primary, #206bc4) 0%, #15489e 100%);
+        }
+        /* 纹理点缀：细网点 + 一道斜向高光，提升质感而不喧宾夺主 */
+        .nv-login-aside::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(rgba(255,255,255,.10) 1px, transparent 1.4px);
+            background-size: 22px 22px;
+            opacity: .55;
+            pointer-events: none;
+        }
+        .nv-login-aside::after {
+            content: "";
+            position: absolute;
+            top: -30%;
+            right: -20%;
+            width: 70%;
+            height: 140%;
+            background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,0));
+            transform: rotate(18deg);
+            pointer-events: none;
+        }
+        .nv-aside-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            padding: 48px 44px;
+            box-sizing: border-box;
+        }
+        .nv-aside-brand { display: flex; align-items: center; gap: 12px; }
+        .nv-aside-logo {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            background: rgba(255,255,255,.16);
+            display: inline-flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            backdrop-filter: blur(2px);
+        }
+        .nv-aside-logo img { width: 30px; height: 30px; object-fit: contain; }
+        .nv-aside-logo--txt {
+            font-size: 20px; font-weight: 700; color: #fff;
+        }
+        .nv-aside-name { font-size: 19px; font-weight: 700; letter-spacing: .5px; color: #fff; }
+
+        .nv-aside-hero { margin-top: auto; margin-bottom: auto; }
+        .nv-aside-title {
+            margin: 0 0 14px;
+            font-size: 30px;
+            line-height: 1.35;
+            font-weight: 700;
+            color: #fff;
+        }
+        .nv-aside-sub {
+            margin: 0 0 28px;
+            font-size: 15px;
+            line-height: 1.7;
+            color: rgba(255,255,255,.82);
+            max-width: 360px;
+        }
+        .nv-aside-feats { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+        .nv-aside-feats li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: rgba(255,255,255,.9); }
+        .nv-aside-feats svg { flex: none; margin-top: 1px; color: rgba(255,255,255,.95); }
+        .nv-aside-foot { font-size: 12px; color: rgba(255,255,255,.62); }
+
+        /* 右：登录卡片区 */
+        .nv-login-main {
+            flex: 1 1 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px 24px;
+            box-sizing: border-box;
+        }
+        .nv-login-wrap { width: 100%; max-width: 400px; }
+
+        /* 未引入 bootstrap.min.css（避免与 Nova 冲突），这里补回 tab 显隐所需的最小规则；
+           bootstrap.min.js 仍负责切换 active 类，保证注册/找回密码 tab 行为不变 */
+        .tab-content > .tab-pane { display: none; }
+        .tab-content > .tab-pane.active { display: block; }
+
+        /* ===== 移动端折叠为单栏 ===== */
+        @@media (max-width: 860px) {
+            .nv-login-aside { display: none; }
+            .nv-login-main { padding: 24px 16px; }
+        }
+    </style>
+</head>
+<body class="nv">
+    <div class="nv-login-page">
+        <aside class="nv-login-aside">
+            <div class="nv-aside-inner">
+                <div class="nv-aside-brand">
+                    @if (!brand.IsNullOrEmpty())
+                    {
+                        <span class="nv-aside-logo">
+                            @if (!Model.Logo.IsNullOrEmpty())
+                            {
+                                <img src="@Model.Logo" alt="@brand" />
+                            }
+                            else
+                            {
+                                <span class="nv-aside-logo--txt">@brand.Substring(0, 1)</span>
+                            }
+                        </span>
+                        <span class="nv-aside-name">@brand</span>
+                    }
+                </div>
+
+                <div class="nv-aside-hero">
+                    <h1 class="nv-aside-title">让设备管理<br />更智能、更安心</h1>
+                    <p class="nv-aside-sub">统一管控设备、精细授权门禁、实时洞察状态——一个平台，掌控全局。</p>
+                    <ul class="nv-aside-feats">
+                        <li>
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                            <span>设备集中管控与远程运维</span>
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                            <span>细粒度门禁与介质授权管理</span>
+                        </li>
+                        <li>
+                            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                            <span>实时状态监测与告警洞察</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="nv-aside-foot">© @year @brand. 保留所有权利。</div>
+            </div>
+        </aside>
+
+        <main class="nv-login-main">
+            <div class="nv-login-wrap">
+                <div class="tab-content">
+                    @await Html.PartialAsync("_Login_Login", Model)@*登录页*@
+                    @* 找回密码：框架内置 Login.cshtml 会渲染 _Login_Forgot，但该分部视图不在站点源码中
+                       （只在历史部署目录留有残留文件），运行时解析不到即 500，故本页不渲染。
+                       且上游登录框里的「忘记密码？」入口本就被注释（历史 _Login_Login.cshtml 57–63 行），
+                       没有入口的面板渲染出来也无意义。
+                       将来要启用找回密码：需在站点层补 _Login_Forgot.cshtml，并在登录框加回 #Forgot 入口链接。 *@
+                    @if (Model.AllowRegister)
+                    {
+                        @await Html.PartialAsync("_Login_Register", Model)@*注册页*@
+                    }
+                    @await Html.PartialAsync("_Login_Login3", Model)@*第三方登录*@
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="@res/js/jquery-3.6.0.min.js"></script>
+    <script src="@res/bootstrap/js/bootstrap.min.js"></script>
+    <script src="@res/js/md5.js"></script>
+    <script src="@res/js/jsencrypt.min.js"></script>
+
+    <script>
+        (function () {
+            var pwd = document.getElementById('password');
+            var eye = document.getElementById('pwd-eye');
+
+            // ① 密码明文 / 密文切换
+            //    仅切换可见输入框 type；提交值始终来自 #pwd（RSA 密文或明文），故不影响加密链路。
+            if (pwd && eye) {
+                eye.addEventListener('click', function () {
+                    var show = pwd.type === 'password';
+                    pwd.type = show ? 'text' : 'password';
+
+                    var label = show ? '隐藏密码' : '显示密码';
+                    eye.setAttribute('aria-pressed', show ? 'true' : 'false');
+                    eye.setAttribute('aria-label', label);
+                    eye.title = label;
+                    eye.classList.toggle('is-on', show);
+
+                    // 保持焦点并把光标移到末尾，避免切换后输入位置丢失
+                    pwd.focus();
+                    if (show) {
+                        try { pwd.setSelectionRange(pwd.value.length, pwd.value.length); } catch (e) { }
+                    }
+                });
+            }
+
+            // ② 登录提交：#password（可见，无 name）→ 可选 RSA 加密 → #pwd（隐藏，name=password）
+            function encryptPwd(p) {
+                var rsa = new JSEncrypt();
+                rsa.setPublicKey(document.getElementById('pkey_container').value);
+                return rsa.encrypt(p);
+            }
+
+            function submitLogin() {
+                var username = document.getElementById('username');
+                var password = document.getElementById('password');
+                var hidden = document.getElementById('pwd');
+                var pkey = document.getElementById('pkey_container');
+
+                if (!username || !username.value) { alert('请输入用户名'); username && username.focus(); return; }
+                if (!password || !password.value) { alert('请输入密码'); password && password.focus(); return; }
+
+                if (hidden) {
+                    var key = pkey ? pkey.value : '';
+                    // 后端未下发公钥时不做加密，与框架原逻辑一致
+                    hidden.value = (key && key.length > 0 && window.JSEncrypt) ? encryptPwd(password.value) : password.value;
+                }
+
+                document.getElementById('cube-login').submit();
+            }
+
+            var btn = document.getElementById('login-btn');
+            if (btn) btn.addEventListener('click', submitLogin);
+
+            // ③ 回车提交（表单内无 submit 按钮，浏览器不会自动提交，这里显式兜底）
+            var form = document.getElementById('cube-login');
+            if (form) {
+                form.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' || e.keyCode === 13) {
+                        e.preventDefault();
+                        submitLogin();
+                    }
+                });
+            }
+        })();
+    </script>
+</body>
+</html>

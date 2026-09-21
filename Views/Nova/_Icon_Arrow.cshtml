@@ -1,0 +1,6 @@
+@* 列表排序箭头：升序 / 降序（Nova 内联 SVG，替代 ACE 的 glyphicon） *@
+@model Boolean
+@{
+    var asc = Model;
+}
+<span class="nv-ico nv-ico-sm" data-nv-ico="@(asc ? "chevron_up" : "chevron_down")" style="color:@(asc ? "var(--nv-primary)" : "var(--nv-text-3)")"></span>

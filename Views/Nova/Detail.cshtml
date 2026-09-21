@@ -1,0 +1,27 @@
+@using NewLife;
+@using System.Reflection
+@using XCode
+@using XCode.Configuration
+@using Microsoft.AspNetCore.Mvc.Rendering;
+@{
+    var theme = NewLife.Cube.CubeSetting.Current.Theme;
+    if (String.IsNullOrEmpty(theme)) theme = "ACE";
+
+    Layout = "~/Views/" + theme + "/_Layout.cshtml";
+
+    var entity = Model as IEntity;
+    var fields = ViewBag.Fields as FieldCollection;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+}
+@if (!set.NavView.IsNullOrEmpty())
+{
+    <div class="nv-mb-3">
+        @await Html.PartialAsync(set.NavView)
+    </div>
+}
+<div class="nv-card">
+    <div class="nv-card-body">
+        @await Html.PartialAsync("_Form_Body", entity)
+    </div>
+    @await Html.PartialAsync("_Form_Footer", entity)
+</div>

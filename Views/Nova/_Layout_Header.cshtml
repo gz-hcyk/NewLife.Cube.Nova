@@ -1,0 +1,60 @@
+@* 顶栏（仅供整页外壳 _Frame.cshtml 使用）：抽屉按钮（窄屏）/ 收起按钮（宽屏）/ 面包屑 / 密度 / 主题 / 用户菜单。
+   对应原型 index.html 的 header.nv-header；控件全部走 data-nv-act，交互由 nova-ui.js 统一处理。
+   注意：内容页的 _Layout 不引用本文件 —— 引用它会让导航在 iframe 内再次出现，形成双重菜单。 *@
+@{
+    var user = ViewBag.User as IUser ?? User.Identity as IUser;
+    var uid = user == null ? 0 : user.ID;
+    var roleNames = (user != null && user.Roles != null) ? user.Roles.Join() : "";
+    var initial = user == null ? "?" : (user + "").Trim().Substring(0, 1).ToUpper();
+}
+<header class="nv-header">
+    <button class="nv-iconbtn nv-menu-burger" type="button" data-nv-act="burger" aria-label="打开导航">
+        <i class="nv-ico" data-nv-ico="list"></i>
+    </button>
+    <button class="nv-iconbtn nv-hide-sm" type="button" data-nv-act="sidebar" aria-label="收起或展开侧栏" title="收起/展开侧栏">
+        <i class="nv-ico" data-nv-ico="collapse"></i>
+    </button>
+
+    <nav class="nv-crumb" aria-label="面包屑">
+        <span id="crumbTail">首页</span>
+    </nav>
+
+    @* 内容页标题：由 iframe 通过 postMessage 上报，nova-ui.js 外壳侧接收后回填 *@
+    <span class="nv-page-title" id="pageTitle" hidden></span>
+
+    <span class="nv-toolbar-spacer"></span>
+
+    <button class="nv-iconbtn" type="button" data-nv-act="density" aria-label="切换信息密度" title="信息密度">
+        <i class="nv-ico" data-nv-ico="columns"></i>
+    </button>
+    <button class="nv-iconbtn" type="button" data-nv-act="theme" aria-label="切换深浅主题" title="深浅主题">
+        <i class="nv-ico" data-nv-theme-ico data-nv-ico="moon"></i>
+    </button>
+
+    @if (user != null)
+    {
+        <button class="nv-userbtn" type="button" data-bs-toggle="dropdown" data-bs-target="#nvUserMenu" aria-haspopup="menu" aria-expanded="false">
+            <span class="nv-avatar">@initial</span>
+            <span class="nv-hide-sm">@user</span>
+            <i class="nv-ico nv-ico-sm nv-hide-sm" data-nv-ico="chevron_down"></i>
+        </button>
+        <div class="dropdown-menu dropdown-menu-end nv-usermenu" id="nvUserMenu">
+            <div class="nv-usermenu-head">
+                <span class="nv-avatar">@initial</span>
+                <span class="nv-usermenu-name">@user</span>
+                <span class="nv-usermenu-role">@roleNames</span>
+            </div>
+            <div class="dropdown-divider"></div>
+            @* 顶栏只出现在整页外壳里：内容类链接送进 iframe(main)，需要重载整页/退出登录的走 _top *@
+            <a class="dropdown-item" href="~/" target="_top"><i class="nv-ico nv-ico-sm" data-nv-ico="dashboard"></i>首页</a>
+            <a class="dropdown-item" href="~/Admin/User/Info/@uid" target="main"><i class="nv-ico nv-ico-sm" data-nv-ico="users"></i>个人信息</a>
+            <a class="dropdown-item" href="~/Admin/Cube" target="main"><i class="nv-ico nv-ico-sm" data-nv-ico="settings"></i>系统设置</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="~/Admin/User/Logout" target="_top"><i class="nv-ico nv-ico-sm" data-nv-ico="logout"></i>注销</a>
+        </div>
+    }
+    else
+    {
+        <a class="nv-btn nv-btn-primary nv-btn-sm" href="~/Admin/User/Login" target="_top">登录</a>
+    }
+</header>

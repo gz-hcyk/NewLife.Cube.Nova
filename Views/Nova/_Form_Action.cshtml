@@ -1,0 +1,19 @@
+@using XCode
+@using XCode.Membership;
+@{
+    var entity = Model as IEntity;
+    var isNew = entity.IsNullKey;
+}
+@if (this.Has(PermissionFlags.Insert, PermissionFlags.Update))
+{
+    <div class="nv-card-foot">
+        <div class="nv-form-actions">
+            <button type="submit" class="nv-btn nv-btn-primary">
+                <i class="nv-ico nv-ico-sm" data-nv-ico="@(isNew ? "plus" : "save")"></i>@(isNew ? "新增" : "保存")
+            </button>
+            <button type="button" class="nv-btn" onclick="history.go(-1);">
+                <i class="nv-ico nv-ico-sm" data-nv-ico="x"></i>取消
+            </button>
+        </div>
+    </div>
+}

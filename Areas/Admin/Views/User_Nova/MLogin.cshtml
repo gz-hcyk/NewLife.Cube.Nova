@@ -1,0 +1,8 @@
+@model LoginViewModel
+@using NewLife.Cube.Areas.Admin.Models;
+@{
+    // 移动端登录与 PC 共用同一套 Nova 登录页（响应式），避免两份实现各自漂移。
+    // 登录表单一处在 _Login_Login.cshtml，交互一处在 Login.cshtml。
+    Layout = null;
+}
+@await Html.PartialAsync("Login", Model)

@@ -1,0 +1,32 @@
+@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@using XCode;
+@using XCode.Configuration;
+@{
+    var name = Model.Name;
+    var value = (DateTime)Model.Value;
+    var type = Model.Type;
+
+    var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
+    if (!atts.ContainsKey("class")) atts.Add("class", "nv-input");
+    atts["autocomplete"] = "off";
+
+    var obj = value == DateTime.MinValue ? "" : value.ToFullString();
+
+    // 最小时间不显示
+    if (value <= DateTime.MinValue || value.Year <= 1900) obj = "";
+
+    // 日期（dateformat 供 nova-ui.js 的 Litepicker 接管，见 initDatePicker）
+    if (Model.ItemType.EqualIgnoreCase("Date") || Model.ItemType.IsNullOrEmpty() && name.EndsWithIgnoreCase("Date", "day"))
+    {
+        if (value > DateTime.MinValue) obj = value.ToString("yyyy-MM-dd");
+        atts["dateformat"] = "yyyy-MM-dd";
+    }
+    else
+    {
+        atts["dateformat"] = "yyyy-MM-dd HH:mm:ss";
+    }
+}
+<span class="nv-input-affix"><i class="nv-ico nv-ico-sm" data-nv-ico="calendar"></i></span>
+@Html.TextBox(name, obj, Model.Format, atts)

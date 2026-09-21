@@ -1,0 +1,8 @@
+@{
+    // Nova 首页/工作台入口（默认，桌面端）。
+    // 必须关闭 Layout：本页自身就是整页（含 <html>/<head>/<body>），
+    // 若再套 _Layout 会把「无导航的内容壳」叠在整页外壳外，导致层级错乱。
+    // 整页外壳（侧栏 + 顶栏 + 承载内容页的 iframe）实现在 _Frame.cshtml。
+    Layout = null;
+}
+@await Html.PartialAsync("_Frame")
