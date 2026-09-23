@@ -1,0 +1,66 @@
+@*
+  设置类页面入口导航（ConfigController / ObjectForm 的 NavView）。
+  方案 A：横排分段控件，与卡内 .nv-tabs-host 分段选项卡同族视觉；
+  「更多设置」保留 BS5 下拉。覆盖框架 Shared/_Object_Nav（BS3 nav-pills 竖排）。
+*@
+@using NewLife
+@{
+    var path = Context.Request.Path + "";
+
+    var dic = new Dictionary<String, Object>();
+    dic["基本设置"] = "/Admin/Core";
+    dic["系统设置"] = "/Admin/Sys";
+    dic["星尘设置"] = "/Admin/Star";
+    dic["数据中间件"] = "/Admin/XCode";
+    dic["魔方设置"] = "/Admin/Cube";
+
+    {
+        var more = new Dictionary<String, Object>();
+        dic["更多设置"] = more;
+        more["短信设置"] = "/Admin/SmsConfig?nav=1";
+        more["邮件设置"] = "/Admin/MailConfig?nav=1";
+        more["OAuth设置"] = "/Admin/OAuthConfig?nav=1";
+        more["访问规则"] = "/Admin/AccessRule?nav=1";
+    }
+
+    Boolean IsActive(String url)
+    {
+        var p = url.IndexOf('?');
+        var v = p > 0 ? url.Substring(0, p) : url;
+        return path.EqualIgnoreCase(v);
+    }
+}
+<nav class="nv-objnav" aria-label="设置入口">
+    <div class="nv-objnav-track">
+        @foreach (var item in dic)
+        {
+            if (item.Value is IDictionary<String, Object> childs)
+            {
+                var childActive = childs.Values.Any(v => IsActive(v + ""));
+                <div class="dropdown nv-objnav-drop">
+                    <button type="button"
+                            class="nv-objnav-item nv-objnav-more dropdown-toggle @(childActive ? "is-active" : "")"
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
+                            aria-haspopup="true">
+                        @item.Key
+                    </button>
+                    <ul class="dropdown-menu nv-objnav-menu">
+                        @foreach (var elm in childs)
+                        {
+                            var url = elm.Value + "";
+                            <li>
+                                <a class="dropdown-item @(IsActive(url) ? "is-active" : "")" href="@url">@elm.Key</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            }
+            else
+            {
+                var url = item.Value + "";
+                <a class="nv-objnav-item @(IsActive(url) ? "is-active" : "")" href="@url">@item.Key</a>
+            }
+        }
+    </div>
+</nav>
