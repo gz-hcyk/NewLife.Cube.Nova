@@ -322,6 +322,56 @@
     }
 
     /* ------------------------------------------------------------ 初始化 */
+    /* Font Awesome → Tabler 图标映射：框架 widget 页（Dashboard 等）用 fa 字体而 Nova 不内置 FA，
+       统一换成随皮肤加载的 tabler 图标（ti 类），避免渲染成空心方框。 */
+    var FA_MAP = {
+        arrows: 'arrows-move', 'ellipsis-v': 'dots-vertical', 'eye-slash': 'eye-off', 'clock-o': 'clock',
+        database: 'database', 'exclamation-triangle': 'alert-triangle', 'file-text': 'file-text',
+        'file-text-o': 'file-text', heartbeat: 'heartbeat', history: 'history', home: 'home',
+        'line-chart': 'chart-line', navicon: 'menu-2', refresh: 'refresh', server: 'server',
+        'sign-in': 'login', spinner: 'loader', stethoscope: 'stethoscope', tachometer: 'dashboard',
+        'th-large': 'layout-grid', undo: 'arrow-back-up', user: 'user', 'user-circle': 'user-circle',
+        'user-circle-o': 'user-circle', 'user-plus': 'user-plus', 'user-secret': 'user-circle',
+        users: 'users', wrench: 'tools'
+    };
+    function remapFaIcons(root) {
+        $all('.fa', root).forEach(function (el) {
+            var m = el.className.match(/\bfa-([a-z0-9-]+)\b/);
+            if (!m) return;
+            el.className = 'ti ti-' + (FA_MAP[m[1]] || 'settings');
+        });
+    }
+
+    /* 顶栏菜单搜索：实时过滤侧栏菜单；命中子项的父级保留并临时展开子菜单，清空/ESC 还原 */
+    function bindMenuSearch() {
+        var input = document.getElementById('nvMenuSearch');
+        if (!input) return;
+        var all = $all('.nv-menu-item');
+        var parents = all.filter(function (li) { return li.querySelector('.nv-submenu'); });
+        var leaves = all.filter(function (li) { return !li.querySelector('.nv-submenu'); });
+        function labelOf(li) {
+            var s = li.querySelector('.nv-menu-link .nv-menu-label');
+            return s ? s.textContent.toLowerCase() : '';
+        }
+        input.addEventListener('input', function () {
+            var q = this.value.trim().toLowerCase();
+            if (!q) {
+                all.forEach(function (li) { li.classList.remove('nv-menu-hide', 'nv-filter-open'); });
+                return;
+            }
+            leaves.forEach(function (li) { li.classList.toggle('nv-menu-hide', labelOf(li).indexOf(q) < 0); });
+            parents.forEach(function (li) {
+                var childHit = $all('.nv-menu-item', li).some(function (c) { return !c.classList.contains('nv-menu-hide'); });
+                var hit = labelOf(li).indexOf(q) >= 0 || childHit;
+                li.classList.toggle('nv-menu-hide', !hit);
+                li.classList.toggle('nv-filter-open', hit);
+            });
+        });
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') { this.value = ''; this.dispatchEvent(new Event('input')); }
+        });
+    }
+
     function init() {
         /* 1) 恢复用户偏好：三者都是「先读存储再落地」，与 nova.js 一致 */
         applyTheme(get('nova-theme', 'light'));
@@ -329,6 +379,8 @@
         var mini = get('nova-sidebar', '0') === '1';
         applySidebar(mini);
         hydrateIcons(document);
+        remapFaIcons(document);
+        bindMenuSearch();
         reveal();
         $all('[data-count]').forEach(function (el) { countUp(el, el.getAttribute('data-count')); });
 

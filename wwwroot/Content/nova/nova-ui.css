@@ -53,6 +53,9 @@
     --nv-info:#0f7f95; --nv-info-weak:#e8f4f6; --nv-info-text:#0b6072;
 
     --nv-bg:#f6f8fb; --nv-bg-frame:#ffffff;
+    /* 深蓝侧边栏（gov-blue 高保真原型基准）：底政务藏青、文字白/淡、悬停白 10%、激活=主色实心块 */
+    --nv-sidebar-bg:#1a3564; --nv-sidebar-text:rgba(255,255,255,.88); --nv-sidebar-text-dim:rgba(255,255,255,.55);
+    --nv-sidebar-hover:rgba(255,255,255,.10); --nv-sidebar-active:#2f6fd0; --nv-sidebar-border:rgba(255,255,255,.10);
     --nv-surface:#ffffff; --nv-surface-2:#f8fafd; --nv-surface-3:#f1f4f9;
     --nv-surface-hover:var(--nv-primary-wash);
     --nv-border:#e8ebf0; --nv-border-strong:#d8dde6;
@@ -2389,3 +2392,91 @@ a.nv-kpi:hover {
  .nv-ops-split { grid-template-columns:1fr; }
  .nv-ops-links { grid-template-columns:1fr; }
 }
+
+/* ============================================================ 深蓝侧边栏（gov-blue 原型基准，2026-09-25）
+   原型整页外壳侧边栏为政务藏青底 + 白色文字，激活项=主色实心块；此前为白底，属偏差，此处统一收编。 */
+.nv-sidebar {
+ background:var(--nv-sidebar-bg); border-right:1px solid var(--nv-sidebar-border); }
+.nv-brand { color:#fff; border-bottom-color:var(--nv-sidebar-border); }
+.nv-brand-sub { color:var(--nv-sidebar-text-dim); }
+.nv-menu-link { color:var(--nv-sidebar-text); }
+.nv-menu-link:hover { background:var(--nv-sidebar-hover); color:#fff; }
+.nv-menu-link:hover .nv-menu-ico { color:#fff; }
+/* 激活项：主色实心块（替代原浅底+描边+竖条） */
+.nv-menu-item.is-active > .nv-menu-link {
+ background:var(--nv-sidebar-active); color:#fff; box-shadow:none; }
+.nv-menu-item.is-active > .nv-menu-link::before { display:none; }
+.nv-menu-item.is-active > .nv-menu-link .nv-menu-ico { color:#fff; }
+/* 子菜单：压暗文字，交互同主菜单 */
+.nv-submenu .nv-menu-link { color:var(--nv-sidebar-text-dim); }
+.nv-submenu .nv-menu-link:hover { background:var(--nv-sidebar-hover); color:#fff; }
+.nv-submenu .nv-menu-item.is-active > .nv-menu-link { background:var(--nv-sidebar-active); color:#fff; }
+.nv-menu-arrow { color:var(--nv-sidebar-text-dim); }
+.nv-sidebar-foot { color:var(--nv-sidebar-text-dim); border-top-color:var(--nv-sidebar-border); }
+
+/* 顶栏全局菜单搜索（对齐原型顶栏搜索框；窄屏隐藏） */
+.nv-topsearch {
+ display:flex; align-items:center; gap:8px; width:240px; margin-left:var(--nv-sp-4);
+ height:36px; padding:0 12px; background:var(--nv-surface-2);
+ border:1px solid var(--nv-border); border-radius:var(--nv-r-sm); color:var(--nv-text-4); }
+.nv-topsearch:focus-within {
+ border-color:var(--nv-primary); box-shadow:0 0 0 3px var(--nv-primary-wash); color:var(--nv-primary); }
+.nv-topsearch input {
+ flex:1 1 auto; min-width:0; border:0; outline:0; background:transparent;
+ font-size:var(--nv-fs-13); color:var(--nv-text); }
+.nv-topsearch input::placeholder { color:var(--nv-text-4); }
+.nv-menu-hide { display:none !important; }
+/* 搜索过滤时强制展开命中的子菜单（不改变原生 is-open 状态） */
+.nv-menu-item.nv-filter-open > .nv-submenu { display:block; }
+
+/* 取消=次要行动：原型表单操作条的「取消」为中性描边，不随 danger 语义变红。
+   作用域严格限定 .form-actions，列表页真正的删除按钮不受影响。 */
+body.nv .form-actions .btn-danger {
+ background-color:var(--nv-bg-frame); border-color:var(--nv-border-strong); color:var(--nv-text-2); }
+body.nv .form-actions .btn-danger:hover, body.nv .form-actions .btn-danger:focus {
+ background-color:var(--nv-surface-3); border-color:var(--nv-border-strong); color:var(--nv-text); }
+
+/* ============================================================ 框架工作台 widget Nova 化（2026-09-25）
+   Dashboard 由魔方框架的 widget 系统渲染（widget-grid/kpi/card），原样是 ACE 时代裸标记；
+   这里按 Nova 卡片体系补最小样式，保证生产交付观感统一。 */
+.widget-grid { display:flex; flex-wrap:wrap; gap:var(--nv-sp-3); margin:0 0 var(--nv-sp-3); }
+.widget-col { flex:1 1 220px; min-width:0; }
+.widget-col-kpi { flex:0 1 200px; }
+.widget-kpi {
+ position:relative; display:flex; align-items:center; gap:12px;
+ background:var(--nv-surface); border:1px solid var(--nv-border); border-radius:var(--nv-r-md);
+ padding:14px 16px; box-shadow:var(--nv-sh-1); }
+.widget-kpi-icon {
+ width:40px; height:40px; flex:0 0 40px; display:flex; align-items:center; justify-content:center;
+ border-radius:10px; font-size:20px; }
+.widget-kpi-icon.k-blue { background:var(--nv-primary-weak); color:var(--nv-primary); }
+.widget-kpi-icon.k-green { background:var(--nv-success-weak); color:var(--nv-success); }
+.widget-kpi-icon.k-cyan { background:var(--nv-info-weak); color:var(--nv-info); }
+.widget-kpi-icon.k-orange, .widget-kpi-icon.k-o { background:var(--nv-warning-weak); color:var(--nv-warning); }
+.widget-kpi-icon.k-red { background:var(--nv-danger-weak); color:var(--nv-danger); }
+.widget-kpi-icon.k-grey { background:var(--nv-surface-3); color:var(--nv-text-3); }
+.widget-kpi-value { font-size:22px; font-weight:var(--nv-fw-bold,700); line-height:1.2; color:var(--nv-text); }
+.widget-kpi-label { font-size:var(--nv-fs-13); color:var(--nv-text-2); margin-top:2px; }
+.widget-kpi-trend { font-size:var(--nv-fs-12); color:var(--nv-text-4); }
+.widget-kpi-link { position:absolute; inset:0; }
+.widget-card {
+ background:var(--nv-surface); border:1px solid var(--nv-border); border-radius:var(--nv-r-md);
+ box-shadow:var(--nv-sh-1); margin-bottom:var(--nv-sp-3); overflow:hidden; }
+.widget-header {
+ display:flex; align-items:center; gap:8px; padding:12px 16px;
+ border-bottom:1px solid var(--nv-border); font-weight:var(--nv-fw-semi); color:var(--nv-text); }
+.widget-header .ti { color:var(--nv-primary); }
+.widget-body { padding:var(--nv-sp-3) var(--nv-sp-4); }
+.widget-body .table { margin:0; }
+.widget-menu {
+ border:0; background:transparent; color:var(--nv-text-4); cursor:pointer;
+ width:26px; height:26px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; }
+.widget-menu:hover { background:var(--nv-surface-hover); color:var(--nv-primary); }
+.widget-menu-drop {
+ position:absolute; right:0; top:28px; z-index:var(--nv-z-pop,1050); min-width:120px;
+ background:var(--nv-surface); border:1px solid var(--nv-border); border-radius:var(--nv-r-sm);
+ box-shadow:var(--nv-sh-2); padding:6px; }
+.widget-menu-drop a { display:flex; align-items:center; gap:6px; padding:6px 10px; border-radius:6px;
+ font-size:var(--nv-fs-13); color:var(--nv-text-2); text-decoration:none; white-space:nowrap; }
+.widget-menu-drop a:hover { background:var(--nv-surface-hover); color:var(--nv-primary); }
+.widget-menu-wrap { position:relative; margin-left:auto; }

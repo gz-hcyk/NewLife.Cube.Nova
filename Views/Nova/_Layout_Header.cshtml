@@ -22,6 +22,12 @@
     @* 内容页标题：由 iframe 通过 postMessage 上报，nova-ui.js 外壳侧接收后回填 *@
     <span class="nv-page-title" id="pageTitle" hidden></span>
 
+    @* 全局菜单搜索（对齐原型顶栏搜索框）：前端实时过滤侧栏菜单，窄屏隐藏 *@
+    <div class="nv-topsearch nv-hide-sm">
+        <i class="nv-ico nv-ico-sm" data-nv-ico="search"></i>
+        <input type="search" id="nvMenuSearch" placeholder="搜索菜单 / 功能" autocomplete="off" aria-label="搜索菜单" />
+    </div>
+
     <span class="nv-toolbar-spacer"></span>
 
     <button class="nv-iconbtn" type="button" data-nv-act="density" aria-label="切换信息密度" title="信息密度">

@@ -5,6 +5,10 @@ $log = $out + '\demo-run.log'
 $errlog = $out + '\demo-run.err.log'
 $base = 'http://127.0.0.1:5259'
 
+# preview dir must exist BEFORE the server starts (PhysicalFileProvider snapshots wwwroot at startup)
+$pvDir = $wd + '\wwwroot\__preview'
+New-Item -ItemType Directory -Force $pvDir | Out-Null
+
 $p = Start-Process -FilePath 'C:\Program Files\dotnet\dotnet.exe' `
     -ArgumentList 'NovaDemo.dll --urls http://127.0.0.1:5259/' `
     -WorkingDirectory $wd -RedirectStandardOutput $log -RedirectStandardError $errlog -PassThru
@@ -87,11 +91,48 @@ try {
     Write-Output 'CHECK form-page : FAIL(exception)'
 }
 
+# 5.5 shell page (sidebar+topbar+iframe, baseline for gov-blue-preview.png)
+try {
+    $shell = Invoke-WebRequest -Uri ($base + '/Admin') -UseBasicParsing -TimeoutSec 30 -WebSession $s -MaximumRedirection 5
+    Check 'shell-page' ($shell.StatusCode -eq 200)
+    Check 'shell-sidebar' ($shell.Content -match 'nv-sidebar')
+    Check 'shell-header' ($shell.Content -match 'nv-topbar|nv-header')
+    Check 'shell-iframe' ($shell.Content -match '<iframe')
+    Check 'shell-topsearch' ($shell.Content -match 'nvMenuSearch')
+    # inline iframe content (headless Edge has no auth cookie, iframe would show login page)
+    $main = Invoke-WebRequest -Uri ($base + '/Admin/Index/Dashboard') -UseBasicParsing -TimeoutSec 30 -WebSession $s
+    $m = [regex]::Match($main.Content, '(?s)<body[^>]*>(.*)</body>')
+    if ($m.Success) {
+        $shellHtml = $shell.Content -replace '(?s)<iframe id="main"[^>]*></iframe>', ('<div id="main" class="nv-frame">' + $m.Groups[1].Value + '</div>')
+        # no postMessage source in the composite: highlight the first menu item (首页 = start page) like the real shell does
+        $mi = '<div class="nv-menu-item">'
+        $miIdx = $shellHtml.IndexOf($mi)
+        if ($miIdx -ge 0) {
+            $shellHtml = $shellHtml.Substring(0, $miIdx) + '<div class="nv-menu-item is-active">' + $shellHtml.Substring($miIdx + $mi.Length)
+        }
+    } else {
+        $shellHtml = $shell.Content
+    }
+    Check 'shell-inline' ($shellHtml -notmatch '<iframe')
+    $htmlShell = $shellHtml -replace '(?i)<head>', ('<head><base href="' + $base + '/">')
+    $htmlShell | Out-File -FilePath ($out + '\runtime-shell.html') -Encoding utf8
+} catch {
+    Write-Output 'CHECK shell-page : FAIL(exception)'
+}
+
 # 6. screenshots via headless Edge (CSS/JS served by running site)
+# 6.1 same-origin preview copies: file:// + <base> makes font requests cross-origin (CORS blocked),
+#     which renders tabler icons as .notdef boxes. Serving the saved HTML from the site origin avoids that.
+#     (dir was created before server startup; see top of script)
+Copy-Item ($out + '\runtime-shell.html') ($pvDir + '\shell.html') -Force
+Copy-Item ($out + '\runtime-list.html') ($pvDir + '\list.html') -Force
+Copy-Item ($out + '\runtime-form.html') ($pvDir + '\form.html') -Force
 $edge = 'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
-$shot1 = Start-Process -FilePath $edge -ArgumentList ('--headless --disable-gpu --hide-scrollbars --window-size=1500,1400 --screenshot="' + $out + '\runtime-list.png" "file:///' + ($out -replace '\\','/') + '/runtime-list.html"') -Wait -PassThru
-$shot2 = Start-Process -FilePath $edge -ArgumentList ('--headless --disable-gpu --hide-scrollbars --window-size=1500,2200 --screenshot="' + $out + '\runtime-form.png" "file:///' + ($out -replace '\\','/') + '/runtime-form.html"') -Wait -PassThru
+$shot1 = Start-Process -FilePath $edge -ArgumentList ('--headless --disable-gpu --hide-scrollbars --window-size=1500,1400 --virtual-time-budget=8000 --screenshot="' + $out + '\runtime-list.png" "' + $base + '/__preview/list.html"') -Wait -PassThru
+$shot2 = Start-Process -FilePath $edge -ArgumentList ('--headless --disable-gpu --hide-scrollbars --window-size=1500,2200 --virtual-time-budget=8000 --screenshot="' + $out + '\runtime-form.png" "' + $base + '/__preview/form.html"') -Wait -PassThru
+$shot3 = Start-Process -FilePath $edge -ArgumentList ('--headless --disable-gpu --hide-scrollbars --window-size=1600,1200 --virtual-time-budget=8000 --screenshot="' + $out + '\runtime-shell.png" "' + $base + '/__preview/shell.html"') -Wait -PassThru
 Write-Output 'SHOTS_DONE'
+Remove-Item -Recurse -Force $pvDir
 
 Stop-Process -Id $p.Id -Force
 Write-Output 'SERVER_STOPPED'
