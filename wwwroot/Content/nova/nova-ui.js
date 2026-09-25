@@ -210,19 +210,26 @@
     function markActive(path) {
         if (!path) return;
         $all('.nv-menu-item').forEach(function (li) {
-            var a = li.querySelector('.nv-menu-link[data-nav]');
+            /* 只匹配直接子级链接：li 内 querySelector 会命中子菜单后代，
+               导致父分组在孩子激活时被连带标成 is-active（双高亮） */
+            var a = li.querySelector(':scope > .nv-menu-link[data-nav]');
             li.classList.toggle('is-active', !!a && a.getAttribute('data-nav') === path);
         });
         $all('.nv-menu-item.is-active').forEach(function (li) {
             var p = li.parentElement;
             while (p && p !== document.body) {
                 if (p.classList && p.classList.contains('nv-submenu')) {
+                    /* owner 是 .nv-submenu 的前一个兄弟（父级 button），
+                       展开态类名必须挂在 .nv-menu-item 容器上才有 CSS 效果
+                       （.nv-menu-item.is-open > .nv-submenu 才显示），
+                       挂在 button 上会导致每次跳转后菜单收起 */
                     var owner = p.previousElementSibling;
+                    var ownerItem = owner && owner.closest ? owner.closest('.nv-menu-item') : null;
                     /* 展开所属一级菜单，收起同级其他菜单 */
                     $all('.nv-menu-item.is-open').forEach(function (o) {
-                        if (o !== owner) o.classList.remove('is-open');
+                        if (o !== ownerItem) o.classList.remove('is-open');
                     });
-                    if (owner) owner.classList.add('is-open');
+                    if (ownerItem) ownerItem.classList.add('is-open');
                     break;
                 }
                 p = p.parentElement;
