@@ -1,0 +1,26 @@
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+}
+@* 用户列表自定义搜索（Nova 覆写，原 Cube 版为 ACE 裸标记：toolbar-link/form-group/control-label，
+   在 Nova 筛选行里完全失序）。统一为 .nv-field 栅格：链接组右置、角色多选、状态、部门、省市。 *@
+<div class="nv-field">
+    <label class="nv-field-label" for="roleIds">角色</label>
+    <div class="nv-field-ctl">
+        @await Html.PartialAsync("_Form_ListBox", new ListBoxModel("roleIds", Role.FindAllWithCache().OrderByDescending(e => e.Sort).ToList(), page["roleIds"]))
+    </div>
+</div>
+@await Html.PartialAsync("_Enable")
+@await Html.PartialAsync("_SelectDepartment", "departmentId")
+@await Html.PartialAsync("_Area2", "")
+<div class="nv-search-links">
+    <a class="nv-search-link" href="@Url.Action("Index", "UserOnline")" target="_blank" rel="noopener">
+        <i class="nv-ico nv-ico-sm" data-nv-ico="users"></i>用户在线
+    </a>
+    <a class="nv-search-link" href="@Url.Action("Index", "UserStat")" target="_blank" rel="noopener">
+        <i class="nv-ico nv-ico-sm" data-nv-ico="chart"></i>用户统计
+    </a>
+</div>

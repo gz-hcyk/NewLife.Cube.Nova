@@ -2302,6 +2302,22 @@ body.nv .nv-tabs-host .nav-tabs .nav-link:focus-visible {
  flex:0 0 auto; width:126px; text-align:center; }
 .nv-toolbar .nv-daterange-sep {
  color:var(--nv-text-4); }
+/* L2b. 筛选行标签定宽右对齐，标签列纵向整齐（生产排版） */
+.nv-toolbar .nv-field-label {
+ flex:0 0 64px; text-align:right; }
+/* 筛选行末尾的弱强调辅助入口（用户在线/用户统计等）：右置、与字段底对齐 */
+.nv-toolbar .nv-search-links {
+ display:inline-flex; align-items:center; gap:var(--nv-sp-3); margin-left:auto; align-self:center; }
+.nv-search-link {
+ display:inline-flex; align-items:center; gap:4px; font-size:var(--nv-fs-13); color:var(--nv-text-link); text-decoration:none; }
+.nv-search-link:hover { text-decoration:underline; }
+/* 其它实体自定义搜索视图的 ACE 遗留标记安全网：不致排版崩坏，逐步由主题覆写替换 */
+.nv-toolbar-filters .toolbar-link {
+ font-size:var(--nv-fs-13); color:var(--nv-text-link); text-decoration:none; }
+.nv-toolbar-filters .form-group {
+ display:flex; align-items:center; gap:var(--nv-sp-2); margin:0; }
+.nv-toolbar-filters .form-group .control-label {
+ margin:0; font-size:var(--nv-fs-12); color:var(--nv-text-3); white-space:nowrap; flex:0 0 64px; text-align:right; }
 /* M. 生产级优化补充：文件隐藏输入 / 行内复选框 / 危险链接 / 权限树表 */.nv-file-hidden {
  position:absolute !important; width:1px; height:1px; padding:0; margin:-1px;
  overflow:hidden; clip:rect(0,0,0,0); border:0; white-space:nowrap; }
