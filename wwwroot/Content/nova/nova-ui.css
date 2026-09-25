@@ -2479,8 +2479,9 @@ body.nv .form-actions .btn-danger:hover, body.nv .form-actions .btn-danger:focus
 .widget-grid { display:flex; flex-wrap:wrap; gap:var(--nv-sp-3); margin:0 0 var(--nv-sp-3); }
 .widget-col { flex:1 1 220px; min-width:0; }
 /* KPI 卡忽略服务端保存的固定百分比宽，按内容自适应换行（响应式基准）；
-   flex-shrink 置 0，避免被同行的信息卡压缩、也不被拉伸成等高 */
-.widget-col-kpi { flex:1 0 180px; width:auto !important; }
+   flex-shrink 置 0，避免被同行的信息卡压缩、也不被拉伸成等高；
+   order:-2 保证 KPI 整体占据第一行（后面的整行部件 basis 100% 会强制断行） */
+.widget-col-kpi { flex:1 0 180px; width:auto !important; order:-2; }
 .widget-kpi {
  position:relative; display:flex; align-items:center; gap:12px;
  background:var(--nv-surface); border:1px solid var(--nv-border); border-radius:var(--nv-r-md);
@@ -2571,6 +2572,15 @@ body.nv .form-actions .btn-danger:hover, body.nv .form-actions .btn-danger:focus
 .cube-workbench .quicklink-item i { font-size:22px; color:var(--nv-primary); }
 .cube-workbench .quicklink-item span {
  font-size:var(--nv-fs-12); max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* 工作台整行部件（2026-09-25 布局确认）：性能监控、系统信息单独成行。
+   性能监控 order:-1 提到 KPI 行之后（视觉顺序，DOM 不变，拖拽序列化不受影响）；
+   其余信息卡（登录与在线/个人信息/快捷入口）保持均分一行。
+   注意：本段在响应式媒体查询之后，等specificity时以本段为准。 */
+.cube-workbench .widget-col[data-name="Monitor"] { order:-1; flex:1 0 100%; width:auto !important; }
+.cube-workbench .widget-col[data-name="SysInfo"] { flex:1 0 100%; width:auto !important; }
+/* 系统信息整行展示时限制表格阅读宽度，避免超宽行 */
+.cube-workbench .widget-col[data-name="SysInfo"] .widget-table { max-width:720px; }
 
 /* ============================================================ 下拉筛选与多选下拉（2026-09-25）
    单选下拉（nv-selectpop）面板顶部筛选框；多选下拉（nv-multipop）= 筛选 + 全选/清空 + 勾选列表。 */
