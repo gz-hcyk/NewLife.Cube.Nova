@@ -385,6 +385,11 @@ body.nv [data-bs-theme="dark"] .nv-header {
  font-size:var(--nv-fs-22); font-weight:var(--nv-fw-bold); letter-spacing:-.02em; }
 .nv-page-desc {
  color:var(--nv-text-3); font-size:var(--nv-fs-13); margin-top:3px; }
+/* 表单页标题：页眉移除后由 _Form_Header 在表单区顶部渲染（如「编辑用户」） */
+.nv-form-title {
+ font-size:var(--nv-fs-18); font-weight:var(--nv-fw-bold); letter-spacing:-.01em;
+ margin-bottom:var(--nv-sp-4);
+}
 .nv-page-actions {
  display:flex; align-items:center; gap:var(--nv-sp-2); flex-wrap:wrap; }
 .nv-crumb {

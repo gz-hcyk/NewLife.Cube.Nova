@@ -1,6 +1,17 @@
 @using NewLife;
 @{
     var msg = ViewBag.StatusMessage as String;
+
+    // 表单页标题：页眉（nv-page-head）移除后，在表单区顶部提示当前操作（如「编辑用户」）
+    // 新增/编辑以路由 Action 为准：框架按 Add/Edit 分别渲染 AddForm/EditForm，
+    // 而 entity.IsNullKey 对 Int32 主键（0 值）判定不可靠，不可作为依据
+    var formTitle = ViewBag.Title as String;
+    var act = ViewContext.RouteData.Values["action"] as String;
+    var isNew = act.EqualIgnoreCase("Add");
+}
+@if (!formTitle.IsNullOrEmpty())
+{
+    <div class="nv-form-title">@(isNew ? "添加" : "编辑")@formTitle</div>
 }
 @if (!msg.IsNullOrEmpty())
 {
