@@ -30,17 +30,26 @@
         </div>
     </div>
     <script>
+        /* 同 _List_Toolbar：解析期执行时按钮可能尚未解析完，等 DOMContentLoaded 再绑定 */
         (function () {
             'use strict';
+            function ready(fn) {
+                if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+                else fn();
+            }
+            ready(function () {
             var btn = document.querySelector('[data-nv-bulk-clear]');
             if (!btn) return;
             btn.addEventListener('click', function () {
+                // 清空跨页记忆（含其它页已勾选），并取消本页勾选、同步批量条
+                if (window.nv && window.nv.bulkClear) { window.nv.bulkClear(); return; }
                 var table = document.querySelector('.nv-table');
                 if (!table) return;
                 var boxes = table.querySelectorAll('tbody input[type=checkbox]');
                 for (var i = 0; i < boxes.length; i++) boxes[i].checked = false;
                 // 冒泡 change 交给工具栏的同步逻辑：按钮启停 + 批量条显隐
                 if (boxes.length) boxes[0].dispatchEvent(new Event('change', { bubbles: true }));
+            });
             });
         })();
     </script>

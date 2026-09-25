@@ -183,6 +183,9 @@
             return;
         }
         var n = boxes.filter(function (b) { return b.checked; }).length;
+        /* 跨页保留选择（规范 5.4）：MVC 适配器注册 nv.bulkCount 后，
+           计数改用 sessionStorage 记忆集合（含其它页已勾选行）。 */
+        if (window.nv && window.nv.bulkCount) n = Math.max(n, window.nv.bulkCount());
         var head = document.querySelector('.nv-table thead input[type=checkbox]');
         if (head) {
             head.checked = n > 0 && n === boxes.length;
@@ -727,6 +730,166 @@
         document.addEventListener('change', function (e) {
             var el = e.target;
             if (el && el.type === 'checkbox' && window.nv && window.nv.refreshBulk) window.nv.refreshBulk();
+        });
+    }
+
+    /* ------------------------------------------------- ④c 跨页保留选择（规范 5.4）
+     * 魔方分页为整页跳转，勾选状态用 sessionStorage 按页面路径记忆：翻页 /
+     * 改页大小 / 筛选后自动回填，批量操作条计数为记忆集合总数（含其它页）。
+     * 提交时由 initBulkAction 把记忆集合并入 keys 参数；批量成功后清空记忆。
+     * sessionStorage 不可用（隐私模式等）时静默降级为页内选择。
+     * ---------------------------------------------------------------- */
+    var BULK_KEY_PREFIX = 'nv-bulk:';
+
+    function bulkLoad() {
+        try { return JSON.parse(sessionStorage.getItem(BULK_KEY_PREFIX + location.pathname) || '[]') || []; }
+        catch (e) { return null; }
+    }
+    function bulkSave(arr) {
+        try {
+            var k = BULK_KEY_PREFIX + location.pathname;
+            if (arr && arr.length) sessionStorage.setItem(k, JSON.stringify(arr));
+            else sessionStorage.removeItem(k);
+        } catch (e) { /* 静默降级 */ }
+    }
+    /* 记忆集合大小；sessionStorage 不可用或本页无勾选列时返回 0 */
+    function bulkCount() {
+        var arr = bulkLoad();
+        return arr ? arr.length : 0;
+    }
+    function bulkClear() {
+        bulkSave([]);
+        $all('.nv-table tbody input[name=keys], .nv-tree-table tbody input[name=keys]').forEach(function (b) { b.checked = false; });
+        if (window.nv && window.nv.refreshBulk) window.nv.refreshBulk();
+    }
+
+    function initBulkKeep() {
+        var table = document.querySelector('.nv-table tbody') || document.querySelector('.nv-tree-table tbody');
+        if (!table || !table.querySelector('input[name=keys]')) return;
+        /* 回填：翻页回来后恢复本页已勾选行 */
+        var sel = bulkLoad();
+        if (sel && sel.length) {
+            $all('input[name=keys]', table).forEach(function (b) {
+                if (sel.indexOf(b.value) >= 0) b.checked = true;
+            });
+        }
+        /* 勾选变化 → 同步记忆集合 */
+        table.addEventListener('change', function (e) {
+            var el = e.target;
+            if (!el || el.type !== 'checkbox' || el.name !== 'keys') return;
+            var arr = bulkLoad();
+            if (!arr) return;
+            var i = arr.indexOf(el.value);
+            if (el.checked && i < 0) arr.push(el.value);
+            if (!el.checked && i >= 0) arr.splice(i, 1);
+            bulkSave(arr);
+        });
+        if (window.nv && window.nv.refreshBulk) window.nv.refreshBulk();
+    }
+
+    /* ------------------------------------------- ④d data-action 契约（原生补齐）
+     * Cube.js（jQuery）在 ACE 等皮肤拦截 [data-action] 发起 ajax；Nova 布局
+     * 不加载 Cube.js，此处用原生 fetch 补齐同一契约，行为对齐：
+     *   data-fields="keys"  → 序列化同名控件（勾选集合），keys 并入跨页记忆
+     *   data-confirm        → 确认后执行
+     *   data-method         → GET/POST（默认 GET）
+     *   响应 { message|data, url, time } → toast 提示；url=[refresh] 刷新，否则跳转
+     * 覆盖：批量操作条按钮、行内 删除/恢复、高级菜单（删除选中/同步/备份…）、
+     *       data-action="upload" 文件导入。
+     * ---------------------------------------------------------------- */
+    var bulkActionBound = false;
+
+    function serializeFields(fields) {
+        var parts = [];
+        fields.forEach(function (f) {
+            if (f === 'keys') {
+                /* 跨页保留选择合并提交：记忆集 ∪ 当前页已勾选 */
+                var vals = bulkLoad() || [];
+                $all('input[name=keys]:checked').forEach(function (b) {
+                    if (vals.indexOf(b.value) < 0) vals.push(b.value);
+                });
+                vals.forEach(function (v) { parts.push('keys=' + encodeURIComponent(v)); });
+                return;
+            }
+            $all('[name="' + f + '"]').forEach(function (inp) {
+                if ((inp.type === 'checkbox' || inp.type === 'radio') && !inp.checked) return;
+                if (inp.tagName === 'SELECT' && (inp.value == null || inp.value === '')) return;
+                parts.push(encodeURIComponent(f) + '=' + encodeURIComponent(inp.value));
+            });
+        });
+        return parts.join('&');
+    }
+
+    function finishAction(rs, usedKeys) {
+        if (rs && (rs.message || rs.data) && window.nv && window.nv.toast) {
+            window.nv.toast(rs.message || rs.data, rs.result === false || rs.code > 0 ? 'danger' : 'success');
+        }
+        /* 批量操作成功后清空记忆，避免刷新后回填已处理行 */
+        if (usedKeys) bulkClear();
+        var u = rs && rs.url, t = rs && +rs.time > 0 ? Math.min(+rs.time, 10) * 1000 : 0;
+        if (u === '[refresh]') setTimeout(function () { location.reload(); }, t);
+        else if (u) setTimeout(function () { location.href = u; }, t);
+    }
+
+    function doClickAction(el) {
+        var fields = (el.getAttribute('data-fields') || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+        var body = serializeFields(fields);
+        var method = (el.getAttribute('data-method') || 'GET').toUpperCase();
+        var url = el.getAttribute('data-url') || el.getAttribute('href') || '';
+        if (!url) return;
+        if (method === 'GET' && body) url += (url.indexOf('?') >= 0 ? '&' : '?') + body;
+        fetch(url, {
+            method: method,
+            credentials: 'same-origin',
+            headers: method === 'GET' ? {} : { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+            body: method === 'GET' ? null : body
+        }).then(function (r) { return r.json().catch(function () { return null; }); })
+            .then(function (rs) { finishAction(rs, fields.indexOf('keys') >= 0); })
+            .catch(function () {
+                if (window.nv && window.nv.toast) window.nv.toast('请求异常，请稍后重试', 'danger');
+            });
+    }
+
+    function doFileUpload(el) {
+        var fd = new FormData();
+        fd.append(el.name || 'file', el.files[0]);
+        (el.getAttribute('data-fields') || '').split(',').map(function (s) { return s.trim(); }).filter(Boolean).forEach(function (f) {
+            var inp = document.querySelector('[name="' + f + '"]');
+            if (inp) fd.append(f, inp.value);
+        });
+        var url = el.getAttribute('data-url') || '';
+        if (!url) return;
+        fetch(url, {
+            method: (el.getAttribute('data-method') || 'POST').toUpperCase(),
+            credentials: 'same-origin',
+            body: fd
+        }).then(function (r) { return r.json().catch(function () { return null; }); })
+            .then(function (rs) { finishAction(rs, false); })
+            .catch(function () {
+                if (window.nv && window.nv.toast) window.nv.toast('上传失败，请稍后重试', 'danger');
+            });
+    }
+
+    function initBulkAction() {
+        /* 挂到 window.nv，供批量条“取消选择”与工具栏脚本使用 */
+        if (window.nv) {
+            window.nv.bulkCount = bulkCount;
+            window.nv.bulkClear = bulkClear;
+        }
+        if (bulkActionBound) return;
+        bulkActionBound = true;
+        document.addEventListener('click', function (e) {
+            var el = e.target && e.target.closest ? e.target.closest('button[data-action="action"],input[data-action="action"],a[data-action="action"]') : null;
+            if (!el || el.disabled) return;
+            e.preventDefault();
+            var cf = el.getAttribute('data-confirm');
+            if (cf) { if (window.confirm(cf)) doClickAction(el); }
+            else doClickAction(el);
+        });
+        document.addEventListener('change', function (e) {
+            var el = e.target;
+            if (!el || el.type !== 'file' || el.getAttribute('data-action') !== 'upload') return;
+            if (el.files && el.files[0]) doFileUpload(el);
         });
     }
 
@@ -1439,6 +1602,8 @@
         initRowDoubleClick();
         initDatePicker();
         initCheckAll();
+        initBulkAction();
+        initBulkKeep();
         initTreeTable();
         initTreeSelect();
         initSelectPop();
@@ -1446,6 +1611,13 @@
     }
 
     migratePrefs();
+
+    /* 解析期即挂出（早于各视图内联脚本的 DOMContentLoaded 初始 sync，
+       保证首屏按钮启停就能读到记忆集合计数）。 */
+    if (window.nv) {
+        window.nv.bulkCount = bulkCount;
+        window.nv.bulkClear = bulkClear;
+    }
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
     else boot();

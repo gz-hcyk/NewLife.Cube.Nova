@@ -1,4 +1,4 @@
-﻿$ErrorActionPreference = 'Continue'
+$ErrorActionPreference = 'Continue'
 $wd  = 'G:\009repos\002MingJia\NovaDemo\bin\Debug\net8.0'
 $out = 'G:\009repos\002MingJia\NewLife.Cube.Nova\docs\preview'
 $log = $out + '\demo-run.log'
@@ -51,6 +51,13 @@ Check 'css-v3-solid-primary' ($css -match '--nv-grad-primary:#1e5cae')
 Check 'css-anchor-btn-guard' ($css -match 'body\.nv a\.nv-btn-primary')
 Check 'css-sidebar-anchor-guard' ($css -match 'body\.nv \.nv-menu-link \{ color:var\(--nv-sidebar-text\)')
 
+# 1b. nova-ui.js: 跨页保留选择 + data-action 契约（规范 5.4）
+$js = (Invoke-WebRequest -Uri ($base + '/Content/nova/nova-ui.js') -UseBasicParsing -TimeoutSec 15).Content
+Check 'js-served' ($js -match 'window\.nv =')
+Check 'js-bulk-keep' ($js -match 'nv-bulk:' -and $js -match 'initBulkKeep')
+Check 'js-bulk-action' ($js -match 'initBulkAction' -and $js -match 'data-action=\\?"action\\?"')
+Check 'js-bulkcount-parse-time' ($js -match 'window\.nv\.bulkCount = bulkCount')
+
 # 2. login page
 $login = Invoke-WebRequest -Uri ($base + '/Admin/User/Login') -UseBasicParsing -TimeoutSec 20 -SessionVariable s
 Check 'login-page' ($login.StatusCode -eq 200)
@@ -75,6 +82,9 @@ $bulkBlock = $idx.Content.Substring($idx.Content.IndexOf('nv-bulkbar"'))
 $bulkBlock = $bulkBlock.Substring(0, [Math]::Min(1500, $bulkBlock.Length))
 Check 'list-bulk-enable-in-bar' ($bulkBlock -match 'EnableSelect')
 Check 'list-bulk-delete-in-bar' ($bulkBlock -match 'DeleteSelect')
+# 规范 5.4 跨页保留选择：工具栏脚本须带 DOMContentLoaded 包裹（解析期表格尚不存在）+ 记忆集合计数
+Check 'list-toolbar-ready' ($idx.Content -match 'ready\(function')
+Check 'list-toolbar-bulk-keep' ($idx.Content -match '跨页保留选择')
 Check 'list-legacy-purple-gone' ($idx.Content -notmatch 'btn-purple')
 Check 'list-pager' ($idx.Content -match 'nv-pager')
 Check 'list-add-anchor-btn' ($idx.Content -match '<a[^>]*nv-btn-primary')

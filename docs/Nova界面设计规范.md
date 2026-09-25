@@ -6,7 +6,7 @@
 | 实现文件 | `wwwroot/Content/nova/nova-ui.css`（设计令牌 + 组件层）、`nova-ui.js`（交互行为） |
 | 底座 | Tabler v1 + Bootstrap 5 + jQuery，本皮肤在其之后加载 |
 | 覆盖页面 | 魔方常用页面：列表、表单、树形、权限设置、用户中心、数据库工具、登录（PC / 移动端） |
-| 最近修订 | 2026-09 v3：政务蓝 · 简洁版（主色纯色化、语义色降饱和、圆角 4–10px、阴影减淡，详见附录 B）。2026-09-25 运行态核对修订：5.6 侧栏藏青底+实心激活块（按 gov-blue 原型）、5.7 下拉三组件全量增强、5.4 行内操作原型优先并标注跨页选择未落地、1.3 密度补标准档成真三档 |
+| 最近修订 | 2026-09 v3：政务蓝 · 简洁版（主色纯色化、语义色降饱和、圆角 4–10px、阴影减淡，详见附录 B）。2026-09-25 运行态核对修订：5.6 侧栏藏青底+实心激活块（按 gov-blue 原型）、5.7 下拉三组件全量增强、5.4 行内操作原型优先并标注跨页选择未落地、1.3 密度补标准档成真三档。2026-09-25 二次修订：5.4 跨页保留选择落地（sessionStorage 记忆 + 批量提交合并）并原生补齐 data-action 契约（含工具栏脚本 DOMContentLoaded 绑定修复） |
 
 > 本规范是 nova-ui.css 中 `--nv-*` 设计令牌的说明文档，供团队评审与实现对照。
 > 组件层只许引用语义令牌，不许直接引用色值；令牌一改，全局换肤。
@@ -220,7 +220,8 @@
 
 - 首列固定多选框，支持全选与批量操作栏（`.nv-bulkbar.is-on`，计数用 `.nv-bulkbar-count b`）。
 - 行内操作：按已确认原型为常显文字操作（`详情 · 编辑`），不用图标按钮、不加 hover 展开（2026-09-25 核对，原型优先）。
-- ⚠ 跨页保留选择：本规范要求但未落地——魔方分页为整页跳转，选择状态无法天然跨页保留，需专项开发（sessionStorage 记忆 + 批量提交合并），待排期。
+- 跨页保留选择（2026-09-25 落地）：勾选状态按页面路径存 sessionStorage（`nv-bulk:<path>`），翻页 / 改页大小 / 筛选后自动回填，批量操作条计数为记忆集合总数（含其它页）；批量提交时记忆集合并入 `keys` 参数，成功后清空记忆（「取消选择」同）。sessionStorage 不可用时静默降级为页内选择。实现：`nova-ui.js` `initBulkKeep` + `initBulkAction`；集成回归 `docs/preview/_cdp-bulk-test.js`。
+- data-action 契约（2026-09-25 补齐）：Nova 布局不加载 Cube 核心的 jQuery `Cube.js`，`nova-ui.js` 用原生 fetch 实现同一契约（`data-action="action"|"upload"`、`data-confirm`、`data-method`、`data-fields`，响应 `{message|data, url, time}` → toast + `[refresh]`/跳转），覆盖批量操作条、行内删除/恢复、高级菜单与文件导入。注意：视图内联脚本必须等 DOMContentLoaded 再绑定（工具栏脚本渲染在表格之前，解析期 `.nv-table` 尚不存在）。
 - 列设置面板 `.nv-colpanel` 可显隐列并记忆偏好；数值列右对齐、等宽数字。
 - 表头 `--nv-fs-12` + `--nv-surface-3` 底色；斑马纹用 `--nv-surface-2`，不用重色。
 - 密度三档由 `[data-nv-density-val]` 驱动。
