@@ -1,0 +1,77 @@
+@using System.Diagnostics
+@using NewLife.Cube.Extensions
+@{
+    ViewBag.Title = "进程模块";
+    var isAll = String.Equals("All", Context.Request.GetRequestValue("Mode"), StringComparison.OrdinalIgnoreCase);
+    var process = Process.GetCurrentProcess();
+    var list = new List<ProcessModule>();
+    try
+    {
+        foreach (ProcessModule item in process.Modules)
+        {
+            try
+            {
+                if (isAll || item.FileVersionInfo.CompanyName != "Microsoft Corporation") list.Add(item);
+            }
+            catch { }
+        }
+    }
+    catch { }
+
+    String Size(Int64 n)
+    {
+        if (n >= 1024 * 1024) return (n / 1024d / 1024d).ToString("n1") + " MB";
+        if (n >= 1024) return (n / 1024d).ToString("n0") + " KB";
+        return n.ToString("n0") + " B";
+    }
+}
+<div class="nv-card">
+    <div class="nv-card-head">
+        <div class="nv-card-title">进程模块</div>
+        <div class="nv-card-sub">
+            @process.ProcessName · PID @process.Id · @list.Count 个
+            @if (isAll)
+            {
+                <a class="nv-link" href="?Mode=OnlyUser">仅用户模块</a>
+            }
+            else
+            {
+                <a class="nv-link" href="?Mode=All">含系统模块</a>
+            }
+        </div>
+    </div>
+    <div class="nv-card-body nv-card-flush">
+        <div class="nv-table-wrap">
+            <table class="nv-table">
+                <thead>
+                    <tr>
+                        <th>模块</th>
+                        <th>公司</th>
+                        <th>产品</th>
+                        <th>描述</th>
+                        <th>版本</th>
+                        <th>大小</th>
+                        <th>路径</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in list)
+                    {
+                        <tr>
+                            <td>@item.ModuleName</td>
+                            <td>@item.FileVersionInfo.CompanyName</td>
+                            <td class="nv-td-clip">@item.FileVersionInfo.ProductName</td>
+                            <td class="nv-td-clip" title="@item.FileVersionInfo.FileDescription">@item.FileVersionInfo.FileDescription</td>
+                            <td>@item.FileVersionInfo.FileVersion</td>
+                            <td class="nv-td-nowrap">@Size(item.ModuleMemorySize)</td>
+                            <td class="nv-td-clip" title="@item.FileName">@item.FileName</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="nv-card-foot">
+        <a class="nv-link" href="@Url.Action("Main")">返回运维中心</a>
+    </div>
+</div>

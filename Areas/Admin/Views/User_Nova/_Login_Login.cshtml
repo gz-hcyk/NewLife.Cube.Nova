@@ -1,4 +1,4 @@
-﻿@model LoginViewModel
+@model LoginViewModel
 @using NewLife
 @using NewLife.Common
 @using NewLife.Cube.Areas.Admin.Models
@@ -134,7 +134,7 @@
         font-size: var(--nv-fs-12, 12px);
         font-weight: var(--nv-fw-semi, 600);
         letter-spacing: .4px;
-        color: var(--nv-primary, #206bc4);
+        color: var(--nv-primary, #1e5cae);
         margin-bottom: 6px;
     }
     .nv-login-title {
@@ -198,8 +198,8 @@
     .nv-login .nv-input::placeholder { color: var(--nv-text-4, #9ca3af); }
     .nv-login .nv-input:focus {
         outline: 0;
-        border-color: var(--nv-primary, #206bc4);
-        box-shadow: 0 0 0 3px var(--nv-primary-wash, rgba(32,107,196,.15));
+        border-color: var(--nv-primary, #1e5cae);
+        box-shadow: 0 0 0 3px var(--nv-primary-wash, rgba(30,92,174,.15));
     }
 
     /* 明文 / 密文切换按钮 */
@@ -221,12 +221,12 @@
         cursor: pointer;
         transition: background .15s, color .15s;
     }
-    .nv-login .nv-eye:hover { background: var(--nv-surface-hover, #f3f4f6); color: var(--nv-primary, #206bc4); }
-    .nv-login .nv-eye:focus-visible { outline: 2px solid var(--nv-primary, #206bc4); outline-offset: 1px; }
+    .nv-login .nv-eye:hover { background: var(--nv-surface-hover, #f3f4f6); color: var(--nv-primary, #1e5cae); }
+    .nv-login .nv-eye:focus-visible { outline: 2px solid var(--nv-primary, #1e5cae); outline-offset: 1px; }
     .nv-login .nv-eye .nv-eye-hide { display: none; }
     .nv-login .nv-eye.is-on .nv-eye-show { display: none; }
     .nv-login .nv-eye.is-on .nv-eye-hide { display: inline-flex; }
-    .nv-login .nv-eye.is-on { color: var(--nv-primary, #206bc4); }
+    .nv-login .nv-eye.is-on { color: var(--nv-primary, #1e5cae); }
 
     .nv-login-row {
         display: flex;
@@ -243,8 +243,8 @@
         cursor: pointer;
         user-select: none;
     }
-    .nv-login .nv-remember input { width: 15px; height: 15px; margin: 0; accent-color: var(--nv-primary, #206bc4); cursor: pointer; }
-    .nv-login .nv-login-link { color: var(--nv-primary, #206bc4); text-decoration: none; }
+    .nv-login .nv-remember input { width: 15px; height: 15px; margin: 0; accent-color: var(--nv-primary, #1e5cae); cursor: pointer; }
+    .nv-login .nv-login-link { color: var(--nv-primary, #1e5cae); text-decoration: none; }
     .nv-login .nv-login-link:hover { text-decoration: underline; }
 
     .nv-login .nv-login-submit {

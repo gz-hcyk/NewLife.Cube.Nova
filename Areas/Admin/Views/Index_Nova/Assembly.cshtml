@@ -1,0 +1,45 @@
+@using NewLife.Reflection
+@{
+    ViewBag.Title = "程序集列表";
+    var asms = ViewBag.Asms as IEnumerable<AssemblyX> ?? [];
+}
+<div class="nv-card">
+    <div class="nv-card-head">
+        <div class="nv-card-title">程序集列表</div>
+        <div class="nv-card-sub">@AppDomain.CurrentDomain.FriendlyName · @asms.Count() 个</div>
+    </div>
+    <div class="nv-card-body nv-card-flush">
+        <div class="nv-table-wrap">
+            <table class="nv-table">
+                <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th>标题</th>
+                        <th>文件版本</th>
+                        <th>内部版本</th>
+                        <th>编译时间</th>
+                        <th>路径</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in asms)
+                    {
+                        var location = "";
+                        try { location = item.Asm?.Location; } catch { }
+                        <tr>
+                            <td>@item.Name</td>
+                            <td class="nv-td-clip">@item.Title</td>
+                            <td class="nv-td-clip">@item.FileVersion</td>
+                            <td>@item.Version</td>
+                            <td class="nv-td-nowrap">@(item.Compile.Year <= 2000 ? "" : item.Compile.ToFullString())</td>
+                            <td class="nv-td-clip" title="@location">@location</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="nv-card-foot">
+        <a class="nv-link" href="@Url.Action("Main")">返回运维中心</a>
+    </div>
+</div>

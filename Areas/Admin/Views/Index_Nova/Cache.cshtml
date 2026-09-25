@@ -1,0 +1,29 @@
+@using Microsoft.Extensions.Caching.Memory
+@inject IMemoryCache Cache
+@{
+    ViewBag.Title = "缓存";
+    var memory = Cache as MemoryCache;
+}
+<div class="nv-card">
+    <div class="nv-card-head">
+        <div class="nv-card-title">内存缓存</div>
+        <div class="nv-card-sub">@(memory == null ? Cache.GetType().Name : "MemoryCache")</div>
+    </div>
+    <div class="nv-card-body">
+        @if (memory == null)
+        {
+            <div class="nv-ops-empty">当前缓存不是 MemoryCache，条目数不可读。类型：@Cache.GetType().FullName</div>
+        }
+        else
+        {
+            <div class="nv-kpi" style="max-width:220px">
+                <div class="nv-kpi-label">条目数</div>
+                <div class="nv-kpi-value">@memory.Count.ToString("n0")</div>
+                <div class="nv-kpi-sub">IMemoryCache 不公开逐条枚举</div>
+            </div>
+        }
+    </div>
+    <div class="nv-card-foot">
+        <a class="nv-link" href="@Url.Action("Main")">返回运维中心</a>
+    </div>
+</div>

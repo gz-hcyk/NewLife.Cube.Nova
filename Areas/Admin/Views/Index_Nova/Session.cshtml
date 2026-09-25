@@ -1,0 +1,82 @@
+@using Microsoft.AspNetCore.Http.Features
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+    ViewBag.Title = "Session";
+    var session = HttpContextAccessor.HttpContext.Features.Get<ISessionFeature>()?.Session;
+    var session2 = HttpContextAccessor.HttpContext.Items["Session"] as IDictionary<String, Object>;
+}
+<div class="nv-card">
+    <div class="nv-card-head">
+        <div class="nv-card-title">Session</div>
+        <div class="nv-card-sub">@(session == null ? "未启用" : session.Keys.Count() + " 项")</div>
+    </div>
+    <div class="nv-card-body nv-card-flush">
+        @if (session == null)
+        {
+            <div class="nv-ops-empty">当前请求没有 Session。</div>
+        }
+        else
+        {
+            <div class="nv-table-wrap">
+                <table class="nv-table">
+                    <thead>
+                        <tr>
+                            <th>名称</th>
+                            <th>数值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var key in session.Keys)
+                        {
+                            <tr>
+                                <td>@key</td>
+                                <td class="nv-td-pre">@session.GetString(key)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+    @if (session2 == null)
+    {
+        <div class="nv-card-foot">
+            <a class="nv-link" href="@Url.Action("Main")">返回运维中心</a>
+        </div>
+    }
+</div>
+@if (session2 != null)
+{
+    <div class="nv-card">
+        <div class="nv-card-head">
+            <div class="nv-card-title">上下文会话</div>
+            <div class="nv-card-sub">@session2.Count 项</div>
+        </div>
+        <div class="nv-card-body nv-card-flush">
+            <div class="nv-table-wrap">
+                <table class="nv-table">
+                    <thead>
+                        <tr>
+                            <th>名称</th>
+                            <th>类型</th>
+                            <th>数值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in session2)
+                        {
+                            <tr>
+                                <td>@item.Key</td>
+                                <td>@item.Value?.GetType().FullName</td>
+                                <td class="nv-td-pre">@item.Value</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="nv-card-foot">
+            <a class="nv-link" href="@Url.Action("Main")">返回运维中心</a>
+        </div>
+    </div>
+}

@@ -1,4 +1,4 @@
-﻿@model EntityField
+@model EntityField
 @using NewLife;
 @using Microsoft.AspNetCore.Routing
 @using XCode;
@@ -201,10 +201,10 @@ else
                 {
                     if (item.MapProvider != null)
                     {
-                        var name = item.MapProvider.EntityType.Name;
-                        var key = item.MapProvider.Key;
+                        // 与框架原版对齐：经 GetUrl 取值，支持 ListField.Url 覆写映射列链接
+                        var href = listField?.GetUrl(entity, page);
                         val = entity[item.MapField];
-                        <td class="@(tdClass ?? "nv-td-mid")" title="@title"><a href="@name?@key=@val">@value</a></td>
+                        <td class="@(tdClass ?? "nv-td-mid")" title="@title"><a href="@href">@value</a></td>
                     }
                     else
                     {

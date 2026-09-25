@@ -941,6 +941,166 @@
         });
     }
 
+    /* ---------------- 原生单选下拉增强（nv-selectpop） ----------------
+       覆盖 .nv-select 与框架输出的 select.form-control/.form-select：闭合态与 Nova 下拉
+       观感一致，打开态改为自绘面板（原生 popup 无法样式化）。原生 select 保留在组件内
+       （裁剪隐藏），负责表单提交与内联 onchange 自动回发。 */
+    var spBound = false;
+
+    function paintSelectPop(box) {
+        var sel = box.querySelector('select');
+        var val = box.querySelector('.nv-selectpop-value');
+        if (!sel || !val) return;
+        var cur = null;
+        for (var i = 0; i < sel.options.length; i++) if (sel.options[i].selected) { cur = sel.options[i]; break; }
+        if (!cur || cur.value === '') {
+            val.textContent = box.getAttribute('data-placeholder') || '请选择';
+            val.classList.add('is-placeholder');
+        } else {
+            val.textContent = cur.text;
+            val.classList.remove('is-placeholder');
+        }
+        $all('.nv-selectpop-opt', box).forEach(function (el) {
+            el.classList.toggle('is-selected', !!cur && cur.value !== '' && el.getAttribute('data-val') === cur.value);
+        });
+        box.classList.toggle('is-disabled', !!sel.disabled);
+    }
+
+    function closeSelectPop(box) {
+        var pop = box.querySelector('.nv-selectpop-pop');
+        var btn = box.querySelector('.nv-selectpop-btn');
+        if (pop) pop.hidden = true;
+        box.classList.remove('is-open');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+    }
+
+    function openSelectPop(box) {
+        $all('.nv-selectpop.is-open').forEach(function (other) { if (other !== box) closeSelectPop(other); });
+        var pop = box.querySelector('.nv-selectpop-pop');
+        var btn = box.querySelector('.nv-selectpop-btn');
+        if (!pop) return;
+        box.classList.add('is-open');
+        pop.hidden = false;
+        if (btn) btn.setAttribute('aria-expanded', 'true');
+        $all('.nv-selectpop-opt', box).forEach(function (el) { el.classList.remove('is-active'); });
+        var cur = pop.querySelector('.nv-selectpop-opt.is-selected') || pop.querySelector('.nv-selectpop-opt');
+        if (cur) {
+            cur.classList.add('is-active');
+            try { cur.scrollIntoView({ block: 'nearest' }); } catch (e) { }
+        }
+    }
+
+    function chooseSelectPop(box, item) {
+        var sel = box.querySelector('select');
+        if (!sel) return;
+        sel.value = item.getAttribute('data-val');
+        paintSelectPop(box);
+        try { sel.dispatchEvent(new Event('change', { bubbles: true })); } catch (err) { }
+    }
+
+    function spMove(box, dir) {
+        var opts = $all('.nv-selectpop-opt', box).filter(function (o) {
+            return !o.classList.contains('is-disabled');
+        });
+        if (!opts.length) return;
+        var idx = -1;
+        for (var i = 0; i < opts.length; i++) if (opts[i].classList.contains('is-active')) { idx = i; break; }
+        idx = idx < 0 ? (dir > 0 ? 0 : opts.length - 1) : (idx + dir + opts.length) % opts.length;
+        opts.forEach(function (o) { o.classList.remove('is-active'); });
+        opts[idx].classList.add('is-active');
+        try { opts[idx].scrollIntoView({ block: 'nearest' }); } catch (e) { }
+    }
+
+    function buildSelectPop(sel) {
+        if (sel.getAttribute('data-nv-sp') === '1') return;
+        if (sel.multiple || sel.size > 1) return;
+        if (sel.closest('[data-nv-treeselect]')) return;
+        var ctl = sel.parentElement;
+        if (!ctl) return;
+        sel.setAttribute('data-nv-sp', '1');
+        var box = document.createElement('span');
+        box.className = 'nv-selectpop';
+        box.setAttribute('data-nv-selectpop', '');
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'nv-selectpop-btn';
+        btn.setAttribute('aria-haspopup', 'listbox');
+        btn.setAttribute('aria-expanded', 'false');
+        var val = document.createElement('span');
+        val.className = 'nv-selectpop-value';
+        btn.appendChild(val);
+        var ico = document.createElement('i');
+        ico.className = 'nv-ico nv-ico-sm';
+        ico.setAttribute('data-nv-ico', 'chevron_down');
+        btn.appendChild(ico);
+        var pop = document.createElement('div');
+        pop.className = 'nv-selectpop-pop';
+        pop.setAttribute('role', 'listbox');
+        pop.hidden = true;
+        for (var i = 0; i < sel.options.length; i++) {
+            var o = sel.options[i];
+            var it = document.createElement('div');
+            it.className = 'nv-selectpop-opt';
+            it.setAttribute('role', 'option');
+            it.setAttribute('data-val', o.value);
+            it.textContent = o.text;
+            if (o.disabled) it.classList.add('is-disabled');
+            pop.appendChild(it);
+        }
+        box.appendChild(btn);
+        box.appendChild(pop);
+        ctl.insertBefore(box, sel);
+        box.appendChild(sel);
+        sel.classList.add('nv-selectpop-native');
+        paintSelectPop(box);
+    }
+
+    function initSelectPop() {
+        $all('select.nv-select, select.form-control, select.form-select').forEach(buildSelectPop);
+        if (spBound) return;
+        spBound = true;
+        document.addEventListener('click', function (e) {
+            var box = e.target.closest ? e.target.closest('[data-nv-selectpop]') : null;
+            if (!box) {
+                $all('.nv-selectpop.is-open').forEach(closeSelectPop);
+                return;
+            }
+            if (e.target.closest('.nv-selectpop-btn')) {
+                if (box.classList.contains('is-disabled')) return;
+                if (box.classList.contains('is-open')) closeSelectPop(box);
+                else openSelectPop(box);
+                return;
+            }
+            var it = e.target.closest('.nv-selectpop-opt');
+            if (it && box.contains(it) && !it.classList.contains('is-disabled')) {
+                chooseSelectPop(box, it);
+                closeSelectPop(box);
+            }
+        });
+        document.addEventListener('keydown', function (e) {
+            var box = e.target.closest ? e.target.closest('[data-nv-selectpop]') : null;
+            if (!box) return;
+            if (e.key === 'Escape') { closeSelectPop(box); return; }
+            if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Enter' && e.key !== ' ') return;
+            if (!(e.target.closest && e.target.closest('.nv-selectpop-btn'))) return;
+            e.preventDefault();
+            if (!box.classList.contains('is-open')) {
+                openSelectPop(box);
+                spMove(box, e.key === 'ArrowUp' ? -1 : 1);
+                return;
+            }
+            if (e.key === 'ArrowDown') spMove(box, 1);
+            else if (e.key === 'ArrowUp') spMove(box, -1);
+            else if (e.key === 'Enter') {
+                var act = box.querySelector('.nv-selectpop-opt.is-active');
+                if (act && !act.classList.contains('is-disabled')) {
+                    chooseSelectPop(box, act);
+                    closeSelectPop(box);
+                }
+            }
+        });
+    }
+
     function initDatePicker() {
         if (!window.Litepicker) return;
         $all('input[dateformat]').forEach(function (el) {
@@ -977,6 +1137,7 @@
         initCheckAll();
         initTreeTable();
         initTreeSelect();
+        initSelectPop();
     }
 
     migratePrefs();

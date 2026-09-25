@@ -43,3 +43,8 @@ bld/
 Thumbs.db
 .DS_Store
 desktop.ini
+
+# 本地工作参考与验证临时产物
+_ace_ref/
+docs/preview/demo-run*.log
+docs/preview/runtime-*.html

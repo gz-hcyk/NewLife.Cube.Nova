@@ -1,0 +1,70 @@
+@using System.Reflection
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+    ViewBag.Title = "服务器变量";
+    var req = HttpContextAccessor.HttpContext.Request;
+}
+<div class="nv-card">
+    <div class="nv-card-head">
+        <div class="nv-card-title">请求头</div>
+        <div class="nv-card-sub">@req.Headers.Count 项</div>
+    </div>
+    <div class="nv-card-body nv-card-flush">
+        <div class="nv-table-wrap">
+            <table class="nv-table">
+                <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th>数值</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var kv in req.Headers)
+                    {
+                        <tr>
+                            <td class="nv-td-nowrap">@kv.Key</td>
+                            <td class="nv-td-pre">@kv.Value.ToString()</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<div class="nv-card">
+    <div class="nv-card-head">
+        <div class="nv-card-title">请求属性</div>
+        <div class="nv-card-sub">@req.GetType().Name</div>
+    </div>
+    <div class="nv-card-body nv-card-flush">
+        <div class="nv-table-wrap">
+            <table class="nv-table">
+                <thead>
+                    <tr>
+                        <th>名称</th>
+                        <th>数值</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var pi in req.GetType().GetProperties())
+                    {
+                        var type = pi.PropertyType;
+                        if (pi.GetIndexParameters().Length > 0) continue;
+                        if (type != typeof(String) && type != typeof(Uri) && type != typeof(PathString) && type != typeof(HostString)
+                            && !typeof(Boolean).IsAssignableFrom(type) && !typeof(String).IsAssignableFrom(type))
+                        {
+                            continue;
+                        }
+                        <tr>
+                            <td class="nv-td-nowrap">@pi.Name</td>
+                            <td class="nv-td-pre">@(req.GetValue(pi) + "")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="nv-card-foot">
+        <a class="nv-link" href="@Url.Action("Main")">返回运维中心</a>
+    </div>
+</div>

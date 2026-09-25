@@ -1,0 +1,8 @@
+@using NewLife.Cube
+@using XCode
+@{
+    // Nova 空覆写：框架 User 控制器自带 _List_Toolbar_Batch（btn-purple 旧标记），
+    // 这里按主题覆写为空，把批量操作统一收拢到批量操作条（_List_BulkBar.cshtml 的 .nv-bulkbar）。
+    // 同时置默认批量视图标记：_List_BulkBar 据此在实体含 Enable 字段时自动注入批量启用/禁用。
+    Context.Items["IsDefaultBatch"] = true;
+}

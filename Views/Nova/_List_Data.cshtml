@@ -8,8 +8,43 @@
     var fields = ViewBag.Fields as FieldCollection;
     var ukey = fact.Unique;
     var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+
+    // 树形自动判定：列表字段（含映射列）中出现 ParentID 即按树形表格渲染。
+    // ParentID 常被从列表隐藏、仅以 ParentName(MapField=ParentID) 映射列出现，故两种形态都要认。
+    // 父键列取 MapField（映射列指向真实列），无映射时取字段自身名
+    var treeParentField = fields.FirstOrDefault(f => f.Name.EqualIgnoreCase("ParentID") ||
+        (!f.MapField.IsNullOrEmpty() && f.MapField.EqualIgnoreCase("ParentID")));
+    var treeParentColumn = treeParentField == null ? null :
+        (!treeParentField.MapField.IsNullOrEmpty() ? treeParentField.MapField : treeParentField.Name);
+    var isTree = treeParentField != null && ukey != null && Model is IEnumerable<IEntity>;
+
+    // 预计算树形行数据：父指针表、有子节点集合。数据为当前页扁平行，前端按 data-nv-tree-* 属性组树
+    IDictionary<String, String> treeParentOf = null;
+    ISet<String> treeChildIds = null;
+    if (isTree)
+    {
+        treeParentOf = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
+        foreach (IEntity entity in (IEnumerable<IEntity>)Model)
+        {
+            var id = entity[ukey.Name];
+            if (id == null) continue;
+            treeParentOf[id.ToString()] = entity[treeParentColumn]?.ToString();
+        }
+        treeChildIds = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
+        foreach (var kv in treeParentOf)
+        {
+            if (!kv.Value.IsNullOrEmpty()) treeChildIds.Add(kv.Value);
+        }
+    }
 }
-<table class="nv-table">
+@if (isTree)
+{
+    <div class="nv-tree-tools">
+        <button type="button" class="nv-btn nv-btn-sm" data-nv-tree-expand="all">全部展开</button>
+        <button type="button" class="nv-btn nv-btn-sm" data-nv-tree-expand="none">全部折叠</button>
+    </div>
+}
+<table class="nv-table@(isTree ? " nv-tree-table" : "")">
     <thead>
         <tr>
             @if (set.EnableSelect && ukey != null)
@@ -46,7 +81,24 @@
     <tbody>
         @foreach (var entity in Model)
         {
-            <tr class="@(fields.GetRowClass?.Invoke(entity))">
+            // 树形行属性：主键、父键、深度（沿父链向上推算）、是否有子节点；平铺列表输出 null
+            String treeAttrs = null;
+            if (isTree)
+            {
+                var treeId = entity[ukey.Name]?.ToString();
+                var treePid = entity[treeParentColumn]?.ToString();
+                var treeDepth = 0;
+                var seen = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
+                var p = treePid;
+                while (!p.IsNullOrEmpty() && treeParentOf.ContainsKey(p) && seen.Add(p) && treeDepth < 64)
+                {
+                    treeDepth++;
+                    p = treeParentOf[p];
+                }
+                var treeBranch = !treeId.IsNullOrEmpty() && treeChildIds.Contains(treeId) ? 1 : 0;
+                treeAttrs = $"data-nv-tree-id=\"{treeId}\" data-nv-tree-parent=\"{treePid}\" data-nv-tree-depth=\"{treeDepth}\" data-nv-tree-branch=\"{treeBranch}\"";
+            }
+            <tr class="@(fields.GetRowClass?.Invoke(entity))" @Html.Raw(treeAttrs)>
                 @if (set.EnableSelect && ukey != null)
                 {
                     <td class="nv-td-sticky nv-td-mid"><input type="checkbox" name="keys" value="@entity[ukey.Name]" /></td>

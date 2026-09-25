@@ -1,183 +1,472 @@
 @{
-    ViewBag.Title = "服务器信息";
+    ViewBag.Title = "运维中心";
 }
-@using System.Diagnostics;
-@using System.Collections;
-@using System.Reflection;
-@using System.Runtime;
-@using System.Runtime.Versioning;
-@using Microsoft.AspNetCore.Hosting;
-@using Microsoft.AspNetCore.Http.Extensions;
-@using Microsoft.AspNetCore.Http.Features;
-@using NewLife.Caching;
-@using NewLife.Common;
-@using NewLife.Cube;
+@using System.Diagnostics
+@using System.Reflection
+@using System.Runtime
+@using System.Runtime.Versioning
+@using Microsoft.AspNetCore.Hosting
+@using Microsoft.AspNetCore.Http.Features
+@using NewLife.Cube.Entity
+@using NewLife.Common
+@using NewLife.Data
+@using XCode.DataAccessLayer
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
 @inject IWebHostEnvironment Env
 @{
-    var asm = Assembly.GetExecutingAssembly();
-    var att = asm.GetCustomAttribute<TargetFrameworkAttribute>();
-    var ver = att?.FrameworkDisplayName ?? att?.FrameworkName;
     var httpContext = HttpContextAccessor.HttpContext;
     var req = httpContext.Request;
     var conn = httpContext.Connection;
+    var cfg = SysConfig.Current;
+    var set = CubeSetting.Current;
+    var mi = MachineInfo.Current ?? new MachineInfo();
+    var process = Process.GetCurrentProcess();
+    var asm = Assembly.GetExecutingAssembly();
+    var fx = asm.GetCustomAttribute<TargetFrameworkAttribute>();
+    var fxName = fx?.FrameworkDisplayName ?? fx?.FrameworkName;
+    var me = ManageProvider.User;
 
-    // 重启权限在Index，而不是Main
+    // 重启、释放内存挂在 Index 上，当前页是 Main
     var menu = ViewBag.Menu as IMenu;
     menu = menu?.Parent.Childs.FirstOrDefault(e => e.Name == "Index");
-    var mi = MachineInfo.Current ?? new MachineInfo();
+    var canRestart = this.Has(menu, (PermissionFlags)16);
+    var canFree = this.Has(menu, (PermissionFlags)32);
 
-    // GC设置
-    var gc = $"IsServerGC={GCSettings.IsServerGC},LatencyMode={GCSettings.LatencyMode}";
+    var addrLocal = conn.LocalIpAddress;
+    var addrRemote = conn.RemoteIpAddress;
+    if (addrLocal != null && addrLocal.IsIPv4MappedToIPv6) addrLocal = addrLocal.MapToIPv4();
+    if (addrRemote != null && addrRemote.IsIPv4MappedToIPv6) addrRemote = addrRemote.MapToIPv4();
+    var userHost = httpContext.GetUserHost();
+
+    var boot = TimeSpan.FromMilliseconds(Environment.TickCount64);
+    var memTotal = mi.Memory;
+    var memAvail = mi.AvailableMemory;
+    var memUsed = memTotal > memAvail ? memTotal - memAvail : 0;
+    var memPct = memTotal > 0 ? (Double)memUsed / memTotal : 0;
+    var cpuPct = mi.CpuRate < 0 ? 0 : mi.CpuRate;
+    var gcMb = GC.GetTotalMemory(false) / 1024d / 1024d;
+    var wsMb = process.WorkingSet64 / 1024d / 1024d;
+
+    long CountOf(Func<Object> read)
+    {
+        try { return Convert.ToInt64(read()); }
+        catch { return -1; }
+    }
+    String Num(Int64 n) => n < 0 ? "—" : n.ToString("n0");
+    String SpanText(TimeSpan ts)
+    {
+        if (ts.TotalDays >= 1) return $"{(Int32)ts.TotalDays}天 {ts.Hours}小时";
+        if (ts.TotalHours >= 1) return $"{(Int32)ts.TotalHours}小时 {ts.Minutes}分";
+        return $"{Math.Max(0, ts.Minutes)}分 {Math.Max(0, ts.Seconds)}秒";
+    }
+    String Tone(Double rate) => rate >= 0.85 ? "is-danger" : rate >= 0.70 ? "is-warn" : "";
+    String Href(String url)
+    {
+        if (url.IsNullOrEmpty()) return null;
+        return url.StartsWith("~/") ? Url.Content(url) : url;
+    }
+    String MenuUrl(String name)
+    {
+        try { return Href(Menu.FindByName(name)?.Url); }
+        catch { return null; }
+    }
+
+    var today = DateTime.Today;
+    var userTotal = CountOf(() => XCode.Membership.User.FindCount());
+    var userEnabled = CountOf(() => XCode.Membership.User.FindCount(XCode.Membership.User._.Enable == true));
+    var userOnline = CountOf(() => XCode.Membership.User.FindCount(XCode.Membership.User._.Online == true));
+    var roleTotal = CountOf(() => Role.FindCount());
+    var roleEnabled = CountOf(() => Role.FindCount(Role._.Enable == true));
+    var deptTotal = CountOf(() => Department.FindCount());
+    var menuTotal = CountOf(() => Menu.FindCount());
+    var menuVisible = CountOf(() => Menu.FindCount(Menu._.Visible == true));
+    var tenantTotal = set.EnableTenant ? CountOf(() => Tenant.FindCount(Tenant._.Enable == true)) : -1;
+    var paramTotal = CountOf(() => Parameter.FindCount());
+    var oauthTotal = CountOf(() => OAuthConfig.FindCount(OAuthConfig._.Enable == true));
+    var sessionRows = set.EnableUserOnline > 0 ? CountOf(() => UserOnline.FindCount()) : -1;
+    var logToday = CountOf(() => Log.FindCount(Log._.CreateTime >= today));
+    var logFail = CountOf(() => Log.FindCount(Log._.Success == false & Log._.CreateTime >= today));
+
+    var shortcuts = new List<(String Title, String Url, String Icon)>();
+    foreach (var name in new[] { "User", "Role", "Department", "Menu", "Log", "Tenant", "Db", "File", "Parameter", "OAuthConfig", "UserOnline", "AppLog" })
+    {
+        try
+        {
+            var item = Menu.FindByName(name);
+            var href = MenuUrl(name);
+            if (item == null || href.IsNullOrEmpty() || !item.Visible) continue;
+            var icon = name switch
+            {
+                "User" or "UserOnline" => "users",
+                "Role" => "shield",
+                "Department" or "Tenant" => "building",
+                "Menu" => "list",
+                "Log" or "AppLog" => "activity",
+                "Db" => "grid",
+                "File" => "folder",
+                "OAuthConfig" => "key",
+                _ => "settings",
+            };
+            shortcuts.Add((item.DisplayName.IsNullOrEmpty() ? item.Name : item.DisplayName, href, icon));
+        }
+        catch { }
+    }
+
+    var dbs = new List<(String Name, String Type, String Database)>();
+    try
+    {
+        foreach (var name in DAL.ConnStrs.Keys.OrderBy(e => e))
+        {
+            try
+            {
+                var dal = DAL.Create(name);
+                dbs.Add((name, dal.DbType + "", dal.Db?.DatabaseName));
+            }
+            catch
+            {
+                dbs.Add((name, "不可用", null));
+            }
+        }
+    }
+    catch { }
+
+    IList<Log> recent = [];
+    try
+    {
+        var page = new PageParameter { PageSize = 8, Sort = "ID", Desc = true, RetrieveTotalCount = false };
+        recent = Log.Search(null, null, 0, null, today.AddDays(-2), DateTime.MinValue, null, page);
+    }
+    catch { }
+
+    var myAsms = ViewBag.MyAsms as IEnumerable<AssemblyX> ?? [];
+    var dbMenu = MenuUrl("Db");
 }
-<div class="nv-card">
-    <div class="nv-card-head">
-        <div class="nv-card-title">服务器信息</div>
-    </div>
-    <div class="nv-card-body">
-        <div style="overflow-x:auto">
-            <table class="nv-table">
-                <thead>
-                    <tr>
-                        <th colspan="4">服务器信息</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="nv-td-label">应用系统</td>
-                        <td>
-                            &nbsp;
-                            @if (this.Has(menu, (PermissionFlags)16))
-                            {
-                                <a class="nv-link" data-action="action" data-href="@Url.Action("Restart")" data-confirm="仅重启本应用进程，而不是操作系统！<br/>确认重启？">重启应用系统</a>
-                            }
-                            &nbsp;&nbsp;&nbsp;&nbsp;@req.GetRawUrl()
-                        </td>
-                        <td class="nv-td-label">目录</td>
-                        <td>@Env.ContentRootPath</td>
-                    </tr>
-                    <tr>
-                        <td class="nv-td-label">域名地址</td>
-                        <td>
-                            @{
-                                var addrLocal = conn.LocalIpAddress;
-                                var addrRemote = conn.RemoteIpAddress;
-                                if (addrLocal != null && addrLocal.IsIPv4MappedToIPv6) addrLocal = addrLocal.MapToIPv4();
-                                if (addrRemote != null && addrRemote.IsIPv4MappedToIPv6) addrRemote = addrRemote.MapToIPv4();
-                                var userHost = httpContext.GetUserHost();
-                            }
-                            <span title="主机">@req.Headers["Host"]</span>，
-                            <span title="本地">@addrLocal:@conn.LocalPort</span>
-                            &nbsp;<span title="远程">[@addrRemote:@conn.RemotePort]</span>
-                            @if (addrRemote + "" != userHost)
-                            {
-                                <span title="真实">&nbsp;[@httpContext.GetUserHost()]</span>
-                            }
-                        </td>
-                        <td class="nv-td-label">应用程序</td>
-                        <td><span title="@Environment.CommandLine">@Process.GetCurrentProcess().ProcessName</span></td>
-                    </tr>
-                    <tr>
-                        <td class="nv-td-label">应用域</td>
-                        <td>
-                            @AppDomain.CurrentDomain.FriendlyName
-                            <a class="nv-link" href="@Url.Action("Main", new{ id = "Assembly" })" target="_blank" title="点击打开进程程序集列表">程序集列表</a>
-                            <a class="nv-link" href="@Url.Action("Main", new{ id = "ProcessModules" })" target="_blank" title="点击打开进程模块列表">模块列表</a>
-                            <a class="nv-link" href="@Url.Action("Main", new{ id = "ServerVar" })" target="_blank" title="点击打开服务器变量列表">服务器变量列表</a>
-                        </td>
-                        <td class="nv-td-label">.Net 版本</td>
-                        <td>@Environment.Version &nbsp;@ver</td>
-                    </tr>
-                    <tr>
-                        <td class="nv-td-label">操作系统</td>
-                        <td title="@mi.Guid">@mi.OSName @mi.OSVersion</td>
-                        <td class="nv-td-label">机器用户</td>
-                        <td>
-                            @if (!mi.Product.IsNullOrEmpty())
-                            {
-                                <span>@mi.Product，</span>
-                            }
-                            @Environment.UserName/@Environment.MachineName
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="nv-td-label">处理器</td>
-                        <td>
-                            @mi.Processor，
-                            @Environment.ProcessorCount 核心，@mi.CpuRate.ToString("p0")
-                            @if (mi.Temperature > 0)
-                            {
-                                <span>，@mi.Temperature ℃</span>
-                            }
-                        </td>
-                        <td class="nv-td-label">时间</td>
-                        @{
-                            var uptime = TimeSpan.FromMilliseconds(Environment.TickCount64);
-                        }
-                        <td title="这里使用了服务器默认的时间格式！后面是开机时间。">@DateTimeOffset.Now，开机@(uptime.ToString(@"dd\.hh\:mm\:ss"))</td>
-                    </tr>
-                    <tr>
-                        @{
-                            var process = Process.GetCurrentProcess();
-                        }
-                        <td class="nv-td-label">内存</td>
-                        <td>
-                            物理：@((mi.AvailableMemory / 1024 / 1024).ToString("n0"))M / @((mi.Memory / 1024 / 1024).ToString("n0"))M，
-                            工作/提交: @((process.WorkingSet64 / 1024 / 1024).ToString("n0"))M/@((process.PrivateMemorySize64 / 1024 / 1024).ToString("n0"))M
-                            GC: @((GC.GetTotalMemory(false) / 1024 / 1024).ToString("n0"))M
-                            @if (this.Has(menu, (PermissionFlags)32))
-                            {
-                                <a class="nv-link" href="@Url.Action("MemoryFree")" title="点击释放进程内存">释放内存</a>
-                            }
-                        </td>
-                        <td class="nv-td-label">进程时间</td>
-                        <td>@process.TotalProcessorTime.TotalSeconds.ToString("N2")秒 启动于 @process.StartTime.ToLocalTime().ToFullString()</td>
-                    </tr>
-                    <tr>
-                        <td class="nv-td-label">Session</td>
-                        <td>
-                            @(httpContext.Features.Get<ISessionFeature>()?.Session.Keys.Count() ?? 0) 个
-                            <a class="nv-link" href="@Url.Action("Main", new{ id = "Session" })" target="_blank" title="点击打开Session列表">Session列表</a>
-                            ，@gc
-                        </td>
-                        <td class="nv-td-label">
-                            @{
-                                var startTime = DateTime.Now.AddMilliseconds(-Environment.TickCount64);
-                            }
-                            应用启动
-                        </td>
-                        <td>启动于 @startTime.ToLocalTime().ToFullString()</td>
-                    </tr>
-                </tbody>
-            </table>
+<div class="nv-ops">
+    <header class="nv-ops-head">
+        <div>
+            <div class="nv-ops-title">运维中心</div>
+            <div class="nv-ops-sub">
+                @(cfg.DisplayName.IsNullOrEmpty() ? cfg.Name : cfg.DisplayName)
+                @if (!cfg.Version.IsNullOrEmpty())
+                {
+                    <span> · @cfg.Version</span>
+                }
+                @if (!cfg.Company.IsNullOrEmpty())
+                {
+                    <span> · @cfg.Company</span>
+                }
+                @if (me != null)
+                {
+                    <span> · @me</span>
+                }
+            </div>
+            <div class="nv-ops-tags">
+                <span class="nv-badge @(cfg.Develop ? "nv-badge-warning" : "nv-badge-success")">@(cfg.Develop ? "开发模式" : "运行模式")</span>
+                @if (set.Debug)
+                {
+                    <span class="nv-badge nv-badge-warning">调试</span>
+                }
+                <span class="nv-badge @(set.AllowLogin ? "nv-badge-success" : "nv-badge-danger")">@(set.AllowLogin ? "允许登录" : "禁止登录")</span>
+                @if (set.EnableTenant)
+                {
+                    <span class="nv-badge nv-badge-primary">多租户</span>
+                }
+                <span class="nv-badge nv-badge-default">会话 @set.SessionTimeout 分钟</span>
+                @if (set.DataRetention > 0)
+                {
+                    <span class="nv-badge nv-badge-default">日志保留 @set.DataRetention 天</span>
+                }
+            </div>
         </div>
-        <div style="height:var(--nv-sp-4)"></div>
-        <div style="overflow-x:auto">
-            <table class="nv-table">
-                <thead>
-                    <tr>
-                        <th>名称</th>
-                        <th>标题</th>
-                        <th>文件版本</th>
-                        <th>内部版本</th>
-                        <th>编译时间</th>
-                        <th>描述</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (AssemblyX item in ViewBag.MyAsms)
+        <div class="nv-ops-actions">
+            @if (canRestart)
+            {
+                <a class="nv-btn nv-btn-danger nv-btn-sm" href="@Url.Action("Restart")" data-nv-restart data-confirm="仅重启本应用进程，而不是操作系统。确认重启？">
+                    <i class="nv-ico nv-ico-sm" data-nv-ico="refresh"></i>重启应用
+                </a>
+            }
+            @if (canFree)
+            {
+                <a class="nv-btn nv-btn-sm" href="@Url.Action("MemoryFree")">
+                    <i class="nv-ico nv-ico-sm" data-nv-ico="zap"></i>释放内存
+                </a>
+            }
+        </div>
+    </header>
+
+    <div class="nv-ops-kpis">
+        @{
+            var kpis = new List<(String Label, String Value, String Sub, String Url, String Tone)>
+            {
+                ("用户", Num(userTotal), userEnabled < 0 ? null : $"启用 {Num(userEnabled)}", MenuUrl("User"), ""),
+                ("在线", Num(userOnline), sessionRows < 0 ? "账号在线标记" : $"在线会话 {Num(sessionRows)}", MenuUrl("UserOnline") ?? MenuUrl("User"), ""),
+                ("角色", Num(roleTotal), roleEnabled < 0 ? null : $"启用 {Num(roleEnabled)}", MenuUrl("Role"), ""),
+                ("部门", Num(deptTotal), null, MenuUrl("Department"), ""),
+                ("菜单", Num(menuTotal), menuVisible < 0 ? null : $"可见 {Num(menuVisible)}", MenuUrl("Menu"), ""),
+                (set.EnableTenant ? "租户" : "参数", set.EnableTenant ? Num(tenantTotal) : Num(paramTotal), set.EnableTenant ? "启用" : "字典参数", MenuUrl(set.EnableTenant ? "Tenant" : "Parameter"), ""),
+                ("今日日志", Num(logToday), "审计", MenuUrl("Log"), ""),
+                ("今日失败", Num(logFail), logFail > 0 ? "需要查看" : "无失败", MenuUrl("Log"), logFail > 0 ? "is-danger" : ""),
+            };
+        }
+        @foreach (var kpi in kpis)
+        {
+            if (kpi.Url.IsNullOrEmpty())
+            {
+                <div class="nv-kpi @kpi.Tone">
+                    <div class="nv-kpi-label">@kpi.Label</div>
+                    <div class="nv-kpi-value">@kpi.Value</div>
+                    @if (!kpi.Sub.IsNullOrEmpty())
                     {
-                        <tr>
-                            <td>@item.Name</td>
-                            <td style="max-width:240px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">@item.Title</td>
-                            <td style="max-width:160px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">@item.FileVersion</td>
-                            <td>@item.Version</td>
-                            <td title="@item.Version">@(item.Compile.Year <= 2000 ? "" : item.Compile.ToFullString())</td>
-                            <td style="max-width:600px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;" title="@item.Description">@item.Description</td>
-                        </tr>
+                        <div class="nv-kpi-sub">@kpi.Sub</div>
                     }
-                </tbody>
-            </table>
-        </div>
+                </div>
+            }
+            else
+            {
+                <a class="nv-kpi @kpi.Tone" href="@kpi.Url">
+                    <div class="nv-kpi-label">@kpi.Label</div>
+                    <div class="nv-kpi-value">@kpi.Value</div>
+                    @if (!kpi.Sub.IsNullOrEmpty())
+                    {
+                        <div class="nv-kpi-sub">@kpi.Sub</div>
+                    }
+                </a>
+            }
+        }
     </div>
+
+    <div class="nv-ops-split">
+        <section class="nv-card">
+            <div class="nv-card-head">
+                <div class="nv-card-title"><i class="nv-ico nv-ico-sm" data-nv-ico="cpu"></i>运行状态</div>
+                <div class="nv-card-sub">@DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss")</div>
+            </div>
+            <div class="nv-card-body">
+                <div class="nv-meter-row">
+                    <div class="nv-meter-label"><span>处理器</span><b>@cpuPct.ToString("p0")</b></div>
+                    <div class="nv-meter @Tone(cpuPct)"><span style="width:@((Int32)Math.Min(100, cpuPct * 100))%"></span></div>
+                    <div class="nv-meter-sub">@mi.Processor · @Environment.ProcessorCount 核@(mi.Temperature > 0 ? $" · {mi.Temperature:0.#} ℃" : "")</div>
+                </div>
+                <div class="nv-meter-row">
+                    <div class="nv-meter-label"><span>物理内存</span><b>@memPct.ToString("p0")</b></div>
+                    <div class="nv-meter @Tone(memPct)"><span style="width:@((Int32)Math.Min(100, memPct * 100))%"></span></div>
+                    <div class="nv-meter-sub">可用 @((memAvail / 1024 / 1024).ToString("n0")) MB / 共 @((memTotal / 1024 / 1024).ToString("n0")) MB</div>
+                </div>
+                <dl class="nv-ops-facts">
+                    <dt>进程</dt>
+                    <dd>@process.ProcessName · PID @process.Id · 工作集 @wsMb.ToString("n0") MB · GC @gcMb.ToString("n0") MB</dd>
+                    <dt>启动</dt>
+                    <dd>进程 @process.StartTime.ToLocalTime().ToFullString() · 已运行 @SpanText(DateTime.Now - process.StartTime) · CPU @process.TotalProcessorTime.TotalSeconds.ToString("n1") 秒</dd>
+                    <dt>开机</dt>
+                    <dd>@SpanText(boot)</dd>
+                    <dt>系统</dt>
+                    <dd title="@mi.Guid">@mi.OSName @mi.OSVersion · @Environment.UserName / @Environment.MachineName@(mi.Product.IsNullOrEmpty() ? "" : " · " + mi.Product)</dd>
+                    <dt>运行时</dt>
+                    <dd>@Environment.Version · @fxName · @(GCSettings.IsServerGC ? "Server GC" : "Workstation GC") · @GCSettings.LatencyMode</dd>
+                    <dt>地址</dt>
+                    <dd>
+                        <span title="主机">@req.Headers["Host"]</span>
+                        · <span title="本地">@addrLocal:@conn.LocalPort</span>
+                        · <span title="远程">@addrRemote:@conn.RemotePort</span>
+                        @if (addrRemote + "" != userHost)
+                        {
+                            <span title="真实"> · @userHost</span>
+                        }
+                    </dd>
+                    <dt>目录</dt>
+                    <dd title="@Environment.CommandLine">@Env.ContentRootPath</dd>
+                    <dt>应用域</dt>
+                    <dd>
+                        @AppDomain.CurrentDomain.FriendlyName
+                        <a class="nv-link" href="@Url.Action("Main", new { id = "Assembly" })">程序集</a>
+                        <a class="nv-link" href="@Url.Action("Main", new { id = "ProcessModules" })">模块</a>
+                        <a class="nv-link" href="@Url.Action("Main", new { id = "ServerVar" })">服务器变量</a>
+                        <a class="nv-link" href="@Url.Action("Main", new { id = "Session" })">Session</a>
+                        <a class="nv-link" href="@Url.Action("Main", new { id = "Cache" })">缓存</a>
+                    </dd>
+                </dl>
+            </div>
+        </section>
+
+        <section class="nv-card">
+            <div class="nv-card-head">
+                <div class="nv-card-title"><i class="nv-ico nv-ico-sm" data-nv-ico="grid"></i>基础数据</div>
+                <div class="nv-card-sub">来自魔方菜单</div>
+            </div>
+            <div class="nv-card-body">
+                @if (shortcuts.Count == 0)
+                {
+                    <div class="nv-ops-empty">当前账号没有可进入的基础数据菜单。</div>
+                }
+                else
+                {
+                    <div class="nv-ops-links">
+                        @foreach (var item in shortcuts)
+                        {
+                            <a class="nv-ops-link" href="@item.Url">
+                                <i class="nv-ico nv-ico-sm" data-nv-ico="@item.Icon"></i>
+                                <span>@item.Title</span>
+                            </a>
+                        }
+                    </div>
+                }
+                <dl class="nv-ops-facts nv-ops-facts-tight">
+                    <dt>登录</dt>
+                    <dd>@(set.AllowRegister ? "允许注册" : "关闭注册") · 连续失败 @set.MaxLoginError 次锁定</dd>
+                    <dt>安全</dt>
+                    <dd>@(set.EnablePasswordComplexity ? "密码复杂度已开启" : "未强制密码复杂度") · @(set.EnableMfa ? "已开 MFA" : "未开 MFA")</dd>
+                    <dt>接入</dt>
+                    <dd>启用的 OAuth @Num(oauthTotal) · 参数 @Num(paramTotal)</dd>
+                    <dt>安装</dt>
+                    <dd>@(cfg.InstallTime.Year > 2000 ? cfg.InstallTime.ToFullString() : "—") · 实例 @cfg.Instance</dd>
+                </dl>
+            </div>
+        </section>
+    </div>
+
+    <section class="nv-card">
+        <div class="nv-card-head">
+            <div class="nv-card-title"><i class="nv-ico nv-ico-sm" data-nv-ico="grid"></i>数据库</div>
+            <div class="nv-card-sub">查询 @DAL.QueryTimes.ToString("n0") · 执行 @DAL.ExecuteTimes.ToString("n0")</div>
+        </div>
+        <div class="nv-card-body nv-card-flush">
+            @if (dbs.Count == 0)
+            {
+                <div class="nv-ops-empty">没有已注册的数据库连接。</div>
+            }
+            else
+            {
+                <div class="nv-table-wrap">
+                    <table class="nv-table">
+                        <thead>
+                            <tr>
+                                <th>连接名</th>
+                                <th>类型</th>
+                                <th>数据库</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var db in dbs)
+                            {
+                                <tr>
+                                    <td>
+                                        @if (dbMenu.IsNullOrEmpty())
+                                        {
+                                            @db.Name
+                                        }
+                                        else
+                                        {
+                                            <a class="nv-link" href="@dbMenu">@db.Name</a>
+                                        }
+                                    </td>
+                                    <td>@db.Type</td>
+                                    <td>@db.Database</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="nv-card">
+        <div class="nv-card-head">
+            <div class="nv-card-title"><i class="nv-ico nv-ico-sm" data-nv-ico="activity"></i>最近审计</div>
+            <div class="nv-card-sub">近两日</div>
+        </div>
+        <div class="nv-card-body nv-card-flush">
+            @if (recent.Count == 0)
+            {
+                <div class="nv-ops-empty">这两天没有审计记录。</div>
+            }
+            else
+            {
+                <div class="nv-table-wrap">
+                    <table class="nv-table">
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>用户</th>
+                                <th>分类</th>
+                                <th>操作</th>
+                                <th>结果</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var log in recent)
+                            {
+                                <tr>
+                                    <td class="nv-td-nowrap">@log.CreateTime.ToFullString()</td>
+                                    <td>@(log.UserName.IsNullOrEmpty() ? log.CreateUser : log.UserName)</td>
+                                    <td>@log.Category</td>
+                                    <td>@log.Action</td>
+                                    <td>
+                                        <span class="nv-badge @(log.Success ? "nv-badge-success" : "nv-badge-danger")">@(log.Success ? "成功" : "失败")</span>
+                                    </td>
+                                    <td class="nv-td-clip" title="@log.Remark">@log.Remark</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="nv-card">
+        <div class="nv-card-head">
+            <div class="nv-card-title"><i class="nv-ico nv-ico-sm" data-nv-ico="folder"></i>本目录组件</div>
+            <a class="nv-link" href="@Url.Action("Main", new { id = "Assembly" })">全部程序集</a>
+        </div>
+        <div class="nv-card-body nv-card-flush">
+            <div class="nv-table-wrap">
+                <table class="nv-table">
+                    <thead>
+                        <tr>
+                            <th>名称</th>
+                            <th>标题</th>
+                            <th>文件版本</th>
+                            <th>内部版本</th>
+                            <th>编译时间</th>
+                            <th>描述</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in myAsms)
+                        {
+                            <tr>
+                                <td>@item.Name</td>
+                                <td class="nv-td-clip">@item.Title</td>
+                                <td class="nv-td-clip">@item.FileVersion</td>
+                                <td>@item.Version</td>
+                                <td class="nv-td-nowrap">@(item.Compile.Year <= 2000 ? "" : item.Compile.ToFullString())</td>
+                                <td class="nv-td-clip" title="@item.Description">@item.Description</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
 </div>
+<script>
+    document.addEventListener('click', function (e) {
+        var link = e.target.closest('[data-nv-restart]');
+        if (!link) return;
+        e.preventDefault();
+        var msg = link.getAttribute('data-confirm') || '确认重启？';
+        if (!window.confirm(msg)) return;
+        fetch(link.getAttribute('href'), { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' })
+            .then(function (r) { return r.json(); })
+            .then(function (rs) {
+                var text = (rs && (rs.message || rs.data)) || '已提交重启';
+                if (window.nv && window.nv.toast) window.nv.toast(text, 'info');
+                else window.alert(text);
+            })
+            .catch(function () {
+                if (window.nv && window.nv.toast) window.nv.toast('重启请求已发出，进程正在退出', 'info');
+            });
+    });
+</script>

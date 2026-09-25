@@ -1600,7 +1600,15 @@ body.nv .col-xs-12, body.nv .col-sm-12, body.nv .col-md-12, body.nv .col-lg-12, 
 body.nv .form-horizontal .form-group {
  display: flex; flex-wrap: wrap; gap: .5rem; align-items: flex-start; }
 body.nv .form-actions {
- display: flex; gap: var(--nv-sp-2); flex-wrap: wrap; padding-top: var(--nv-sp-2); }
+ display:flex; gap:var(--nv-sp-2); flex-wrap:wrap; padding:var(--nv-sp-3) 0 0; margin-top:var(--nv-sp-3);
+ position:sticky; bottom:0; background:var(--nv-bg); border-top:1px solid var(--nv-border); }
+/* 保存 = 页面唯一主行动：原型确认表单页保存按钮用主色，不随 success 语义变绿 */
+body.nv .form-actions .btn-success {
+ background-color:var(--nv-primary); border-color:var(--nv-primary); color:#fff; }
+body.nv .form-actions .btn-success:hover, body.nv .form-actions .btn-success:focus {
+ background-color:var(--nv-primary-hover); border-color:var(--nv-primary-hover); }
+body.nv .form-actions .btn-success:active {
+ background-color:var(--nv-primary-active); border-color:var(--nv-primary-active); }
 body.nv .control-label, body.nv .form-control-static {
 
     display: block;

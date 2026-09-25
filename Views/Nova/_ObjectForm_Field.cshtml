@@ -26,7 +26,7 @@
         }
         else
         {
-            @await Html.PartialAsync("_Form_Editor", new ItemModel(name, val, pi.Type))
+            @await Html.PartialAsync("_Form_Editor", new ItemModel(name, val, pi.Type) { ItemType = pi.ItemType })
         }
     </div>
     @if (err > 0)
