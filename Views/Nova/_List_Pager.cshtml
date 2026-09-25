@@ -4,6 +4,13 @@
     var pager = ViewBag.Page as Pager;
     var act = Context.Request.Path + "";
     if (act.IsNullOrEmpty()) { act = Url.Action("Index"); }
+
+    // GetPage() 输出裸 <a href>...</a>（可用）或纯文字（禁用），统一接入 .nv-page 按钮体系
+    string PageBtn(string html)
+    {
+        if (html.Contains("<a")) return html.Replace("<a ", "<a class=\"nv-page\" ");
+        return $"<span class=\"nv-page is-disabled\">{html}</span>";
+    }
 }
 @if (pager != null && pager.TotalCount > 0)
 {
@@ -28,10 +35,10 @@
         <div class="nv-pager-nums">
             <form action="@act?@pager.GetBaseUrl(true, true, false)" method="post" role="form" class="nv-pager-form">
                 <div class="nv-pages">
-                    @Html.Raw(pager.GetPage("首页"))
-                    @Html.Raw(pager.GetPage("上一页"))
-                    @Html.Raw(pager.GetPage("下一页"))
-                    @Html.Raw(pager.GetPage("尾页"))
+                    @Html.Raw(PageBtn(pager.GetPage("首页")))
+                    @Html.Raw(PageBtn(pager.GetPage("上一页")))
+                    @Html.Raw(PageBtn(pager.GetPage("下一页")))
+                    @Html.Raw(PageBtn(pager.GetPage("尾页")))
                 </div>
                 <span class="nv-pager-jump">
                     跳至 <input class="nv-input" name="PageIndex" type="text" value="@pager.PageIndex" aria-label="跳转到第几页" /> 页
