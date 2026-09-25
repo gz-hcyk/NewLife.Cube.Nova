@@ -440,9 +440,12 @@ body.nv [data-bs-theme="dark"] .nv-header {
  box-shadow:none; cursor:not-allowed; }
 .nv-btn-primary {
  background:var(--nv-grad-primary); border-color:transparent; color:var(--nv-on-primary); box-shadow:var(--nv-sh-primary); }
-/* 实心按钮若以 <a> 输出（如工具栏「添加」），显式钉死白字，防宿主侧 a 链接色渗漏 */
-a.nv-btn-primary, a.nv-btn-success, a.nv-btn-danger {
+/* 按钮若以 <a> 输出（如工具栏「添加」），显式钉死文字色，防宿主侧 body.nv a 链接色渗漏。
+   注意特异性必须高于 body.nv a（0,1,2）：之前 a.nv-btn-primary（0,1,1）压不住，蓝字贴蓝底看不见。 */
+body.nv a.nv-btn { color:var(--nv-text); text-decoration:none; }
+body.nv a.nv-btn-primary, body.nv a.nv-btn-success, body.nv a.nv-btn-danger {
  color:#fff; text-decoration:none; }
+body.nv a.nv-btn:hover { text-decoration:none; }
 .nv-btn-primary:hover:not(:disabled) {
  background:var(--nv-grad-primary-hover); border-color:transparent; color:var(--nv-on-primary); box-shadow:var(--nv-sh-primary); }
 .nv-btn-primary:active:not(:disabled) {

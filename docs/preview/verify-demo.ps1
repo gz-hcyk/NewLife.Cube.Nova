@@ -48,6 +48,7 @@ function Check($name, $cond) {
 $css = (Invoke-WebRequest -Uri ($base + '/Content/nova/nova-ui.css') -UseBasicParsing -TimeoutSec 15).Content
 Check 'css-served' ($css -match 'nv-primary')
 Check 'css-v3-solid-primary' ($css -match '--nv-grad-primary:#1e5cae')
+Check 'css-anchor-btn-guard' ($css -match 'body\.nv a\.nv-btn-primary')
 
 # 2. login page
 $login = Invoke-WebRequest -Uri ($base + '/Admin/User/Login') -UseBasicParsing -TimeoutSec 20 -SessionVariable s
@@ -75,6 +76,7 @@ Check 'list-bulk-enable-in-bar' ($bulkBlock -match 'EnableSelect')
 Check 'list-bulk-delete-in-bar' ($bulkBlock -match 'DeleteSelect')
 Check 'list-legacy-purple-gone' ($idx.Content -notmatch 'btn-purple')
 Check 'list-pager' ($idx.Content -match 'nv-pager')
+Check 'list-add-anchor-btn' ($idx.Content -match '<a[^>]*nv-btn-primary')
 $htmlList = $idx.Content -replace '(?i)<head>', ('<head><base href="' + $base + '/">')
 $htmlList | Out-File -FilePath ($out + '\runtime-list.html') -Encoding utf8
 
@@ -99,6 +101,7 @@ try {
     Check 'shell-header' ($shell.Content -match 'nv-topbar|nv-header')
     Check 'shell-iframe' ($shell.Content -match '<iframe')
     Check 'shell-topsearch' ($shell.Content -match 'nvMenuSearch')
+    Check 'shell-crumb-strong' ($shell.Content -match '<strong id="crumbTail">')
     # inline iframe content (headless Edge has no auth cookie, iframe would show login page)
     $main = Invoke-WebRequest -Uri ($base + '/Admin/Index/Dashboard') -UseBasicParsing -TimeoutSec 30 -WebSession $s
     $m = [regex]::Match($main.Content, '(?s)<body[^>]*>(.*)</body>')
