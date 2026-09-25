@@ -127,11 +127,23 @@ try {
 Copy-Item ($out + '\runtime-shell.html') ($pvDir + '\shell.html') -Force
 Copy-Item ($out + '\runtime-list.html') ($pvDir + '\list.html') -Force
 Copy-Item ($out + '\runtime-form.html') ($pvDir + '\form.html') -Force
+# open the first multi/single dropdown on load so the screenshot shows the pop panels
+$formPv = Get-Content ($pvDir + '\form.html') -Raw
+$formPv = $formPv -replace '</body>', '<script>window.addEventListener("load",function(){setTimeout(function(){var m=document.querySelectorAll(".nv-multipop-btn");if(m[0])m[0].click();},300);});</script></body>'
+$formPv | Out-File -FilePath ($pvDir + '\form.html') -Encoding utf8
 $edge = 'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
 $shot1 = Start-Process -FilePath $edge -ArgumentList ('--headless --disable-gpu --hide-scrollbars --window-size=1500,1400 --virtual-time-budget=8000 --screenshot="' + $out + '\runtime-list.png" "' + $base + '/__preview/list.html"') -Wait -PassThru
 $shot2 = Start-Process -FilePath $edge -ArgumentList ('--headless --disable-gpu --hide-scrollbars --window-size=1500,2200 --virtual-time-budget=8000 --screenshot="' + $out + '\runtime-form.png" "' + $base + '/__preview/form.html"') -Wait -PassThru
 $shot3 = Start-Process -FilePath $edge -ArgumentList ('--headless --disable-gpu --hide-scrollbars --window-size=1600,1200 --virtual-time-budget=8000 --screenshot="' + $out + '\runtime-shell.png" "' + $base + '/__preview/shell.html"') -Wait -PassThru
 Write-Output 'SHOTS_DONE'
+
+# 6.2 DOM-level checks after JS runs: dropdown widgets built, filter inputs present
+$dom = & $edge --headless --disable-gpu --virtual-time-budget=8000 --dump-dom ($base + '/__preview/form.html') 2>$null | Out-String
+Check 'dom-multipop-built' ($dom -match 'nv-multipop-pop')
+Check 'dom-multipop-filter' ($dom -match 'nv-multipop-filter')
+Check 'dom-selectpop-filter' ($dom -match 'nv-selectpop-filter')
+Check 'dom-multipop-items' ($dom -match 'nv-multipop-item')
+
 Remove-Item -Recurse -Force $pvDir
 
 Stop-Process -Id $p.Id -Force

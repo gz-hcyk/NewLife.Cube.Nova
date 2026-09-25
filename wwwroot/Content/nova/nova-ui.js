@@ -372,17 +372,6 @@
         });
     }
 
-    /* 勾选清单全选/清空（事件委托，表单页多选字段用） */
-    document.addEventListener('click', function (e) {
-        var t = e.target.closest ? e.target.closest('[data-nv-checkall],[data-nv-checknone]') : null;
-        if (!t) return;
-        var id = t.getAttribute('data-nv-checkall') || t.getAttribute('data-nv-checknone');
-        var box = document.getElementById(id);
-        if (!box) return;
-        var on = t.hasAttribute('data-nv-checkall');
-        $all('input[type="checkbox"]', box).forEach(function (c) { c.checked = on; });
-    });
-
     function init() {
         /* 1) 恢复用户偏好：三者都是「先读存储再落地」，与 nova.js 一致 */
         applyTheme(get('nova-theme', 'light'));
@@ -1045,12 +1034,22 @@
         box.classList.add('is-open');
         pop.hidden = false;
         if (btn) btn.setAttribute('aria-expanded', 'true');
+        var f = box.querySelector('.nv-selectpop-filter');
+        if (f) { f.value = ''; filterSelectPop(box, ''); }
         $all('.nv-selectpop-opt', box).forEach(function (el) { el.classList.remove('is-active'); });
-        var cur = pop.querySelector('.nv-selectpop-opt.is-selected') || pop.querySelector('.nv-selectpop-opt');
+        var cur = pop.querySelector('.nv-selectpop-opt.is-selected:not(.is-hidden)') || pop.querySelector('.nv-selectpop-opt:not(.is-hidden)');
         if (cur) {
             cur.classList.add('is-active');
             try { cur.scrollIntoView({ block: 'nearest' }); } catch (e) { }
         }
+    }
+
+    /* 单选下拉筛选：按文本过滤选项；清空关键字还原 */
+    function filterSelectPop(box, keyword) {
+        var q = (keyword || '').replace(/^\s+|\s+$/g, '').toLowerCase();
+        $all('.nv-selectpop-opt', box).forEach(function (el) {
+            el.classList.toggle('is-hidden', !!q && (el.textContent || '').toLowerCase().indexOf(q) < 0);
+        });
     }
 
     function chooseSelectPop(box, item) {
@@ -1063,7 +1062,7 @@
 
     function spMove(box, dir) {
         var opts = $all('.nv-selectpop-opt', box).filter(function (o) {
-            return !o.classList.contains('is-disabled');
+            return !o.classList.contains('is-disabled') && !o.classList.contains('is-hidden');
         });
         if (!opts.length) return;
         var idx = -1;
@@ -1100,6 +1099,14 @@
         pop.className = 'nv-selectpop-pop';
         pop.setAttribute('role', 'listbox');
         pop.hidden = true;
+        // 筛选框：单选下拉支持按关键字过滤选项（与树下拉/多选下拉交互一致）
+        var filter = document.createElement('input');
+        filter.type = 'search';
+        filter.className = 'nv-input nv-selectpop-filter';
+        filter.placeholder = '筛选';
+        filter.setAttribute('aria-label', '筛选');
+        filter.setAttribute('autocomplete', 'off');
+        pop.appendChild(filter);
         for (var i = 0; i < sel.options.length; i++) {
             var o = sel.options[i];
             var it = document.createElement('div');
@@ -1122,6 +1129,10 @@
         $all('select.nv-select, select.form-control, select.form-select').forEach(buildSelectPop);
         if (spBound) return;
         spBound = true;
+        document.addEventListener('input', function (e) {
+            if (!e.target.classList || !e.target.classList.contains('nv-selectpop-filter')) return;
+            filterSelectPop(e.target.closest('[data-nv-selectpop]'), e.target.value);
+        });
         document.addEventListener('click', function (e) {
             var box = e.target.closest ? e.target.closest('[data-nv-selectpop]') : null;
             if (!box) {
@@ -1143,6 +1154,17 @@
         document.addEventListener('keydown', function (e) {
             var box = e.target.closest ? e.target.closest('[data-nv-selectpop]') : null;
             if (!box) return;
+            if (e.target.classList && e.target.classList.contains('nv-selectpop-filter')) {
+                if (e.key === 'Escape') { closeSelectPop(box); return; }
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    var first = $all('.nv-selectpop-opt', box).filter(function (o) {
+                        return !o.classList.contains('is-disabled') && !o.classList.contains('is-hidden');
+                    })[0];
+                    if (first) { chooseSelectPop(box, first); closeSelectPop(box); }
+                }
+                return;
+            }
             if (e.key === 'Escape') { closeSelectPop(box); return; }
             if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Enter' && e.key !== ' ') return;
             if (!(e.target.closest && e.target.closest('.nv-selectpop-btn'))) return;
@@ -1191,6 +1213,203 @@
         });
     }
 
+    /* ---------------- 原生多选下拉增强（nv-multipop） ----------------
+       扁平数据源的多选：下拉面板 = 筛选框 + 全选/清空 + 勾选列表（树下拉仍走 nv-treeselect）。
+       原生 select[multiple] 保留在组件内（裁剪隐藏）负责表单提交；勾选状态与 option.selected 双向同步。 */
+    var mpBound = false;
+
+    function paintMultiPop(box) {
+        var sel = box.querySelector('select');
+        var label = box.querySelector('.nv-multipop-value');
+        if (!sel || !label) return;
+        var placeholder = box.getAttribute('data-placeholder') || '请选择';
+        var picked = [];
+        for (var i = 0; i < sel.options.length; i++) {
+            var op = sel.options[i];
+            if (op.selected && op.value !== '') picked.push(op);
+        }
+        $all('.nv-multipop-item', box).forEach(function (item) {
+            var idx = parseInt(item.getAttribute('data-idx'), 10);
+            var cb = item.querySelector('.nv-multipop-check');
+            if (cb && sel.options[idx]) cb.checked = !!sel.options[idx].selected;
+            item.classList.toggle('is-on', !!(sel.options[idx] && sel.options[idx].selected));
+        });
+        if (!picked.length) {
+            label.textContent = placeholder;
+            label.classList.add('is-placeholder');
+        } else if (picked.length <= 2) {
+            var names = [];
+            for (var n = 0; n < picked.length; n++) names.push(picked[n].text);
+            label.textContent = names.join('、');
+            label.classList.remove('is-placeholder');
+        } else {
+            label.textContent = '已选 ' + picked.length + ' 项';
+            label.classList.remove('is-placeholder');
+        }
+    }
+
+    function syncMultiPop(box) {
+        paintMultiPop(box);
+        var sel = box.querySelector('select');
+        if (sel) { try { sel.dispatchEvent(new Event('change', { bubbles: true })); } catch (err) { } }
+    }
+
+    function setMultiPopAll(box, on, onlyVisible) {
+        var sel = box.querySelector('select');
+        if (!sel) return;
+        $all('.nv-multipop-item', box).forEach(function (item) {
+            if (onlyVisible && item.classList.contains('is-hidden')) return;
+            var idx = parseInt(item.getAttribute('data-idx'), 10);
+            if (sel.options[idx] && !sel.options[idx].disabled) sel.options[idx].selected = on;
+        });
+        box.setAttribute('data-nv-dirty', '1');
+        syncMultiPop(box);
+    }
+
+    function filterMultiPop(box, keyword) {
+        var q = (keyword || '').replace(/^\s+|\s+$/g, '').toLowerCase();
+        $all('.nv-multipop-item', box).forEach(function (item) {
+            item.classList.toggle('is-hidden', !!q && (item.textContent || '').toLowerCase().indexOf(q) < 0);
+        });
+    }
+
+    function closeMultiPop(box) {
+        var pop = box.querySelector('.nv-multipop-pop');
+        var btn = box.querySelector('.nv-multipop-btn');
+        if (pop) pop.hidden = true;
+        box.classList.remove('is-open');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+        if (box.getAttribute('data-nv-dirty') === '1' && box.getAttribute('data-autopost') === '1') {
+            box.removeAttribute('data-nv-dirty');
+            var form = box.closest('form');
+            if (form) form.submit();
+        }
+    }
+
+    function openMultiPop(box) {
+        $all('.nv-multipop.is-open').forEach(function (other) { if (other !== box) closeMultiPop(other); });
+        var pop = box.querySelector('.nv-multipop-pop');
+        var btn = box.querySelector('.nv-multipop-btn');
+        if (!pop) return;
+        box.classList.add('is-open');
+        pop.hidden = false;
+        if (btn) btn.setAttribute('aria-expanded', 'true');
+        var f = box.querySelector('.nv-multipop-filter');
+        if (f) { f.value = ''; filterMultiPop(box, ''); f.focus(); }
+    }
+
+    function buildMultiPop(sel) {
+        if (sel.getAttribute('data-nv-mp') === '1') return;
+        if (!sel.multiple || sel.size > 1) return;
+        if (sel.closest('[data-nv-treeselect]')) return;
+        var ctl = sel.parentElement;
+        if (!ctl) return;
+        sel.setAttribute('data-nv-mp', '1');
+        var box = document.createElement('span');
+        box.className = 'nv-multipop';
+        box.setAttribute('data-nv-multipop', '');
+        box.setAttribute('data-placeholder', sel.getAttribute('data-placeholder') || '请选择');
+        if (sel.getAttribute('data-autopost') === '1') box.setAttribute('data-autopost', '1');
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'nv-multipop-btn';
+        btn.setAttribute('aria-haspopup', 'listbox');
+        btn.setAttribute('aria-expanded', 'false');
+        var val = document.createElement('span');
+        val.className = 'nv-multipop-value';
+        btn.appendChild(val);
+        var ico = document.createElement('i');
+        ico.className = 'nv-ico nv-ico-sm';
+        ico.setAttribute('data-nv-ico', 'chevron_down');
+        btn.appendChild(ico);
+        var pop = document.createElement('div');
+        pop.className = 'nv-multipop-pop';
+        pop.hidden = true;
+        var filter = document.createElement('input');
+        filter.type = 'search';
+        filter.className = 'nv-input nv-multipop-filter';
+        filter.placeholder = '筛选';
+        filter.setAttribute('aria-label', '筛选');
+        filter.setAttribute('autocomplete', 'off');
+        pop.appendChild(filter);
+        var bar = document.createElement('div');
+        bar.className = 'nv-multipop-bar';
+        bar.innerHTML = '<a href="javascript:;" data-nv-mp-all>全选</a><a href="javascript:;" data-nv-mp-none>清空</a>';
+        pop.appendChild(bar);
+        var list = document.createElement('div');
+        list.className = 'nv-multipop-list';
+        list.setAttribute('role', 'listbox');
+        list.setAttribute('aria-multiselectable', 'true');
+        for (var i = 0; i < sel.options.length; i++) {
+            var o = sel.options[i];
+            var item = document.createElement('label');
+            item.className = 'nv-multipop-item';
+            item.setAttribute('data-idx', i);
+            var cb = document.createElement('input');
+            cb.type = 'checkbox';
+            cb.className = 'nv-multipop-check';
+            cb.checked = !!o.selected;
+            cb.disabled = !!o.disabled;
+            cb.setAttribute('tabindex', '-1');
+            item.appendChild(cb);
+            var tx = document.createElement('span');
+            tx.textContent = o.text;
+            item.appendChild(tx);
+            if (o.disabled) item.classList.add('is-disabled');
+            list.appendChild(item);
+        }
+        pop.appendChild(list);
+        box.appendChild(btn);
+        box.appendChild(pop);
+        ctl.insertBefore(box, sel);
+        box.appendChild(sel);
+        sel.classList.add('nv-multipop-native');
+        paintMultiPop(box);
+    }
+
+    function initMultiPop() {
+        $all('select[multiple]').forEach(buildMultiPop);
+        if (mpBound) return;
+        mpBound = true;
+        document.addEventListener('change', function (e) {
+            if (!e.target.classList || !e.target.classList.contains('nv-multipop-check')) return;
+            var item = e.target.closest('.nv-multipop-item');
+            var box = e.target.closest('[data-nv-multipop]');
+            if (!item || !box) return;
+            var sel = box.querySelector('select');
+            var idx = parseInt(item.getAttribute('data-idx'), 10);
+            if (!sel || !sel.options[idx]) return;
+            sel.options[idx].selected = e.target.checked;
+            box.setAttribute('data-nv-dirty', '1');
+            syncMultiPop(box);
+        });
+        document.addEventListener('input', function (e) {
+            if (!e.target.classList || !e.target.classList.contains('nv-multipop-filter')) return;
+            filterMultiPop(e.target.closest('[data-nv-multipop]'), e.target.value);
+        });
+        document.addEventListener('click', function (e) {
+            var box = e.target.closest ? e.target.closest('[data-nv-multipop]') : null;
+            if (!box) {
+                $all('.nv-multipop.is-open').forEach(closeMultiPop);
+                return;
+            }
+            if (e.target.closest('.nv-multipop-btn')) {
+                var sel0 = box.querySelector('select');
+                if (sel0 && sel0.disabled) return;
+                if (box.classList.contains('is-open')) closeMultiPop(box);
+                else openMultiPop(box);
+                return;
+            }
+            if (e.target.closest('[data-nv-mp-all]')) { e.preventDefault(); setMultiPopAll(box, true, true); return; }
+            if (e.target.closest('[data-nv-mp-none]')) { e.preventDefault(); setMultiPopAll(box, false, true); return; }
+        });
+        document.addEventListener('keydown', function (e) {
+            var box = e.target.closest ? e.target.closest('[data-nv-multipop]') : null;
+            if (!box || !box.classList.contains('is-open')) return;
+            if (e.key === 'Escape') closeMultiPop(box);
+        });
+    }
+
     /* ---------------------------------------------------------------- ⑤ 启动 */
     function boot() {
         initNotice();
@@ -1201,6 +1420,7 @@
         initTreeTable();
         initTreeSelect();
         initSelectPop();
+        initMultiPop();
     }
 
     migratePrefs();

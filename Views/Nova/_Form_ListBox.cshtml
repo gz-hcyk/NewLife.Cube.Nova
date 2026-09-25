@@ -10,8 +10,6 @@
     var type = value.GetType();
 
     var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
-    // 原生 select[multiple] 需要 Ctrl+Click，对业务用户不友好；Nova 一律渲染为勾选清单（tag 化复选）。
-    // 不再依赖 bootstrap-multiselect 插件（皮肤未内置，此前输出裸 select 挤成 4 行小框）。
     var id = atts.ContainsKey("id") ? atts["id"] as String : name;
     if (id.IsNullOrEmpty()) id = name;
 
@@ -28,7 +26,8 @@
         }
     }
 
-    // 各分支统一收敛为 MultiSelectList，再由下方勾选清单渲染（提交格式与原生 ListBox 完全一致：name 重复出现）
+    // 各分支统一收敛为 MultiSelectList；非树数据渲染原生多选（JS 增强为下拉多选+筛选，nv-multipop）。
+    // 原生 select 保留在组件内负责表单提交，提交格式不变（选中项随 name 提交）。
     MultiSelectList msl = null;
     if (treeSample == null)
     {
@@ -67,17 +66,11 @@
 }
 else if (msl != null)
 {
-    <div class="nv-checklist-bar">
-        <a href="javascript:;" data-nv-checkall="@id">全选</a>
-        <a href="javascript:;" data-nv-checknone="@id">清空</a>
-    </div>
-    <div class="nv-checklist" id="@id" role="group" aria-label="多选列表">
+    <select class="nv-select" id="@id" multiple name="@name" aria-label="多选列表"
+            @(Model.AutoPostback ? Html.Raw("data-autopost=\"1\"") : null)>
         @foreach (var it in msl)
         {
-            <label class="nv-check-item">
-                <input type="checkbox" name="@name" value="@it.Value" checked="@it.Selected" />
-                <span>@it.Text</span>
-            </label>
+            <option value="@it.Value" selected="@it.Selected">@it.Text</option>
         }
-    </div>
+    </select>
 }
