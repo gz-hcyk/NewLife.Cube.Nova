@@ -85,11 +85,11 @@
             String treeAttrs = null;
             if (isTree)
             {
-                var treeId = entity[ukey.Name]?.ToString();
-                var treePid = entity[treeParentColumn]?.ToString();
+                var treeId = (String)entity[ukey.Name]?.ToString();
+                var treePid = (String)entity[treeParentColumn]?.ToString();
                 var treeDepth = 0;
                 var seen = new HashSet<String>(StringComparer.OrdinalIgnoreCase);
-                var p = treePid;
+                String p = treePid;
                 while (!p.IsNullOrEmpty() && treeParentOf.ContainsKey(p) && seen.Add(p) && treeDepth < 64)
                 {
                     treeDepth++;

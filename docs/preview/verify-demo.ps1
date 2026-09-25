@@ -1,4 +1,4 @@
-$ErrorActionPreference = 'Continue'
+﻿$ErrorActionPreference = 'Continue'
 $wd  = 'G:\009repos\002MingJia\NovaDemo\bin\Debug\net8.0'
 $out = 'G:\009repos\002MingJia\NewLife.Cube.Nova\docs\preview'
 $log = $out + '\demo-run.log'
@@ -122,6 +122,15 @@ try {
     $htmlShell | Out-File -FilePath ($out + '\runtime-shell.html') -Encoding utf8
 } catch {
     Write-Output 'CHECK shell-page : FAIL(exception)'
+}
+
+# 5.7 department list page（ParentID 树形自动判定；回归：动态类型上调用 IsNullOrEmpty 扩展方法）
+try {
+    $dept = Invoke-WebRequest -Uri ($base + '/Admin/Department') -UseBasicParsing -TimeoutSec 30 -WebSession $s
+    Check 'dept-page' ($dept.StatusCode -eq 200)
+    Check 'dept-tree-table' ($dept.Content -match 'nv-tree-table')
+} catch {
+    Write-Output 'CHECK dept-page : FAIL(exception)'
 }
 
 # 6. screenshots via headless Edge (CSS/JS served by running site)
