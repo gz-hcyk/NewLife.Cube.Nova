@@ -5,7 +5,9 @@
    因此这里必须保持「无导航」，否则菜单会在外层与 iframe 内各出现一次（双重菜单）。
    契约仍与 ACE 布局一致（PageSetting / ViewBag.Charts / ViewBag.HeaderContent），
    可在 CubeSetting.Theme 之间自由切换而不改任何业务代码。
-   内容区结构与原型 pages/*.html 一致：.nv-body > .nv-container > .nv-page-head。 *@
+   内容区结构与原型 pages/*.html 一致：.nv-body > .nv-container。
+   2026-09 生产化调整：全部内容页（列表/表单/详情/自定义）不再渲染页眉（面包屑+标题）与页脚，
+   政务客户要求界面简洁；PageSetting.EnableNavbar / EnableFooter 开关保留但 Nova 布局忽略之。 *@
 @{
     var set = CubeSetting.Current;
     var pageSetting = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
@@ -23,8 +25,6 @@
     var charts = ViewBag.Charts as IList<ECharts>;
     var charts2 = ViewBag.Charts2 as IList<ECharts>;
     var hasChart = (charts != null && charts.Count > 0) || (charts2 != null && charts2.Count > 0);
-
-    var remark = ViewBag.HeaderContent as String;
 
     // 供外壳按路径高亮菜单：nova-ui.js 的 ready 消息会把本值带给外层
     var pagePath = Context.Request.Path.Value ?? "";
@@ -79,29 +79,9 @@
         }
 
         <div class="nv-container">
-            @if (pageSetting.EnableNavbar)
-            {
-                <div class="nv-page-head">
-                    <div>
-                        <nav class="nv-crumb">
-                            @await Html.PartialAsync("_Layout_Nav")
-                        </nav>
-                        <h1 class="nv-page-title">@ViewBag.Title</h1>
-                        @if (!remark.IsNullOrEmpty())
-                        {
-                            <div class="nv-page-desc">@remark</div>
-                        }
-                    </div>
-                </div>
-            }
             @RenderBody()
         </div>
     </div>
-
-    @if (pageSetting.EnableFooter)
-    {
-        @await Html.PartialAsync("_Layout_Footer")
-    }
 
     <div class="nv-toast-host"></div>
 
