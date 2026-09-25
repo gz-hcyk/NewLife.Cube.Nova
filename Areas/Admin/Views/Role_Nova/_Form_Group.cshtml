@@ -1,0 +1,45 @@
+@model EntityField
+@using NewLife;
+@using NewLife.Cube.ViewModels
+@using XCode;
+@using XCode.Configuration;
+@{
+    var entity = Model.Entity;
+    var item = Model.Field;
+
+    // 与 Views/Nova/_Form_Group.cshtml 保持同构：权限矩阵整行，其余走标准字段项
+    var full = item.Name.EqualIgnoreCase("Permission")
+            || item.ItemType.EqualIgnoreCase("html")
+            || item.ItemType.EqualIgnoreCase("markdown")
+            || item.IsBigText();
+}
+@if (item.Name.EqualIgnoreCase("Permission"))
+{
+    if (!entity.IsNullKey)
+    {
+        <div class="nv-col-full">
+            @await Html.PartialAsync("SetPermission", new { Role = entity })
+        </div>
+    }
+}
+else if (full)
+{
+    <div class="nv-col-full">
+        @if (item.ItemType.EqualIgnoreCase("html"))
+        {
+            @await Html.PartialAsync("_Form_Html", Model)
+        }
+        else if (item.ItemType.EqualIgnoreCase("markdown"))
+        {
+            @await Html.PartialAsync("_Form_Markdown", Model)
+        }
+        else
+        {
+            @await Html.PartialAsync("_Form_BigText", Model)
+        }
+    </div>
+}
+else
+{
+    @await Html.PartialAsync("_Form_Item", Model)
+}

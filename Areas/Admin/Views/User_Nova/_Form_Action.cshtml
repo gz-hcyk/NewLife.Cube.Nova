@@ -1,0 +1,20 @@
+@using XCode.Membership;
+@using NewLife.Cube;
+@{
+    var entity = Model as IEntity;
+    var isNew = entity.IsNullKey;
+}
+@* 用户表单操作条（Nova 覆写，原 ACE 版为 form-actions/btn-success/glyphicon 裸标记）。
+   保存=主按钮；取消=中性描边（原型表单操作条基准，回退用 history.back）；清空密码=弱操作。 *@
+@if (this.Has(PermissionFlags.Insert, PermissionFlags.Update))
+{
+    <div class="form-actions">
+        @if (!isNew)
+        {
+            <a href="~/Admin/User/ClearPassword/@entity["ID"]" class="nv-btn nv-btn-sm" title="数据库为空密码时，任何密码均可登录">清空密码</a>
+        }
+        <span class="nv-toolbar-spacer"></span>
+        <button type="submit" class="nv-btn nv-btn-primary">@(isNew ? "新增" : "保存")</button>
+        <button type="button" class="nv-btn" onclick="history.back();">取消</button>
+    </div>
+}

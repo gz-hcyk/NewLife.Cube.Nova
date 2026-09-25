@@ -1,0 +1,17 @@
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+
+    var ms = Menu.Root.Childs;
+}
+@* 菜单列表自定义搜索（Nova 覆写）：父级下拉统一 .nv-field 栅格 *@
+<div class="nv-field">
+    <label class="nv-field-label" for="parentId">父级</label>
+    <div class="nv-field-ctl">
+        @Html.DropDownList("parentId", new SelectList(ms.ToDictionary(e => e.ID, e => e + ""), "Key", "Value", page["parentId"]), "全部",
+            new Dictionary<String, Object> { ["class"] = "nv-select", ["onchange"] = "$(this).parents('form').submit();" })
+    </div>
+</div>

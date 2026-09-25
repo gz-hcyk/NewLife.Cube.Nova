@@ -1,0 +1,17 @@
+@using NewLife.Common;
+@using NewLife.Cube
+@using XCode
+@{
+    var user = ViewBag.User as IUser ?? User.Identity as IUser;
+    var fact = ViewBag.Factory as IEntityFactory;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+}
+@* 部门列表批量工具条（Nova 覆写，原 ACE 版为 btn/input-group 裸标记）：
+   下载模版=中性按钮；导入=隐藏文件输入 + 触发按钮，沿用 data-action="upload" 契约。 *@
+@if (set.EnableSelect)
+{
+    <a class="nv-btn nv-btn-sm" href="/Admin/Department/ExportExcelTemplate">下载模版</a>
+    <input name="file" type="file" accept=".xlsx" class="nv-file-hidden" id="deptImportFile"
+           data-action="upload" data-url="/Admin/Department/ImportExcel" />
+    <button type="button" class="nv-btn nv-btn-sm" onclick="var f=document.getElementById('deptImportFile');if(f)f.click();">导入Excel</button>
+}

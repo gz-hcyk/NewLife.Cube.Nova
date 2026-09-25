@@ -1,0 +1,17 @@
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using NewLife.Cube.Entity;
+@{
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var providers = OAuthConfig.FindAllWithCache().ToDictionary(e => e.Name, e => e.NickName ?? e.Name);
+}
+@* 用户连接列表自定义搜索（Nova 覆写）：提供商下拉，统一 .nv-field 栅格 *@
+<div class="nv-field">
+    <label class="nv-field-label" for="provider">提供商</label>
+    <div class="nv-field-ctl">
+        @Html.DropDownList("provider", new SelectList(providers, "Key", "Value", page["provider"]), "全部",
+            new Dictionary<String, Object> { ["class"] = "nv-select", ["onchange"] = "$(this).parents('form').submit();" })
+    </div>
+</div>
