@@ -35,7 +35,7 @@
  * 「主题/密度/侧栏」三段可原样并入 nova.js，其余仅为原型演示用。
  * 约定（与现网 nova.js 一致）：
  *   - 主题持久化键  nova-theme     值 light | dark      → <html data-bs-theme>
- *   - 密度持久化键  nova-density   值 compact | cozy    → <html data-nv-density>
+ *   - 密度持久化键  nova-density   值 comfortable | standard | compact（cozy 为历史别名→comfortable） → <html data-nv-density>
  *   - 侧栏持久化键  nova-sidebar   值 1 | 0             → .nv-shell.is-mini
  * ==========================================================================*/
 (function () {
@@ -136,10 +136,19 @@
         hydrateIcons(document);
         broadcast('theme', t);
     }
+    /* 密度三档：舒适 comfortable / 标准 standard / 紧凑 compact（compact 为默认基值）。
+       历史键名 cozy 归一化为 comfortable，存量偏好不受影响。 */
+    var DENSITIES = ['comfortable', 'standard', 'compact'];
+    var DENSITY_LABEL = { comfortable: '舒适', standard: '标准', compact: '紧凑' };
+    function normDensity(d) {
+        if (d === 'cozy') d = 'comfortable';
+        return DENSITIES.indexOf(d) >= 0 ? d : 'compact';
+    }
     function applyDensity(d) {
+        d = normDensity(d);
         html.setAttribute('data-nv-density', d);
         set('nova-density', d);
-        $all('[data-nv-density-val]').forEach(function (el) { el.textContent = d === 'cozy' ? '宽松' : '紧凑'; });
+        $all('[data-nv-density-val]').forEach(function (el) { el.textContent = DENSITY_LABEL[d]; });
     }
 
     /* ------------------------------------------------- 与 iframe 内容页同步
@@ -405,7 +414,8 @@
             if (act === 'theme') {
                 applyTheme(html.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark');
             } else if (act === 'density') {
-                applyDensity(html.getAttribute('data-nv-density') === 'cozy' ? 'compact' : 'cozy');
+                var cur = normDensity(html.getAttribute('data-nv-density'));
+                applyDensity(DENSITIES[(DENSITIES.indexOf(cur) + 1) % DENSITIES.length]);
             } else if (act === 'sidebar') {
                 applySidebar(!document.querySelector('.nv-shell').classList.contains('is-mini'));
             } else if (act === 'burger') {

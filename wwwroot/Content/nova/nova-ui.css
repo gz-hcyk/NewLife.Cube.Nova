@@ -116,7 +116,12 @@
     --nv-fs-table:var(--nv-fs-13);
     --nv-sp-section:var(--nv-sp-5);
 }
-[data-nv-density="cozy"] {
+[data-nv-density="standard"] {
+
+    --nv-row-h-eff:44px; --nv-cell-py:11px; --nv-fs-table:var(--nv-fs-14); --nv-sp-section:24px;
+}
+/* cozy 为历史键名，等价 comfortable（舒适档） */
+[data-nv-density="cozy"], [data-nv-density="comfortable"] {
 
     --nv-row-h-eff:48px; --nv-cell-py:13px; --nv-fs-table:var(--nv-fs-14); --nv-sp-section:28px;
 }
@@ -139,14 +144,14 @@
     --nv-grad-primary-hover:#5f9ae2;
     --nv-sh-primary:0 2px 6px -2px rgba(74,138,216,.4);
 
-    --nv-success-weak:rgba(34,165,70,.16);   --nv-success-text:#6ed07f;
-    --nv-warning-weak:rgba(245,158,11,.16);  --nv-warning-text:#f0b74a;
-    --nv-danger-weak:rgba(226,59,59,.16);    --nv-danger-text:#ef7a7a;
-    --nv-info-weak:rgba(17,162,187,.16);     --nv-info-text:#5cc9dc;
+    --nv-success-weak:rgba(46,139,82,.16);   --nv-success-text:#6ed07f;
+    --nv-warning-weak:rgba(185,127,28,.16);  --nv-warning-text:#f0b74a;
+    --nv-danger-weak:rgba(192,68,68,.16);    --nv-danger-text:#ef7a7a;
+    --nv-info-weak:rgba(15,127,149,.16);     --nv-info-text:#5cc9dc;
 
-    --nv-st-online-weak:rgba(34,165,70,.16);  --nv-st-offline-weak:rgba(154,163,178,.14);
-    --nv-st-alarm-weak:rgba(226,59,59,.16);   --nv-st-warn-weak:rgba(245,158,11,.16);
-    --nv-st-busy-weak:rgba(74,138,216,.16);   --nv-st-pending-weak:rgba(247,103,7,.16);
+    --nv-st-online-weak:rgba(46,139,82,.16);  --nv-st-offline-weak:rgba(154,163,178,.14);
+    --nv-st-alarm-weak:rgba(192,68,68,.16);   --nv-st-warn-weak:rgba(185,127,28,.16);
+    --nv-st-busy-weak:rgba(74,138,216,.16);   --nv-st-pending-weak:rgba(192,94,24,.16);
     --nv-st-disabled-weak:rgba(154,163,178,.14);
 
     --nv-overlay:rgba(0,0,0,.62); --nv-tooltip-bg:#2a313c; --nv-tooltip-text:#e6e9ef;
