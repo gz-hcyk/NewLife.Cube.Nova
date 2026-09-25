@@ -231,6 +231,7 @@
 - **Toast**（`.nv-toast-host` / `.nv-toast`）：操作结果即时反馈，失败给出可执行建议；成功 / 警告 / 危险按语义色三件套。
 - **骨架屏**（`.nv-skel` / `.nv-skeleton`）：加载占位不用转圈菊花，减少感知等待。
 - **空状态**：给下一步动作按钮（新建 / 调整筛选），不放孤立插图。
+- **AI 助手浮窗**（`#aiAssistant`，2026-09-25 落地）：右下角 48px 悬浮球（`.ai-fab`，`position:fixed; right:20px; bottom:20px`），点开为 460px 对话面板（SSE 流式 + Markdown + 工具调用 + 表单智能填充）。与魔方核心 Ace 注入块同一契约（`data-ai-url="/Ai/AiChat"`，`data-ai-area` / `data-ai-controller` 按路由注入），视图见 `Views/Nova/_AIAssistant.cshtml`；主色取 `--nv-primary`（政务蓝），图标经 FA_MAP 映射为 Tabler 图标；快捷指令按页面类型适配（列表=分析当前数据 / 系统诊断，表单=帮我填表 / 分析当前记录 / 系统诊断）。核心视图按 Bootstrap 3/4 调 jQuery `modal('show')`（工作台 AI 诊断弹窗），由 `nova-ui.js` `initCompat` 垫片桥接 Tabler（`window.tabler`）原生 Modal。
 
 ### 5.6 导航与树（`.nv-shell`、`.nv-sidebar`、`.nv-tree-node`）
 
@@ -372,5 +373,6 @@ Dashboard 由魔方框架 widget 系统渲染（`widget-grid` 流式布局，列
 | 运维中心（桌面 1700，KPI 8 列 + 数据库表） | 6.1 / 6.4 | [runtime-ops-desktop](preview/runtime-ops-desktop.png) |
 | 运维中心（平板 1100，KPI 5+3 折行） | 6.4 | [runtime-ops-tablet](preview/runtime-ops-tablet.png) |
 | 运维中心（手机 560，KPI 2 列单列堆叠） | 6.4 | [runtime-ops-mobile](preview/runtime-ops-mobile.png) |
+| AI 助手浮窗（列表页点开面板） | 5.5 | [runtime-ai-assistant](preview/runtime-ai-assistant.png) |
 
 复摄说明：`docs/preview/verify-demo.ps1` 内嵌全部检查项并在通过时刷新对应基线截图；单独复摄某组件时参照同目录已归档的 `_*shot*.ps1` 脚本模式（起站 → 登录 → 快照 → 停站），注意脚本需以 UTF-8 带 BOM 保存。
