@@ -19,9 +19,6 @@
         @await Html.PartialAsync(set.NavView)
     </div>
 }
-<div class="nv-card">
-    <div class="nv-card-body">
-        @await Html.PartialAsync("_Form_Body", entity)
-    </div>
-    @await Html.PartialAsync("_Form_Footer", entity)
-</div>
+@* 卡片由 _Form_Body 渲染（详情为只读形态，同构不分组一张卡），此处不再包外层卡片 *@
+@await Html.PartialAsync("_Form_Body", entity)
+@await Html.PartialAsync("_Form_Footer", entity)

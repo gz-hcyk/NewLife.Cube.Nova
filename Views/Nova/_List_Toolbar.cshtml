@@ -13,33 +13,27 @@
 }
 <div class="nv-toolbar">
     <form action="@Html.Raw(page.GetFormAction(act))" method="post" role="form" class="nv-toolbar-form">
-        @if (set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert))
-        {
-            var rv = page.GetRouteValue();
-            @Html.ActionLink("添加", "Add", rv, new { @class = "nv-btn nv-btn-primary nv-btn-sm" }.ToDictionary())
-        }
-        @if (set.EnableSelect)
-        {
-            <div class="nv-toolbar-batch">
-                @await Html.PartialAsync("_List_Toolbar_Batch")
-                @{
-                    // 未被子级重载且实体含 Boolean 类型 Enable 字段时，自动注入批量启用/禁用
-                    var hasEnableField = Context.Items.ContainsKey("IsDefaultBatch")
-                        && fact?.Table?.FindByName("Enable") is FieldItem enableFi
-                        && enableFi.Type == typeof(Boolean);
-                }
-                @if (hasEnableField)
-                {
-                    <button type="button" class="nv-btn nv-btn-sm" data-action="action" data-url="@Url.Action("EnableSelect")" data-fields="keys" disabled>批量启用</button>
-                    <button type="button" class="nv-btn nv-btn-sm" data-action="action" data-url="@Url.Action("DisableSelect")" data-fields="keys" disabled>批量禁用</button>
-                }
-            </div>
-        }
-        @await Html.PartialAsync("_List_Toolbar_Custom")
-        <span class="nv-toolbar-spacer"></span>
-        @await Html.PartialAsync("_List_Search")
-        @await Html.PartialAsync("_List_Toolbar_Search")
-        @await Html.PartialAsync("_List_Toolbar_Adv")
+        <div class="nv-toolbar-row">
+            @if (set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert))
+            {
+                var rv = page.GetRouteValue();
+                @Html.ActionLink("添加", "Add", rv, new { @class = "nv-btn nv-btn-primary nv-btn-sm" }.ToDictionary())
+            }
+            @if (set.EnableSelect)
+            {
+                <div class="nv-toolbar-batch">
+                    @await Html.PartialAsync("_List_Toolbar_Batch")
+                    @* 批量启用/禁用已移入批量操作条（_List_BulkBar.cshtml），选中后随 .nv-bulkbar 浮出 *@
+                </div>
+            }
+            @await Html.PartialAsync("_List_Toolbar_Custom")
+            <span class="nv-toolbar-spacer"></span>
+            @await Html.PartialAsync("_List_Toolbar_Search")
+            @await Html.PartialAsync("_List_Toolbar_Adv")
+        </div>
+        <div class="nv-toolbar-filters">
+            @await Html.PartialAsync("_List_Search")
+        </div>
     </form>
 </div>
 @if (set.EnableSelect)

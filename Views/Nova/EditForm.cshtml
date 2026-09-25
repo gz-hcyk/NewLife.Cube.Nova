@@ -24,14 +24,15 @@
         @await Html.PartialAsync(set.NavView)
     </div>
 }
-<div class="nv-card">
-    @using (Html.BeginForm("Edit", null, rv, FormMethod.Post, null, htmlAttributes))
+@* 卡片由 _Form_Body 渲染（单分组一张卡，多分组纵向分组卡片），错误提示独立成卡，此处不再包外层卡片 *@
+@using (Html.BeginForm("Edit", null, rv, FormMethod.Post, null, htmlAttributes))
+{
+    @await Html.PartialAsync("_Form_Header", entity)
+    if (ViewData.ModelState.Values.Any(st => st.Errors.Count > 0))
     {
-        @await Html.PartialAsync("_Form_Header", entity)
-        if (ViewData.ModelState.Values.Any(st => st.Errors.Count > 0))
-        {
-            <div class="nv-card-body nv-pt-0">
-                <div class="nv-notice nv-notice-danger">
+        <div class="nv-card nv-mb-3">
+            <div class="nv-card-body nv-pt-3">
+                <div class="nv-notice nv-notice-danger" style="margin-bottom:0">
                     <i class="nv-ico nv-notice-ico" data-nv-ico="alert"></i>
                     <div class="nv-notice-body">
                         @foreach (var item in ViewData.ModelState.Values)
@@ -44,9 +45,9 @@
                     </div>
                 </div>
             </div>
-        }
-        @await Html.PartialAsync("_Form_Body", entity)
-        @await Html.PartialAsync("_Form_Footer", entity)
-        @await Html.PartialAsync("_Form_Action", entity)
+        </div>
     }
-</div>
+    @await Html.PartialAsync("_Form_Body", entity)
+    @await Html.PartialAsync("_Form_Footer", entity)
+    @await Html.PartialAsync("_Form_Action", entity)
+}

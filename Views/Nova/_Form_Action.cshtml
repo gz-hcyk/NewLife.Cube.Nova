@@ -6,14 +6,14 @@
 }
 @if (this.Has(PermissionFlags.Insert, PermissionFlags.Update))
 {
-    <div class="nv-card-foot">
-        <div class="nv-form-actions">
-            <button type="submit" class="nv-btn nv-btn-primary">
-                <i class="nv-ico nv-ico-sm" data-nv-ico="@(isNew ? "plus" : "save")"></i>@(isNew ? "新增" : "保存")
-            </button>
-            <button type="button" class="nv-btn" onclick="history.go(-1);">
-                <i class="nv-ico nv-ico-sm" data-nv-ico="x"></i>取消
-            </button>
-        </div>
+    @* 吸底操作栏：卡片由 _Form_Body 分组渲染后，本条独立成栏（原型确认的底部操作区形态）。
+       .nv-form-actions 自带 sticky + 顶部分隔线，这里补全边框与圆角使其自成一条。 *@
+    <div class="nv-form-actions" style="margin:0;border:1px solid var(--nv-border);border-radius:var(--nv-r-md)">
+        <button type="submit" class="nv-btn nv-btn-primary">
+            <i class="nv-ico nv-ico-sm" data-nv-ico="@(isNew ? "plus" : "save")"></i>@(isNew ? "新增" : "保存")
+        </button>
+        <button type="button" class="nv-btn" onclick="history.go(-1);">
+            <i class="nv-ico nv-ico-sm" data-nv-ico="x"></i>取消
+        </button>
     </div>
 }
