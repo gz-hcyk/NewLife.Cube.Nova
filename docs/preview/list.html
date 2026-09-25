@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><title>业务台账 — Nova v3 预览</title>
+<style>:root {
+
+    /* 科技蓝阶（锚点 600 = 主色） */
+    --nv-blue-50:#e9f1fa;  --nv-blue-100:#d2e2f6; --nv-blue-200:#accdec; --nv-blue-300:#7cabe1;
+    --nv-blue-400:#4d88d1; --nv-blue-500:#2f6cbd; --nv-blue-600:#1e5cae; --nv-blue-700:#194b8c;
+    --nv-blue-800:#143c6e; --nv-blue-900:#102f56;
+
+    /* 冷调中性灰（替代通用灰：带极轻蓝相，更"设计过"） */
+    --nv-gray-0:#ffffff; --nv-gray-50:#f7f9fc; --nv-gray-100:#f1f4f9; --nv-gray-200:#e9edf3;
+    --nv-gray-300:#dde2ea; --nv-gray-400:#c2c9d4; --nv-gray-500:#9aa3b2; --nv-gray-600:#6b7384;
+    --nv-gray-700:#4c5464; --nv-gray-800:#333b49; --nv-gray-900:#1e2530;
+
+    --nv-green-50:#ebf5ee; --nv-green-100:#d5e9db; --nv-green-500:#2e8b52; --nv-green-600:#267a45; --nv-green-700:#1f6b3c;
+    --nv-amber-50:#faf3e3; --nv-amber-100:#f3e4c2; --nv-amber-500:#b97f1c; --nv-amber-600:#9c6a17; --nv-amber-700:#8a5d10;
+    --nv-orange-500:#c05e18; --nv-orange-600:#a54f14;
+    --nv-red-50:#f9ecec; --nv-red-100:#f2d4d4; --nv-red-500:#c04444; --nv-red-600:#a53737; --nv-red-700:#8f2d2d;
+    --nv-cyan-50:#e8f4f6; --nv-cyan-500:#0f7f95; --nv-cyan-600:#0b6072;
+
+    /* ============================================================ 2 语义令牌
+       组件层只许引用语义令牌，不许直接引用原语 */
+    --nv-primary:#1e5cae; --nv-primary-hover:#1a4f92; --nv-primary-active:#143c6e;
+    --nv-primary-rgb:30,92,174;
+    --nv-primary-weak:rgba(30,92,174,.08); --nv-primary-weak-2:rgba(30,92,174,.14);
+    --nv-primary-wash:rgba(30,92,174,.045);
+    /* 主色质感：政务简洁版一律纯色（2026-09 起渐变下线），令牌名保留以维持组件契约 */
+    --nv-grad-primary:#1e5cae;
+    --nv-grad-primary-hover:#194b8c;
+    --nv-on-primary:#ffffff;
+
+    --nv-success:#2e8b52; --nv-success-weak:#ebf5ee; --nv-success-text:#1f6b3c;
+    --nv-warning:#b97f1c; --nv-warning-weak:#faf3e3; --nv-warning-text:#8a5d10;
+    --nv-danger:#c04444; --nv-danger-weak:#f9ecec; --nv-danger-text:#8f2d2d;
+    --nv-info:#0f7f95; --nv-info-weak:#e8f4f6; --nv-info-text:#0b6072;
+
+    --nv-bg:#f6f8fb; --nv-bg-frame:#ffffff;
+    --nv-surface:#ffffff; --nv-surface-2:#f8fafd; --nv-surface-3:#f1f4f9;
+    --nv-surface-hover:var(--nv-primary-wash);
+    --nv-border:#e8ebf0; --nv-border-strong:#d8dde6;
+    --nv-text:#1e2530; --nv-text-2:#4c5464; --nv-text-3:#6b7384; --nv-text-4:#9aa3b2;
+    --nv-text-inverse:#ffffff; --nv-text-link:#1a4f92;
+
+    --nv-overlay:rgba(16,24,40,.42); --nv-tooltip-bg:#262d38; --nv-tooltip-text:#eef2f7;
+
+    /* ============================================================ 3 设备与业务状态色 */
+    --nv-st-online:#2e8b52;  --nv-st-online-weak:#ebf5ee;
+    --nv-st-offline:#9aa3b2; --nv-st-offline-weak:#f1f4f9;
+    --nv-st-alarm:#c04444;   --nv-st-alarm-weak:#f9ecec;
+    --nv-st-warn:#b97f1c;    --nv-st-warn-weak:#faf3e3;
+    --nv-st-busy:#1e5cae;    --nv-st-busy-weak:#e9f1fa;
+    --nv-st-pending:#c05e18; --nv-st-pending-weak:#f7ece4;
+    --nv-st-disabled:#6b7384;--nv-st-disabled-weak:#f1f4f9;
+
+    /* 电量分级 */
+    --nv-batt-sufficient:#2e8b52; --nv-batt-normal:#1e5cae; --nv-batt-warning:#b97f1c;
+    --nv-batt-critical:#c04444;   --nv-batt-unknown:#9aa3b2;
+
+    /* ============================================================ 4 字体（中文优先） */
+    --nv-font:"PingFang SC","Microsoft YaHei","Hiragino Sans GB","Source Han Sans SC","Noto Sans CJK SC",
+        system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    --nv-font-mono:"JetBrains Mono","Cascadia Mono",Consolas,"SFMono-Regular","Courier New",monospace;
+
+    --nv-fs-11:11px; --nv-fs-12:12px; --nv-fs-13:13px; --nv-fs-14:14px;
+    --nv-fs-16:16px; --nv-fs-18:18px; --nv-fs-20:20px; --nv-fs-22:22px; --nv-fs-28:28px; --nv-fs-34:34px;
+    --nv-lh-tight:1.25; --nv-lh-snug:1.45; --nv-lh-body:1.6;
+    --nv-fw-normal:400; --nv-fw-medium:500; --nv-fw-semi:600; --nv-fw-bold:700;
+
+    /* ============================================================ 5 间距（4px 基数） */
+    --nv-sp-1:4px; --nv-sp-2:8px; --nv-sp-3:12px; --nv-sp-4:16px; --nv-sp-5:20px;
+    --nv-sp-6:24px; --nv-sp-8:32px; --nv-sp-10:40px; --nv-sp-12:48px; --nv-sp-16:64px;
+
+    /* ============================================================ 6 圆角（政务简洁：克制庄重 4–10px） */
+    --nv-r-xs:4px; --nv-r-sm:6px; --nv-r-md:8px; --nv-r-lg:10px; --nv-r-full:999px;
+
+    /* ============================================================ 7 阴影（分层柔影，政务版整体减淡） */
+    --nv-sh-1:0 1px 2px rgba(20,30,50,.05);
+    --nv-sh-2:0 1px 3px rgba(20,30,50,.06), 0 4px 10px -2px rgba(20,30,50,.05);
+    --nv-sh-3:0 12px 32px -12px rgba(20,30,50,.20), 0 4px 10px -6px rgba(20,30,50,.08);
+    --nv-sh-focus:0 0 0 3px rgba(30,92,174,.18);
+    --nv-sh-primary:0 2px 6px -2px rgba(30,92,174,.35);
+
+    /* ============================================================ 8 结构尺寸 */
+    --nv-sidebar-w:248px; --nv-sidebar-w-mini:68px; --nv-header-h:58px;
+    --nv-ctrl-h:34px; --nv-ctrl-h-lg:38px; --nv-row-h:40px; --nv-pad-page:24px;
+    --nv-z-sidebar:1030; --nv-z-header:1020; --nv-z-drawer:1050; --nv-z-modal:1060; --nv-z-toast:1070;
+
+    /* ============================================================ 9 动效 */
+    --nv-dur-fast:130ms; --nv-dur-base:200ms; --nv-dur-slow:280ms;
+    --nv-ease:cubic-bezier(.4,0,.2,1); --nv-ease-out:cubic-bezier(.16,1,.3,1);
+
+    /* ============================================================ 10 密度（紧凑为默认） */
+    --nv-row-h-eff:var(--nv-row-h);
+    --nv-cell-py:9px;
+    --nv-fs-table:var(--nv-fs-13);
+    --nv-sp-section:var(--nv-sp-5);
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+body{font-family:var(--nv-font);background:var(--nv-bg);color:var(--nv-text);font-size:var(--nv-fs-14);line-height:var(--nv-lh-body);display:flex}
+.sidebar{width:var(--nv-sidebar-w);background:var(--nv-bg-frame);border-right:1px solid var(--nv-border);flex-shrink:0;display:flex;flex-direction:column;height:100vh;position:sticky;top:0}
+.brand{height:var(--nv-header-h);display:flex;align-items:center;gap:10px;padding:0 16px;border-bottom:1px solid var(--nv-border);font-weight:var(--nv-fw-semi)}
+.brand .logo{width:30px;height:30px;border-radius:var(--nv-r-sm);background:var(--nv-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:var(--nv-sh-primary)}
+.menu{padding:12px 8px;flex:1}
+.menu-group{font-size:var(--nv-fs-12);color:var(--nv-text-4);padding:14px 12px 6px}
+.menu-item{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:var(--nv-r-sm);color:var(--nv-text-2);font-size:var(--nv-fs-14);margin-bottom:2px;cursor:pointer}
+.menu-item:hover{background:var(--nv-primary-wash);color:var(--nv-primary)}
+.menu-item.active{background:var(--nv-primary-weak);color:var(--nv-primary);font-weight:var(--nv-fw-semi);box-shadow:inset 0 0 0 1px var(--nv-primary-weak-2)}
+.menu-item .arrow{margin-left:auto;color:var(--nv-text-4);font-size:11px}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{height:var(--nv-header-h);background:var(--nv-surface);border-bottom:1px solid var(--nv-border);display:flex;align-items:center;padding:0 var(--nv-pad-page);gap:14px}
+.crumb{color:var(--nv-text-3);font-size:var(--nv-fs-13)}
+.crumb b{color:var(--nv-text);font-weight:var(--nv-fw-semi)}
+.topbar .sp{flex:1}
+.search{display:flex;align-items:center;gap:8px;width:230px;height:32px;border:1px solid var(--nv-border-strong);border-radius:var(--nv-r-sm);padding:0 10px;color:var(--nv-text-4);font-size:var(--nv-fs-13);background:var(--nv-surface)}
+.user{display:flex;align-items:center;gap:8px;font-size:var(--nv-fs-13);color:var(--nv-text-2);cursor:pointer;padding:4px 8px;border-radius:var(--nv-r-sm)}
+.user:hover{background:var(--nv-gray-100)}
+.avatar{width:26px;height:26px;border-radius:50%;background:var(--nv-primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px}
+.content{padding:var(--nv-sp-5) var(--nv-pad-page);flex:1}
+.page-head{display:flex;align-items:center;margin-bottom:var(--nv-sp-4)}
+.page-head h1{font-size:var(--nv-fs-20);font-weight:var(--nv-fw-semi)}
+.page-head .sub{color:var(--nv-text-3);font-size:var(--nv-fs-13);margin-left:12px}
+.page-head .sp{flex:1}
+/* 按钮（生产令牌：--nv-grad-primary 已是纯色） */
+.btn{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:var(--nv-r-sm);font-size:var(--nv-fs-13);cursor:pointer;border:1px solid transparent;font-family:inherit;transition:all .15s}
+.btn-pri{background:var(--nv-grad-primary);color:var(--nv-on-primary);box-shadow:var(--nv-sh-primary)}
+.btn-pri:hover{background:var(--nv-grad-primary-hover)}
+.btn-sec{background:var(--nv-surface);border-color:var(--nv-border-strong);color:var(--nv-text-2)}
+.btn-sec:hover{border-color:var(--nv-primary);color:var(--nv-primary);background:var(--nv-primary-weak)}
+.btn-danger{background:var(--nv-surface);border-color:var(--nv-border-strong);color:var(--nv-danger)}
+.btn-danger:hover{background:var(--nv-danger);border-color:var(--nv-danger);color:#fff}
+.card{background:var(--nv-surface);border:1px solid var(--nv-border);border-radius:var(--nv-r-md);box-shadow:var(--nv-sh-1)}
+/* 工具栏 */
+.toolbar{padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--nv-border)}
+.toolbar .sp{flex:1}
+.tinput{height:34px;border:1px solid var(--nv-border-strong);border-radius:var(--nv-r-sm);padding:0 10px;font-size:var(--nv-fs-13);font-family:inherit;color:var(--nv-text);width:200px;background:var(--nv-surface)}
+.tinput:focus{outline:none;border-color:var(--nv-primary);box-shadow:var(--nv-sh-focus)}
+.filters{display:flex;align-items:flex-end;gap:12px;padding:12px 16px;flex-wrap:wrap;border-bottom:1px solid var(--nv-border)}
+.fi-mini{display:flex;flex-direction:column;gap:4px}
+.fi-mini label{font-size:var(--nv-fs-12);color:var(--nv-text-3)}
+.fi-mini select,.fi-mini input{height:34px;border:1px solid var(--nv-border-strong);border-radius:var(--nv-r-sm);padding:0 10px;font-size:var(--nv-fs-13);font-family:inherit;color:var(--nv-text);background:var(--nv-surface);width:200px}
+.fi-mini input{width:126px}
+/* 表格 */
+table{width:100%;border-collapse:collapse;font-size:var(--nv-fs-13)}
+th{background:var(--nv-surface-3);color:var(--nv-text-2);font-weight:var(--nv-fw-semi);text-align:left;padding:10px 12px;border-bottom:1px solid var(--nv-border-strong);font-size:var(--nv-fs-12);white-space:nowrap}
+td{padding:var(--nv-cell-py) 12px;border-bottom:1px solid var(--nv-border);color:var(--nv-text-2);white-space:nowrap}
+tbody tr:hover{background:var(--nv-surface-hover)}
+tbody tr:last-child td{border-bottom:none}
+.num{font-variant-numeric:tabular-nums;color:var(--nv-text-2)}
+.link{color:var(--nv-primary);cursor:pointer}
+.link:hover{text-decoration:underline}
+.st{display:inline-flex;align-items:center;gap:6px;font-size:var(--nv-fs-12);padding:2px 10px;border-radius:var(--nv-r-xs);font-weight:var(--nv-fw-medium)}
+.st i{width:6px;height:6px;border-radius:50%;display:inline-block}
+.st-on{background:var(--nv-st-online-weak);color:var(--nv-success-text)} .st-on i{background:var(--nv-st-online)}
+.st-off{background:var(--nv-st-offline-weak);color:var(--nv-text-3)} .st-off i{background:var(--nv-st-offline)}
+.st-warn{background:var(--nv-st-warn-weak);color:var(--nv-warning-text)} .st-warn i{background:var(--nv-st-warn)}
+.st-err{background:var(--nv-st-alarm-weak);color:var(--nv-danger-text)} .st-err i{background:var(--nv-st-alarm)}
+.st-busy{background:var(--nv-st-busy-weak);color:var(--nv-primary)} .st-busy i{background:var(--nv-st-busy)}
+.pager{display:flex;align-items:center;gap:6px;justify-content:flex-end;padding:12px 16px;font-size:var(--nv-fs-13);color:var(--nv-text-3)}
+.pg{min-width:28px;height:28px;border-radius:var(--nv-r-xs);border:1px solid var(--nv-border-strong);display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--nv-surface)}
+.pg:hover{border-color:var(--nv-primary);color:var(--nv-primary)}
+.pg.cur{background:var(--nv-primary);border-color:var(--nv-primary);color:#fff}
+/* 批量条 */
+.bulkbar{display:flex;align-items:center;gap:12px;margin:14px 16px;padding:9px 14px;background:var(--nv-primary-weak);border:1px solid var(--nv-primary-weak-2);border-radius:var(--nv-r-sm);font-size:var(--nv-fs-13);color:var(--nv-text-2)}
+.bulkbar b{color:var(--nv-primary);font-weight:var(--nv-fw-semi)}
+/* 表单 */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px 24px;padding:16px}
+.fi label{display:block;font-size:var(--nv-fs-13);color:var(--nv-text-2);margin-bottom:6px}
+.fi label em{color:var(--nv-danger);font-style:normal;margin-left:2px}
+.fi input,.fi select,.fi textarea{width:100%;height:36px;border:1px solid var(--nv-border-strong);border-radius:var(--nv-r-sm);padding:0 10px;font-size:var(--nv-fs-13);font-family:inherit;color:var(--nv-text);background:var(--nv-surface);transition:border-color .15s,box-shadow .15s}
+.fi textarea{height:auto;padding:8px 10px;resize:vertical}
+.fi input:focus,.fi select:focus,.fi textarea:focus{outline:none;border-color:var(--nv-primary);box-shadow:var(--nv-sh-focus)}
+.fi .hint{font-size:var(--nv-fs-12);color:var(--nv-text-4);margin-top:4px}
+.fi.full{grid-column:1/-1}
+.fi.err input{border-color:var(--nv-danger)}
+.fi.err input:focus{box-shadow:0 0 0 3px rgba(192,68,68,.15)}
+.fi .err-msg{font-size:var(--nv-fs-12);color:var(--nv-danger-text);margin-top:4px;display:flex;align-items:center;gap:5px}
+.fi.ok input{border-color:var(--nv-success)}
+.form-foot{display:flex;gap:10px;padding:14px 16px;border-top:1px solid var(--nv-border);background:var(--nv-surface);position:sticky;bottom:0}
+.group-t{font-size:var(--nv-fs-14);font-weight:var(--nv-fw-semi);padding:13px 16px;border-bottom:1px solid var(--nv-border);display:flex;align-items:center}
+.group-t .tag{font-size:var(--nv-fs-12);color:var(--nv-text-4);font-weight:var(--nv-fw-normal);margin-left:10px}
+
+</style></head><body>
+
+<aside class="sidebar">
+  <div class="brand"><span class="logo">◆</span>应用管理平台</div>
+  <nav class="menu">
+    <div class="menu-item active"><span>▦</span>工作台</div>
+    <div class="menu-group">业务管理</div>
+    <div class="menu-item"><span>▤</span>业务台账<span class="arrow">›</span></div>
+    <div class="menu-item"><span>⚠</span>告警中心<span class="arrow">›</span></div>
+    <div class="menu-item"><span>◫</span>统计报表</div>
+    <div class="menu-group">系统管理</div>
+    <div class="menu-item"><span>♟</span>用户管理</div>
+    <div class="menu-item"><span>⚙</span>权限设置</div>
+    <div class="menu-item"><span>◷</span>操作日志</div>
+  </nav>
+</aside>
+<div class="main">
+  <header class="topbar">
+    <span class="crumb">业务管理 / <b>业务台账</b></span>
+    <div class="sp"></div>
+    <div class="search">🔍 关键字搜索</div>
+    <div class="user"><span class="avatar">管</span>系统管理员 <span style="color:var(--nv-text-4)">▾</span></div>
+  </header>
+  <main class="content">
+    <div class="page-head">
+      <h1>业务台账</h1><span class="sub">共 4,216 条 · 更新于 10 分钟前</span>
+      <div class="sp"></div>
+      <button class="btn btn-sec">⬇ 导出</button><button class="btn btn-pri">＋ 新增</button>
+    </div>
+    
+<div class="card">
+  <div class="toolbar">
+    <button class="btn btn-pri">＋ 新增</button>
+    <button class="btn btn-sec">批量导入</button>
+    <button class="btn btn-danger">删 除</button>
+    <div class="sp"></div>
+    <input class="tinput" placeholder="名称 / 编号关键字">
+    <button class="btn btn-pri" style="box-shadow:none">查 询</button>
+    <button class="btn btn-sec">重 置</button>
+  </div>
+  <div class="filters">
+    <div class="fi-mini"><label>所属单位</label><select><option>全部</option><option>机关单位</option><option>下属事业单位</option></select></div>
+    <div class="fi-mini"><label>状态</label><select><option>全部</option><option>在线</option><option>离线</option><option>告警</option></select></div>
+    <div class="fi-mini"><label>创建日期</label><div style="display:flex;gap:6px"><input placeholder="2026-09-01"> <span style="align-self:center;color:var(--nv-text-4)">—</span> <input placeholder="2026-09-25"></div></div>
+  </div>
+  <table>
+    <thead><tr><th><input type="checkbox"></th><th>编号</th><th>名称</th><th>所属单位</th><th>位置</th><th>状态</th><th>电量</th><th>最近更新</th><th style="text-align:right">数值A</th><th style="text-align:right">数值B</th><th>操作</th></tr></thead>
+    <tbody>
+      <tr><td><input type="checkbox"></td><td class="num">SB-2024-0087</td><td>采集终端甲</td><td>机关事务管理局</td><td>1号楼 3层</td><td><span class="st st-on"><i></i>在线</span></td><td class="num">86%</td><td class="num">2026-09-25 07:42</td><td class="num" style="text-align:right">12,480</td><td class="num" style="text-align:right">3,216.50</td><td><span class="link">详情</span> · <span class="link">编辑</span></td></tr>
+      <tr><td><input type="checkbox"></td><td class="num">SB-2024-0103</td><td>计量仪表乙</td><td>水务服务中心</td><td>配电室 B</td><td><span class="st st-warn"><i></i>告警</span></td><td class="num">42%</td><td class="num">2026-09-25 06:15</td><td class="num" style="text-align:right">8,042</td><td class="num" style="text-align:right">1,098.00</td><td><span class="link">详情</span> · <span class="link">处理</span></td></tr>
+      <tr><td><input type="checkbox"></td><td class="num">SB-2023-0561</td><td>控制单元丙</td><td>图书档案馆</td><td>东门岗亭</td><td><span class="st st-off"><i></i>离线</span></td><td class="num">—</td><td class="num">2026-09-22 18:03</td><td class="num" style="text-align:right">0</td><td class="num" style="text-align:right">0.00</td><td><span class="link">详情</span> · <span class="link">重启</span></td></tr>
+      <tr><td><input type="checkbox"></td><td class="num">SB-2024-0218</td><td>探测装置丁</td><td>档案保管中心</td><td>库房 2F</td><td><span class="st st-on"><i></i>在线</span></td><td class="num">93%</td><td class="num">2026-09-25 07:51</td><td class="num" style="text-align:right">27,615</td><td class="num" style="text-align:right">9,334.75</td><td><span class="link">详情</span> · <span class="link">编辑</span></td></tr>
+      <tr><td><input type="checkbox"></td><td class="num">SB-2024-0330</td><td>监控主机戊</td><td>体育活动中心</td><td>中控室</td><td><span class="st st-busy"><i></i>维护中</span></td><td class="num">67%</td><td class="num">2026-09-24 22:10</td><td class="num" style="text-align:right">5,390</td><td class="num" style="text-align:right">2,007.20</td><td><span class="link">详情</span> · <span class="link">编辑</span></td></tr>
+    </tbody>
+  </table>
+  <div class="bulkbar">已选 <b>2</b> 项：<span class="link">批量启用</span> · <span class="link">批量导出</span> · <span class="link" style="color:var(--nv-danger-text)">批量删除</span><span style="margin-left:auto" class="link">取消选择</span></div>
+  <div class="pager">共 4,216 条 <span class="pg">‹</span><span class="pg cur">1</span><span class="pg">2</span><span class="pg">3</span><span class="pg">…</span><span class="pg">212</span><span class="pg">›</span></div>
+</div>
+
+  </main>
+</div>
+
+</body></html>
