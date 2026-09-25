@@ -38,7 +38,7 @@ NewLife.Cube.Nova/
 
 ## 使用方法
 
-宿主项目（如 IoT.Web）引用本库后，在 `Program.cs` / `Startup.cs` 中启用：
+宿主项目引用本库后，在 `Program.cs` / `Startup.cs` 中启用：
 
 ```csharp
 // 注册魔方

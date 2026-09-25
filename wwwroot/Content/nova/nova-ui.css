@@ -942,7 +942,7 @@ body.nv [data-bs-theme="dark"] .nv-skel::after {
 .nv-toast-warning .nv-toast-ico {
  color:#f0b74a; }
 @keyframes nv-toast-in { from { opacity:0; transform:translateX(18px); } to { opacity:1; transform:none; } }/* ============================================================================
- * 27. IoT 设备卡片
+ * 27. 设备卡片
  * ==========================================================================*/.nv-dc-board {
  display:grid; gap:var(--nv-sp-4); align-items:start; grid-template-columns:minmax(0,1fr) 304px; }
 @media (max-width:1180px)  {
