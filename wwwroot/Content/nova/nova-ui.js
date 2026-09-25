@@ -344,7 +344,10 @@
         'sign-in': 'login', spinner: 'loader', stethoscope: 'stethoscope', tachometer: 'dashboard',
         'th-large': 'layout-grid', undo: 'arrow-back-up', user: 'user', 'user-circle': 'user-circle',
         'user-circle-o': 'user-circle', 'user-plus': 'user-plus', 'user-secret': 'user-circle',
-        users: 'users', wrench: 'tools'
+        users: 'users', wrench: 'tools',
+        /* AI 助手浮窗 / 诊断弹窗（_AIAssistant.cshtml 与核心工作台视图） */
+        expand: 'arrows-maximize', compress: 'arrows-minimize', times: 'x', 'paper-plane': 'send',
+        trash: 'trash', 'check-circle': 'circle-check', 'exclamation-circle': 'alert-circle', inbox: 'inbox'
     };
     function remapFaIcons(root) {
         $all('.fa', root).forEach(function (el) {
@@ -890,6 +893,39 @@
             var el = e.target;
             if (!el || el.type !== 'file' || el.getAttribute('data-action') !== 'upload') return;
             if (el.files && el.files[0]) doFileUpload(el);
+        });
+    }
+
+    /* ------------------------------------------- ④e jQuery modal 兼容垫片
+     * 魔方核心视图（工作台 AI 诊断弹窗等）按 Bootstrap 3/4 契约调用：
+     *   $('#x').modal('show') / <button data-dismiss="modal">
+     * Nova 的 Tabler 只内置原生 Bootstrap 5（无 jQuery 插件注册），
+     * 这里补 $.fn.modal 薄桥 + data-dismiss 委托，使核心视图开箱可用。
+     * ---------------------------------------------------------------- */
+    var compatBound = false;
+    function initCompat() {
+        if (compatBound) return;
+        compatBound = true;
+        /* Tabler 1.5 的 UMD 导出挂 window.tabler（含 Modal/Dropdown 等 Bootstrap 组件），
+           不挂 window.bootstrap；两个来源都试。 */
+        var BS = window.bootstrap || window.tabler || {};
+        if (window.$ && window.$.fn && !window.$.fn.modal && BS.Modal) {
+            window.$.fn.modal = function (action) {
+                return this.each(function () {
+                    var m = BS.Modal.getOrCreateInstance(this);
+                    if (action === 'hide') m.hide();
+                    else m.show();
+                });
+            };
+        }
+        document.addEventListener('click', function (e) {
+            var el = e.target && e.target.closest ? e.target.closest('[data-dismiss="modal"]') : null;
+            if (!el) return;
+            var modalEl = el.closest('.modal');
+            if (modalEl && BS.Modal) {
+                e.preventDefault();
+                BS.Modal.getOrCreateInstance(modalEl).hide();
+            }
         });
     }
 
@@ -1604,6 +1640,7 @@
         initCheckAll();
         initBulkAction();
         initBulkKeep();
+        initCompat();
         initTreeTable();
         initTreeSelect();
         initSelectPop();

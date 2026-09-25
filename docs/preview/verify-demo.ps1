@@ -57,6 +57,9 @@ Check 'js-served' ($js -match 'window\.nv =')
 Check 'js-bulk-keep' ($js -match 'nv-bulk:' -and $js -match 'initBulkKeep')
 Check 'js-bulk-action' ($js -match 'initBulkAction' -and $js -match 'data-action=\\?"action\\?"')
 Check 'js-bulkcount-parse-time' ($js -match 'window\.nv\.bulkCount = bulkCount')
+# AI 助手入口 + jQuery modal 垫片（_AIAssistant.cshtml 注入块 / initCompat）
+Check 'js-modal-shim' ($js -match '\$\.fn\.modal' -and $js -match 'initCompat')
+Check 'js-famap-ai' ($js -match 'arrows-maximize' -and $js -match "'paper-plane': 'send'")
 
 # 2. login page
 $login = Invoke-WebRequest -Uri ($base + '/Admin/User/Login') -UseBasicParsing -TimeoutSec 20 -SessionVariable s
@@ -85,6 +88,8 @@ Check 'list-bulk-delete-in-bar' ($bulkBlock -match 'DeleteSelect')
 # 规范 5.4 跨页保留选择：工具栏脚本须带 DOMContentLoaded 包裹（解析期表格尚不存在）+ 记忆集合计数
 Check 'list-toolbar-ready' ($idx.Content -match 'ready\(function')
 Check 'list-toolbar-bulk-keep' ($idx.Content -match '跨页保留选择')
+# AI 助手悬浮入口：布局注入块 + 核心脚本（契约同 Ace 皮肤）
+Check 'layout-ai-assistant' ($idx.Content -match 'aiAssistantFab' -and $idx.Content -match 'ai-assistant\.js' -and $idx.Content -match 'data-ai-url="/Ai/AiChat"')
 Check 'list-legacy-purple-gone' ($idx.Content -notmatch 'btn-purple')
 Check 'list-pager' ($idx.Content -match 'nv-pager')
 Check 'list-add-anchor-btn' ($idx.Content -match '<a[^>]*nv-btn-primary')

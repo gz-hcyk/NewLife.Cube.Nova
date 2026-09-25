@@ -105,6 +105,9 @@
 
     <div class="nv-toast-host"></div>
 
+    @* AI 助手悬浮入口（右下角，魔方核心 AiController 端点，与 Ace 皮肤同一契约） *@
+    @await Html.PartialAsync("_AIAssistant")
+
     <!-- Tabler v1.5.1：Bootstrap 5.3.8 的 JS 已内置进 tabler.min.js（含 Popper），
          供下拉菜单/模态等 data-bs-* 组件使用；1.5 不再单独提供 bootstrap.bundle.min.js -->
     <script src="@res/tabler/js/tabler.min.js"></script>
