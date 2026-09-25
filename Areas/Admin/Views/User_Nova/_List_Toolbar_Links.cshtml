@@ -1,0 +1,10 @@
+@* 用户列表工具栏辅助链接：与搜索相关的弱强调入口，置于第一行右侧、高级按钮旁。
+   从筛选行移出，保证筛选行行尾固定为 关键字+查询（生产排版基准）。 *@
+<div class="nv-search-links">
+    <a class="nv-search-link" href="@Url.Action("Index", "UserOnline")" target="_blank" rel="noopener">
+        <i class="nv-ico nv-ico-sm" data-nv-ico="users"></i>用户在线
+    </a>
+    <a class="nv-search-link" href="@Url.Action("Index", "UserStat")" target="_blank" rel="noopener">
+        <i class="nv-ico nv-ico-sm" data-nv-ico="chart"></i>用户统计
+    </a>
+</div>

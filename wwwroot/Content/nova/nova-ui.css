@@ -1906,12 +1906,17 @@ body.nv [data-bs-theme="dark"] .nv-usermenu-name {
     display: flex;
     flex-wrap: wrap;
     align-items: flex-end;
-    gap: var(--nv-sp-3) var(--nv-sp-4);
+    gap: var(--nv-sp-3) var(--nv-sp-3);
     padding-block-start: var(--nv-sp-3);
     border-block-start: 1px solid var(--nv-border);
 }
-.nv-toolbar-filters:not(:has(.nv-field)) {
+.nv-toolbar-filters:not(:has(.nv-field)):not(:has(.nv-search-box)) {
  display: none; }
+/* 关键字搜索框在筛选行末尾：略窄于字段控件槽，保证与筛选字段同行容纳 */
+.nv-toolbar-filters .nv-search-box .nv-input {
+ width: 176px; }
+.nv-toolbar-filters > button[type="submit"], .nv-toolbar-filters > .nv-btn {
+ align-self: flex-end; }
 /* 批量操作区：与相邻控件留一点间隔，内部按钮成组 */.nv-toolbar-batch {
 
     display: inline-flex;
@@ -2305,9 +2310,13 @@ body.nv .nv-tabs-host .nav-tabs .nav-link:focus-visible {
 /* L2b. 筛选行标签定宽右对齐，标签列纵向整齐（生产排版） */
 .nv-toolbar .nv-field-label {
  flex:0 0 64px; text-align:right; }
-/* 筛选行末尾的弱强调辅助入口（用户在线/用户统计等）：右置、与字段底对齐 */
+/* 工具栏辅助链接（用户在线/用户统计等）：第一行右侧、高级按钮旁，左分隔线。
+   筛选行行尾永远留给关键字+查询（.nv-search-box 用 margin-left:auto 顶到最右）。 */
 .nv-toolbar .nv-search-links {
- display:inline-flex; align-items:center; gap:var(--nv-sp-3); margin-left:auto; align-self:center; }
+ display:inline-flex; align-items:center; gap:var(--nv-sp-3); align-self:center;
+ padding-left:var(--nv-sp-3); border-left:1px solid var(--nv-border); }
+.nv-toolbar-filters .nv-search-box {
+ margin-left:auto; }
 .nv-search-link {
  display:inline-flex; align-items:center; gap:4px; font-size:var(--nv-fs-13); color:var(--nv-text-link); text-decoration:none; }
 .nv-search-link:hover { text-decoration:underline; }

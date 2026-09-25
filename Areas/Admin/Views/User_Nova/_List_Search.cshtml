@@ -16,11 +16,5 @@
 @await Html.PartialAsync("_Enable")
 @await Html.PartialAsync("_SelectDepartment", "departmentId")
 @await Html.PartialAsync("_Area2", "")
-<div class="nv-search-links">
-    <a class="nv-search-link" href="@Url.Action("Index", "UserOnline")" target="_blank" rel="noopener">
-        <i class="nv-ico nv-ico-sm" data-nv-ico="users"></i>用户在线
-    </a>
-    <a class="nv-search-link" href="@Url.Action("Index", "UserStat")" target="_blank" rel="noopener">
-        <i class="nv-ico nv-ico-sm" data-nv-ico="chart"></i>用户统计
-    </a>
-</div>
+@* 用户在线/用户统计等辅助入口已移至 _List_Toolbar_Links（第一行右侧、高级按钮旁），
+   保证筛选行行尾固定为 关键字+查询（生产排版基准）。 *@

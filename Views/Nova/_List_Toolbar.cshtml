@@ -28,11 +28,13 @@
             }
             @await Html.PartialAsync("_List_Toolbar_Custom")
             <span class="nv-toolbar-spacer"></span>
-            @await Html.PartialAsync("_List_Toolbar_Search")
+            @await Html.PartialAsync("_List_Toolbar_Links")
             @await Html.PartialAsync("_List_Toolbar_Adv")
         </div>
         <div class="nv-toolbar-filters">
             @await Html.PartialAsync("_List_Search")
+            @* 关键字 + 查询/重置固定在筛选行末尾（生产排版基准），与字段底对齐 *@
+            @await Html.PartialAsync("_List_Toolbar_Search")
         </div>
     </form>
 </div>
