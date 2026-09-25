@@ -127,8 +127,8 @@
 
                 if (item.Type == typeof(DateTime) && item.Services.Count == 0 && df?.GetValue == null)
                 {
-                    var width = item.ItemType == "Date" ? 80 : 134;
-                    <th class="nv-th nv-td-mid" style="min-width:@(width)px" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
+                    @* 列宽自适应：不再给 DateTime 列强制 min-width，由内容与表格自动布局决定 *@
+                    <th class="nv-th nv-td-mid" title="@title"><a href="@Html.Raw(sortUrl)">@name</a></th>
                 }
                 else if (item.Type == null)
                 {
