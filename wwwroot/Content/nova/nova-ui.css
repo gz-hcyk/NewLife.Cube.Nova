@@ -5,9 +5,10 @@
  * 契约：设计令牌 --nv-*、组件类名 .nv-*、data-* 属性与原型完全一致，不做改名
  * 适配：见文件末尾「MVC 落地适配层」（外壳别名 / Tabler 对齐 / Bootstrap3 垫片 / 双槽通知）
  *//*!
- * Nova UI v2 —— 明佳物联网平台界面设计系统（高质感重做版，可交互原型实现）
- * 设计方针：延续科技蓝 #206bc4 主色锚点，升级质感 —— 冷调中性灰、分层柔影、
- *           发丝边框、主色渐变与聚焦光晕、克制优雅的圆角与节奏。
+ * Nova UI v3 —— 政务蓝 · 简洁版（面向政府/事业单位客户的中性主题，可交互原型实现）
+ * 设计方针：延续科技蓝主色锚点 #1e5cae，政务化收敛 —— 主色一律纯色无渐变、语义色降饱和、
+ *           圆角 4–10px、阴影减淡、冷调中性灰 + 发丝边框，干净透气、庄重不花哨。
+ * 历史：v2 高质感版（渐变/大圆角）→ v3 2026-09 政务简洁版；令牌名与组件契约保持不变。
  * 移植到生产：按 docs/66-Nova界面设计规范.md 第 7 章「令牌映射」并入
  *             NewLife.Cube.Nova/wwwroot/Content/nova/nova.css
  * 约束：零 CDN / 零图标字体 / 中文优先字体栈 / 亮暗双主题 / WCAG AA
@@ -17,61 +18,61 @@
  *   .nv-tree-node(.is-open/.is-active) .nv-tree-children .nv-toast-host .nv-toast
  *   [data-nv-ico][data-nv-act][data-nv-theme-ico][data-nv-density-val]
  *//* ============================================================ 1 色彩原语
-   主色锚定 #206bc4（现网既有主色，保持连续性）；中性灰改为冷调蓝灰，营造科技气质 */:root {
+   主色锚定 #1e5cae（现网 #206bc4 加深一档，延续蓝色家族认知）；中性灰改为冷调蓝灰，营造科技气质 */:root {
 
     /* 科技蓝阶（锚点 600 = 主色） */
-    --nv-blue-50:#eef5fd;  --nv-blue-100:#d8e8fb; --nv-blue-200:#b6d2f6; --nv-blue-300:#84b2ef;
-    --nv-blue-400:#5191e6; --nv-blue-500:#3579d6; --nv-blue-600:#206bc4; --nv-blue-700:#1b589f;
-    --nv-blue-800:#16457c; --nv-blue-900:#12355d;
+    --nv-blue-50:#e9f1fa;  --nv-blue-100:#d2e2f6; --nv-blue-200:#accdec; --nv-blue-300:#7cabe1;
+    --nv-blue-400:#4d88d1; --nv-blue-500:#2f6cbd; --nv-blue-600:#1e5cae; --nv-blue-700:#194b8c;
+    --nv-blue-800:#143c6e; --nv-blue-900:#102f56;
 
     /* 冷调中性灰（替代通用灰：带极轻蓝相，更"设计过"） */
     --nv-gray-0:#ffffff; --nv-gray-50:#f7f9fc; --nv-gray-100:#f1f4f9; --nv-gray-200:#e9edf3;
     --nv-gray-300:#dde2ea; --nv-gray-400:#c2c9d4; --nv-gray-500:#9aa3b2; --nv-gray-600:#6b7384;
     --nv-gray-700:#4c5464; --nv-gray-800:#333b49; --nv-gray-900:#1e2530;
 
-    --nv-green-50:#ecfaf0; --nv-green-100:#d3f4dc; --nv-green-500:#22a546; --nv-green-600:#1b8a39; --nv-green-700:#15702e;
-    --nv-amber-50:#fff6e8; --nv-amber-100:#feecc7; --nv-amber-500:#f59e0b; --nv-amber-600:#d97706; --nv-amber-700:#a35a04;
-    --nv-orange-500:#f76707; --nv-orange-600:#d95a06;
-    --nv-red-50:#fdecec; --nv-red-100:#fbd6d6; --nv-red-500:#e23b3b; --nv-red-600:#c22b2b; --nv-red-700:#9c2222;
-    --nv-cyan-50:#e9f8fb; --nv-cyan-500:#11a2bb; --nv-cyan-600:#0d869c;
+    --nv-green-50:#ebf5ee; --nv-green-100:#d5e9db; --nv-green-500:#2e8b52; --nv-green-600:#267a45; --nv-green-700:#1f6b3c;
+    --nv-amber-50:#faf3e3; --nv-amber-100:#f3e4c2; --nv-amber-500:#b97f1c; --nv-amber-600:#9c6a17; --nv-amber-700:#8a5d10;
+    --nv-orange-500:#c05e18; --nv-orange-600:#a54f14;
+    --nv-red-50:#f9ecec; --nv-red-100:#f2d4d4; --nv-red-500:#c04444; --nv-red-600:#a53737; --nv-red-700:#8f2d2d;
+    --nv-cyan-50:#e8f4f6; --nv-cyan-500:#0f7f95; --nv-cyan-600:#0b6072;
 
     /* ============================================================ 2 语义令牌
        组件层只许引用语义令牌，不许直接引用原语 */
-    --nv-primary:#206bc4; --nv-primary-hover:#1b5fac; --nv-primary-active:#16457c;
-    --nv-primary-rgb:32,107,196;
-    --nv-primary-weak:rgba(32,107,196,.08); --nv-primary-weak-2:rgba(32,107,196,.14);
-    --nv-primary-wash:rgba(32,107,196,.045);
-    /* 主色渐变：按钮/品牌/激活态的质感来源 */
-    --nv-grad-primary:linear-gradient(135deg,#3a86d8 0%,#1d63b8 100%);
-    --nv-grad-primary-hover:linear-gradient(135deg,#4690df 0%,#206bc4 100%);
+    --nv-primary:#1e5cae; --nv-primary-hover:#1a4f92; --nv-primary-active:#143c6e;
+    --nv-primary-rgb:30,92,174;
+    --nv-primary-weak:rgba(30,92,174,.08); --nv-primary-weak-2:rgba(30,92,174,.14);
+    --nv-primary-wash:rgba(30,92,174,.045);
+    /* 主色质感：政务简洁版一律纯色（2026-09 起渐变下线），令牌名保留以维持组件契约 */
+    --nv-grad-primary:#1e5cae;
+    --nv-grad-primary-hover:#194b8c;
     --nv-on-primary:#ffffff;
 
-    --nv-success:#22a546; --nv-success-weak:#ecfaf0; --nv-success-text:#15702e;
-    --nv-warning:#f59e0b; --nv-warning-weak:#fff6e8; --nv-warning-text:#a35a04;
-    --nv-danger:#e23b3b; --nv-danger-weak:#fdecec; --nv-danger-text:#9c2222;
-    --nv-info:#11a2bb; --nv-info-weak:#e9f8fb; --nv-info-text:#0d869c;
+    --nv-success:#2e8b52; --nv-success-weak:#ebf5ee; --nv-success-text:#1f6b3c;
+    --nv-warning:#b97f1c; --nv-warning-weak:#faf3e3; --nv-warning-text:#8a5d10;
+    --nv-danger:#c04444; --nv-danger-weak:#f9ecec; --nv-danger-text:#8f2d2d;
+    --nv-info:#0f7f95; --nv-info-weak:#e8f4f6; --nv-info-text:#0b6072;
 
     --nv-bg:#f6f8fb; --nv-bg-frame:#ffffff;
     --nv-surface:#ffffff; --nv-surface-2:#f8fafd; --nv-surface-3:#f1f4f9;
     --nv-surface-hover:var(--nv-primary-wash);
     --nv-border:#e8ebf0; --nv-border-strong:#d8dde6;
     --nv-text:#1e2530; --nv-text-2:#4c5464; --nv-text-3:#6b7384; --nv-text-4:#9aa3b2;
-    --nv-text-inverse:#ffffff; --nv-text-link:#1b5fac;
+    --nv-text-inverse:#ffffff; --nv-text-link:#1a4f92;
 
     --nv-overlay:rgba(16,24,40,.42); --nv-tooltip-bg:#262d38; --nv-tooltip-text:#eef2f7;
 
     /* ============================================================ 3 设备与业务状态色 */
-    --nv-st-online:#22a546;  --nv-st-online-weak:#ecfaf0;
+    --nv-st-online:#2e8b52;  --nv-st-online-weak:#ebf5ee;
     --nv-st-offline:#9aa3b2; --nv-st-offline-weak:#f1f4f9;
-    --nv-st-alarm:#e23b3b;   --nv-st-alarm-weak:#fdecec;
-    --nv-st-warn:#f59e0b;    --nv-st-warn-weak:#fff6e8;
-    --nv-st-busy:#206bc4;    --nv-st-busy-weak:#eef5fd;
-    --nv-st-pending:#f76707; --nv-st-pending-weak:#fff1e6;
+    --nv-st-alarm:#c04444;   --nv-st-alarm-weak:#f9ecec;
+    --nv-st-warn:#b97f1c;    --nv-st-warn-weak:#faf3e3;
+    --nv-st-busy:#1e5cae;    --nv-st-busy-weak:#e9f1fa;
+    --nv-st-pending:#c05e18; --nv-st-pending-weak:#f7ece4;
     --nv-st-disabled:#6b7384;--nv-st-disabled-weak:#f1f4f9;
 
     /* 电量分级 */
-    --nv-batt-sufficient:#22a546; --nv-batt-normal:#206bc4; --nv-batt-warning:#f59e0b;
-    --nv-batt-critical:#e23b3b;   --nv-batt-unknown:#9aa3b2;
+    --nv-batt-sufficient:#2e8b52; --nv-batt-normal:#1e5cae; --nv-batt-warning:#b97f1c;
+    --nv-batt-critical:#c04444;   --nv-batt-unknown:#9aa3b2;
 
     /* ============================================================ 4 字体（中文优先） */
     --nv-font:"PingFang SC","Microsoft YaHei","Hiragino Sans GB","Source Han Sans SC","Noto Sans CJK SC",
@@ -87,15 +88,15 @@
     --nv-sp-1:4px; --nv-sp-2:8px; --nv-sp-3:12px; --nv-sp-4:16px; --nv-sp-5:20px;
     --nv-sp-6:24px; --nv-sp-8:32px; --nv-sp-10:40px; --nv-sp-12:48px; --nv-sp-16:64px;
 
-    /* ============================================================ 6 圆角（克制优雅） */
-    --nv-r-xs:6px; --nv-r-sm:8px; --nv-r-md:12px; --nv-r-lg:14px; --nv-r-full:999px;
+    /* ============================================================ 6 圆角（政务简洁：克制庄重 4–10px） */
+    --nv-r-xs:4px; --nv-r-sm:6px; --nv-r-md:8px; --nv-r-lg:10px; --nv-r-full:999px;
 
-    /* ============================================================ 7 阴影（分层柔影） */
-    --nv-sh-1:0 1px 2px rgba(20,30,50,.04), 0 1px 3px rgba(20,30,50,.06);
-    --nv-sh-2:0 4px 14px -3px rgba(20,30,50,.10), 0 2px 6px -3px rgba(20,30,50,.06);
-    --nv-sh-3:0 18px 42px -14px rgba(20,30,50,.24), 0 6px 14px -8px rgba(20,30,50,.12);
-    --nv-sh-focus:0 0 0 3px rgba(32,107,196,.22);
-    --nv-sh-primary:0 6px 16px -4px rgba(32,107,196,.45);
+    /* ============================================================ 7 阴影（分层柔影，政务版整体减淡） */
+    --nv-sh-1:0 1px 2px rgba(20,30,50,.05);
+    --nv-sh-2:0 1px 3px rgba(20,30,50,.06), 0 4px 10px -2px rgba(20,30,50,.05);
+    --nv-sh-3:0 12px 32px -12px rgba(20,30,50,.20), 0 4px 10px -6px rgba(20,30,50,.08);
+    --nv-sh-focus:0 0 0 3px rgba(30,92,174,.18);
+    --nv-sh-primary:0 2px 6px -2px rgba(30,92,174,.35);
 
     /* ============================================================ 8 结构尺寸 */
     --nv-sidebar-w:248px; --nv-sidebar-w-mini:68px; --nv-header-h:58px;
@@ -131,9 +132,9 @@
     --nv-primary-rgb:74,138,216;
     --nv-primary-weak:rgba(74,138,216,.15); --nv-primary-weak-2:rgba(74,138,216,.22);
     --nv-primary-wash:rgba(74,138,216,.07);
-    --nv-grad-primary:linear-gradient(135deg,#5f9ae2 0%,#2f6fb8 100%);
-    --nv-grad-primary-hover:linear-gradient(135deg,#6fa6e8 0%,#3a7cc2 100%);
-    --nv-sh-primary:0 6px 16px -4px rgba(74,138,216,.5);
+    --nv-grad-primary:#4a8ad8;
+    --nv-grad-primary-hover:#5f9ae2;
+    --nv-sh-primary:0 2px 6px -2px rgba(74,138,216,.4);
 
     --nv-success-weak:rgba(34,165,70,.16);   --nv-success-text:#6ed07f;
     --nv-warning-weak:rgba(245,158,11,.16);  --nv-warning-text:#f0b74a;
@@ -236,7 +237,7 @@ body.nv [data-bs-theme="dark"] .nv-header {
  text-decoration:none; }
 .nv-brand-logo {
 
-    width:30px; height:30px; flex:0 0 30px; border-radius:9px;
+    width:30px; height:30px; flex:0 0 30px; border-radius:var(--nv-r-sm);
     background:var(--nv-grad-primary); color:#fff;
     display:inline-flex; align-items:center; justify-content:center;
     box-shadow:var(--nv-sh-primary);
@@ -361,9 +362,9 @@ body.nv [data-bs-theme="dark"] .nv-header {
 .nv-loadbar {
 
     position:fixed; top:0; left:0; height:2.5px; width:0;
-    background:linear-gradient(90deg,var(--nv-blue-400),var(--nv-primary));
+    background:var(--nv-primary);
     z-index:var(--nv-z-toast); transition:width var(--nv-dur-slow) var(--nv-ease),opacity var(--nv-dur-base);
-    opacity:0; box-shadow:0 0 8px rgba(32,107,196,.5);
+    opacity:0;
 }
 .nv-loadbar.is-on {
  opacity:1; }
@@ -427,11 +428,15 @@ body.nv [data-bs-theme="dark"] .nv-header {
 .nv-btn:active:not(:disabled) {
  transform:translateY(1px); }
 .nv-btn:disabled {
- opacity:.5; cursor:not-allowed; }
+ background:var(--nv-surface-2); border-color:var(--nv-border); color:var(--nv-text-4);
+ box-shadow:none; cursor:not-allowed; }
 .nv-btn-primary {
  background:var(--nv-grad-primary); border-color:transparent; color:var(--nv-on-primary); box-shadow:var(--nv-sh-primary); }
+/* 实心按钮若以 <a> 输出（如工具栏「添加」），显式钉死白字，防宿主侧 a 链接色渗漏 */
+a.nv-btn-primary, a.nv-btn-success, a.nv-btn-danger {
+ color:#fff; text-decoration:none; }
 .nv-btn-primary:hover:not(:disabled) {
- background:var(--nv-grad-primary-hover); border-color:transparent; color:var(--nv-on-primary); box-shadow:0 8px 20px -4px rgba(32,107,196,.55); }
+ background:var(--nv-grad-primary-hover); border-color:transparent; color:var(--nv-on-primary); box-shadow:var(--nv-sh-primary); }
 .nv-btn-primary:active:not(:disabled) {
  box-shadow:var(--nv-sh-primary); }
 .nv-btn-success {
@@ -1012,7 +1017,7 @@ body.nv [data-bs-theme="dark"] .nv-skel::after {
 .nv-devcard-ico {
 
     flex:0 0 auto; display:grid; place-items:center; width:34px; height:34px;
-    border-radius:10px; background:var(--nv-primary-weak); color:var(--nv-primary);
+    border-radius:var(--nv-r-sm); background:var(--nv-primary-weak); color:var(--nv-primary);
 }
 .nv-devcard-ttl {
  min-width:0; flex:1 1 auto; }
@@ -1460,6 +1465,79 @@ body.nv .form-control:focus, body.nv .form-select:focus {
     border-color: var(--nv-primary);
     box-shadow: 0 0 0 3px var(--nv-primary-weak-2);
 }
+/* 框架原生 select（ForDropDownList 输出 class="form-control"）升级为完整 Nova 下拉观感：
+   去原生样式、自定义 chevron、统一 34px 高度与聚焦光环；打开态面板由 nv-selectpop 自绘 */
+body.nv select.form-control, body.nv select.form-select {
+    -webkit-appearance: none; appearance: none;
+    height: var(--nv-ctrl-h); padding: 0 30px 0 11px;
+    color: var(--nv-text); background-color: var(--nv-surface);
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7384' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 9px center; background-size: 14px;
+    transition: border-color var(--nv-dur-fast) var(--nv-ease), box-shadow var(--nv-dur-fast) var(--nv-ease);
+}
+body.nv select.form-control:hover, body.nv select.form-select:hover {
+    border-color: var(--nv-gray-400, var(--nv-border-strong));
+}
+body.nv select.form-control:focus, body.nv select.form-select:focus {
+    outline: none; border-color: var(--nv-border-focus, var(--nv-primary)); box-shadow: var(--nv-sh-focus);
+}
+body.nv select.form-control:disabled, body.nv select.form-select:disabled {
+    background-color: var(--nv-surface-3); color: var(--nv-text-3); cursor: not-allowed;
+}
+body.nv [data-bs-theme="dark"] select.form-control, body.nv [data-bs-theme="dark"] select.form-select {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23aeb6c2' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+}
+
+/* ---- 原生单选下拉增强（nv-selectpop）：闭合态同 Nova 下拉，打开态为自绘面板 ----
+   原生 select 保留在组件内（裁剪隐藏），负责表单提交与 onchange 自动回发 */
+.nv-selectpop { position: relative; display: inline-block; width: 100%; }
+.nv-field-ctl > .nv-selectpop {
+ flex: 1 1 auto; }
+.nv-selectpop-native {
+    position: absolute !important; width: 1px !important; height: 1px !important;
+    padding: 0 !important; margin: -1px !important; overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important; border: 0 !important; white-space: nowrap !important; }
+.nv-selectpop-btn {
+    display: flex; align-items: center; justify-content: space-between; gap: var(--nv-sp-2);
+    width: 100%; height: var(--nv-ctrl-h); padding: 0 9px 0 11px;
+    font-family: inherit; font-size: var(--nv-fs-13); color: var(--nv-text);
+    background: var(--nv-surface); border: 1px solid var(--nv-border-strong);
+    border-radius: var(--nv-r-sm); cursor: pointer; text-align: left;
+    transition: border-color var(--nv-dur-fast) var(--nv-ease), box-shadow var(--nv-dur-fast) var(--nv-ease);
+}
+.nv-selectpop-btn:hover { border-color: var(--nv-gray-400, var(--nv-border-strong)); }
+.nv-selectpop-btn:focus-visible {
+    outline: none; border-color: var(--nv-border-focus, var(--nv-primary)); box-shadow: var(--nv-sh-focus); }
+.nv-selectpop.is-open .nv-selectpop-btn {
+    border-color: var(--nv-border-focus, var(--nv-primary)); box-shadow: var(--nv-sh-focus); }
+.nv-selectpop.is-disabled .nv-selectpop-btn {
+    background: var(--nv-surface-3); color: var(--nv-text-3); cursor: not-allowed; }
+.nv-selectpop-value {
+    flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nv-selectpop-value.is-placeholder { color: var(--nv-text-4); }
+.nv-selectpop-btn .nv-ico { color: var(--nv-text-3); transition: transform var(--nv-dur-fast) var(--nv-ease); }
+.nv-selectpop.is-open .nv-selectpop-btn .nv-ico { transform: rotate(180deg); }
+.nv-selectpop-pop {
+    position: absolute; z-index: 1080; inset-inline: 0; top: calc(100% + 4px);
+    max-height: 260px; overflow: auto; padding: 4px;
+    background: var(--nv-surface); border: 1px solid var(--nv-border);
+    border-radius: var(--nv-r-md); box-shadow: var(--nv-sh-2);
+    animation: nv-pop var(--nv-dur-base) var(--nv-ease-out);
+}
+.nv-selectpop-opt {
+    display: flex; align-items: center; gap: var(--nv-sp-2);
+    padding: 7px 9px; font-size: var(--nv-fs-13); color: var(--nv-text);
+    border-radius: var(--nv-r-xs); cursor: pointer; user-select: none;
+}
+.nv-selectpop-opt:hover, .nv-selectpop-opt.is-active { background: var(--nv-surface-hover); }
+.nv-selectpop-opt.is-selected { color: var(--nv-primary); font-weight: var(--nv-fw-medium); }
+.nv-selectpop-opt.is-disabled { color: var(--nv-text-4); cursor: not-allowed; }
+.nv-selectpop-opt.is-selected::after {
+    content: ""; flex: none; margin-inline-start: auto; width: 14px; height: 14px;
+    background: currentColor;
+    -webkit-mask: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/14px no-repeat;
+    mask: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/14px no-repeat;
+}
 body.nv .form-label {
  font-size: var(--nv-fs-13); font-weight: var(--nv-fw-medium); color: var(--nv-text-2); margin-bottom: var(--nv-sp-1); }
 body.nv .table {
@@ -1790,14 +1868,31 @@ body.nv [data-bs-theme="dark"] .nv-usermenu-name {
  margin-top: var(--nv-sp-3) !important; }
 .nv-mb-3 {
  margin-bottom: var(--nv-sp-3) !important; }
-/* 工具栏内的表单：横向排布、可换行、撑满整条工具栏 */.nv-toolbar-form {
+/* 工具栏内的表单：双行结构——第一行操作（添加/批量/自定义/关键字/查询/高级），
+   第二行筛选字段（.nv-toolbar-filters，无字段时自动隐藏） */.nv-toolbar-form {
 
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--nv-sp-3);
+    width: 100%;
+}
+.nv-toolbar-row {
     display: flex;
     align-items: center;
     gap: var(--nv-sp-2);
     flex-wrap: wrap;
-    width: 100%;
 }
+.nv-toolbar-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--nv-sp-3) var(--nv-sp-4);
+    padding-block-start: var(--nv-sp-3);
+    border-block-start: 1px solid var(--nv-border);
+}
+.nv-toolbar-filters:not(:has(.nv-field)) {
+ display: none; }
 /* 批量操作区：与相邻控件留一点间隔，内部按钮成组 */.nv-toolbar-batch {
 
     display: inline-flex;
@@ -2169,16 +2264,21 @@ body.nv .nv-tabs-host .nav-tabs .nav-link.active {
 }
 body.nv .nv-tabs-host .nav-tabs .nav-link:focus-visible {
  outline:2px solid var(--nv-primary); outline-offset:1px; }
-/* L2. 列表搜索栏：标签内联、控件等宽、垂直居中对齐 */.nv-toolbar .nv-field {
- display:flex; align-items:center; gap:6px; margin:0; }
+/* L2. 列表搜索栏（筛选行）：标签内联、控件槽定宽 200px、底对齐折行 */.nv-toolbar .nv-field {
+ display:flex; align-items:center; gap:var(--nv-sp-2); margin:0; }
 .nv-toolbar .nv-field-label {
  margin:0; font-size:var(--nv-fs-12); font-weight:var(--nv-fw-normal); color:var(--nv-text-3); white-space:nowrap; }
 .nv-toolbar .nv-field-ctl {
- gap:6px; }
-.nv-toolbar .nv-field-ctl > .nv-input, .nv-toolbar .nv-field-ctl > .nv-select {
- flex:0 0 auto; width:auto; min-width:118px; padding:0 9px; }
+ gap:6px; width:200px; }
+.nv-toolbar .nv-field-ctl > .nv-input, .nv-toolbar .nv-field-ctl > .nv-select,
+.nv-toolbar .nv-field-ctl > .nv-selectpop {
+ flex:1 1 auto; width:100%; min-width:0; }
+.nv-toolbar .nv-field-ctl > .nv-input {
+ padding:0 9px; }
 .nv-toolbar .nv-field select[multiple].nv-select {
- min-width:132px; height:auto; min-height:var(--nv-ctrl-h); max-height:104px; padding:5px 9px; background-image:none; }
+ width:100%; height:auto; min-height:var(--nv-ctrl-h); max-height:104px; padding:5px 9px; background-image:none; }
+.nv-toolbar .nv-daterange.nv-field-ctl {
+ width:auto; }
 .nv-toolbar .nv-daterange > .nv-input {
  flex:0 0 auto; width:126px; text-align:center; }
 .nv-toolbar .nv-daterange-sep {
@@ -2208,3 +2308,76 @@ body.nv .dropdown-item:hover .nv-ico {
  color:var(--nv-primary); }
 body.nv .dropdown-item.nv-link-danger .nv-ico {
  color:var(--nv-danger); }
+/* ============================================================
+   N. 运维中心（/Admin/Index/Main）
+   ============================================================ */.nv-ops-head {
+ display:flex; align-items:flex-start; justify-content:space-between; gap:var(--nv-sp-4); flex-wrap:wrap;
+ margin-bottom:var(--nv-sp-4); }
+.nv-ops-title {
+ font-size:var(--nv-fs-20); font-weight:var(--nv-fw-semi); letter-spacing:-.02em; line-height:var(--nv-lh-tight); }
+.nv-ops-sub {
+ margin-top:4px; font-size:var(--nv-fs-13); color:var(--nv-text-3); }
+.nv-ops-tags {
+ display:flex; flex-wrap:wrap; gap:6px; margin-top:var(--nv-sp-3); }
+.nv-ops-actions {
+ display:flex; flex-wrap:wrap; gap:var(--nv-sp-2); }
+.nv-ops-kpis {
+ display:grid; grid-template-columns:repeat(auto-fill, minmax(156px, 1fr)); gap:var(--nv-sp-3); }
+.nv-kpi {
+ display:flex; flex-direction:column; gap:2px; min-height:92px;
+ padding:14px 16px; background:var(--nv-surface); color:inherit; text-decoration:none;
+ border:1px solid var(--nv-border); border-radius:var(--nv-r-md); box-shadow:var(--nv-sh-1); }
+a.nv-kpi:hover {
+ border-color:var(--nv-primary); background:var(--nv-primary-wash); text-decoration:none; color:inherit; }
+.nv-kpi-label {
+ font-size:var(--nv-fs-12); color:var(--nv-text-3); }
+.nv-kpi-value {
+ font-size:var(--nv-fs-22); font-weight:var(--nv-fw-semi); letter-spacing:-.03em; line-height:1.2; color:var(--nv-text); }
+.nv-kpi.is-warn .nv-kpi-value { color:var(--nv-warning-text); }
+.nv-kpi.is-danger .nv-kpi-value { color:var(--nv-danger); }
+.nv-kpi-sub {
+ font-size:var(--nv-fs-12); color:var(--nv-text-4); }
+.nv-ops-split {
+ display:grid; grid-template-columns:minmax(0, 1.45fr) minmax(280px, .85fr);
+ gap:var(--nv-sp-4); margin-top:var(--nv-sp-4); }
+.nv-ops-split > .nv-card + .nv-card { margin-top:0; }
+.nv-ops > .nv-card { margin-top:var(--nv-sp-4); }
+.nv-meter-row + .nv-meter-row { margin-top:var(--nv-sp-4); }
+.nv-meter-label, .nv-meter-sub {
+ display:flex; justify-content:space-between; gap:var(--nv-sp-3); font-size:var(--nv-fs-12); color:var(--nv-text-3); }
+.nv-meter-label b { color:var(--nv-text); font-weight:var(--nv-fw-semi); }
+.nv-meter {
+ height:6px; margin:6px 0; background:var(--nv-surface-3); border-radius:var(--nv-r-full); overflow:hidden; }
+.nv-meter > span {
+ display:block; height:100%; width:0; background:var(--nv-primary); border-radius:inherit; }
+.nv-meter.is-warn > span { background:var(--nv-warning); }
+.nv-meter.is-danger > span { background:var(--nv-danger); }
+.nv-ops-facts {
+ display:grid; grid-template-columns:72px minmax(0, 1fr); gap:8px 12px;
+ margin:var(--nv-sp-4) 0 0; font-size:var(--nv-fs-13); }
+.nv-ops-facts dt { color:var(--nv-text-3); }
+.nv-ops-facts dd { margin:0; color:var(--nv-text); word-break:break-word; }
+.nv-ops-facts dd .nv-link { margin-left:8px; }
+.nv-ops-facts-tight { margin-top:var(--nv-sp-4); padding-top:var(--nv-sp-3); border-top:1px solid var(--nv-border); }
+.nv-ops-links {
+ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.nv-ops-link {
+ display:flex; align-items:center; gap:8px; min-height:36px; padding:6px 10px;
+ border:1px solid var(--nv-border); border-radius:var(--nv-r-sm);
+ color:var(--nv-text); font-size:var(--nv-fs-13); text-decoration:none; background:var(--nv-surface); }
+.nv-ops-link:hover {
+ border-color:var(--nv-primary); background:var(--nv-primary-wash); color:var(--nv-primary); text-decoration:none; }
+.nv-ops-link .nv-ico { color:var(--nv-text-3); }
+.nv-ops-link:hover .nv-ico { color:var(--nv-primary); }
+.nv-ops-empty {
+ padding:var(--nv-sp-5) var(--nv-sp-4); color:var(--nv-text-3); font-size:var(--nv-fs-13); }
+.nv-card-flush { padding:0; }
+.nv-td-nowrap { white-space:nowrap; }
+.nv-td-clip {
+ max-width:280px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.nv-td-pre {
+ white-space:pre-wrap; word-break:break-word; }
+@media (max-width: 980px) {
+ .nv-ops-split { grid-template-columns:1fr; }
+ .nv-ops-links { grid-template-columns:1fr; }
+}

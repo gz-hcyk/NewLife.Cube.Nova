@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>政务蓝 · 简洁版 — Nova 皮肤预览</title>
+<style>
+/* ========== 政务蓝 · 简洁版 提案令牌 ========== */
+:root{
+  --nv-blue-600:#1e5cae; --nv-blue-700:#194b8c; --nv-blue-800:#143c6e; --nv-blue-900:#102f56;
+  --nv-blue-50:#eef3fa;  --nv-blue-100:#dce7f5;
+  /* 中性色压灰一档 */
+  --nv-gray-0:#ffffff; --nv-gray-50:#f7f8fa; --nv-gray-100:#f1f3f6; --nv-gray-200:#e8ebef;
+  --nv-gray-300:#d9dee5; --nv-gray-400:#b8bfc9; --nv-gray-500:#8b93a1; --nv-gray-600:#636b78;
+  --nv-gray-700:#454c58; --nv-gray-800:#2e3440; --nv-gray-900:#1c212b;
+  /* 语义色降饱和 */
+  --nv-success:#2e8b52; --nv-success-weak:#ebf5ee; --nv-success-text:#1f6b3c;
+  --nv-warning:#b97f1c; --nv-warning-weak:#faf3e3; --nv-warning-text:#8a5d10;
+  --nv-danger:#c04444;  --nv-danger-weak:#f9ecec;  --nv-danger-text:#8f2d2d;
+  --nv-info:#0f7f95;    --nv-info-weak:#e8f4f6;    --nv-info-text:#0b6072;
+  /* 表面与文字 */
+  --nv-bg:#f5f6f8; --nv-surface:#ffffff; --nv-surface-2:#f8f9fb; --nv-surface-3:#f1f3f6;
+  --nv-border:#e4e7ec; --nv-border-strong:#d4d9e0;
+  --nv-text:#1c212b; --nv-text-2:#454c58; --nv-text-3:#636b78; --nv-text-4:#8b93a1;
+  --nv-primary:#1e5cae; --nv-primary-hover:#194b8c; --nv-primary-active:#143c6e;
+  --nv-primary-weak:#eef3fa; --nv-primary-weak-2:#dce7f5;
+  --nv-radius:4px; --nv-radius-lg:6px;
+  --nv-shadow-1:0 1px 2px rgba(16,47,86,.05);
+  --nv-shadow-2:0 1px 3px rgba(16,47,86,.07),0 4px 10px rgba(16,47,86,.05);
+  --nv-font:"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Segoe UI",system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--nv-font);background:var(--nv-bg);color:var(--nv-text);font-size:14px;line-height:1.6;display:flex;min-height:100vh}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:var(--nv-gray-300);border-radius:5px}
+
+/* ========== 侧栏 ========== */
+.sidebar{width:232px;background:linear-gradient(180deg,#143c6e 0%,#102f56 100%);color:#cdd9ec;flex-shrink:0;display:flex;flex-direction:column}
+.brand{height:56px;display:flex;align-items:center;gap:10px;padding:0 20px;color:#fff;font-size:16px;font-weight:600;letter-spacing:1px;border-bottom:1px solid rgba(255,255,255,.08)}
+.brand .logo{width:28px;height:28px;border-radius:4px;background:#fff;color:#143c6e;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.menu{padding:12px 10px;flex:1}
+.menu-group{font-size:12px;color:#7f97bd;padding:14px 12px 6px;letter-spacing:2px}
+.menu-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--nv-radius);color:#cdd9ec;cursor:pointer;font-size:14px;margin-bottom:2px}
+.menu-item .ico{width:16px;text-align:center;opacity:.85;font-size:13px}
+.menu-item:hover{background:rgba(255,255,255,.07);color:#fff}
+.menu-item.active{background:var(--nv-blue-600);color:#fff}
+.menu-item .arrow{margin-left:auto;font-size:11px;opacity:.6}
+
+/* ========== 主区域 ========== */
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{height:56px;background:var(--nv-surface);border-bottom:1px solid var(--nv-border);display:flex;align-items:center;padding:0 24px;gap:16px}
+.crumb{color:var(--nv-text-3);font-size:13px}
+.crumb b{color:var(--nv-text);font-weight:600}
+.topbar .sp{flex:1}
+.search{width:220px;height:32px;border:1px solid var(--nv-border-strong);border-radius:var(--nv-radius);padding:0 12px;color:var(--nv-text-3);font-size:13px;display:flex;align-items:center;background:var(--nv-surface-2)}
+.user{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--nv-text-2);cursor:pointer;padding:6px 8px;border-radius:var(--nv-radius)}
+.user:hover{background:var(--nv-gray-100)}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--nv-blue-600);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px}
+.iconbtn{width:32px;height:32px;border-radius:var(--nv-radius);display:flex;align-items:center;justify-content:center;color:var(--nv-text-3);cursor:pointer;font-size:15px}
+.iconbtn:hover{background:var(--nv-gray-100);color:var(--nv-text)}
+
+.content{padding:24px;flex:1}
+.page-head{display:flex;align-items:center;margin-bottom:18px}
+.page-head h1{font-size:18px;font-weight:600;color:var(--nv-text)}
+.page-head .sub{color:var(--nv-text-3);font-size:13px;margin-left:12px}
+.page-head .sp{flex:1}
+
+/* ========== 按钮：纯色、无渐变 ========== */
+.btn{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;border-radius:var(--nv-radius);font-size:13px;cursor:pointer;border:1px solid transparent;font-family:var(--nv-font);transition:all .15s}
+.btn-pri{background:var(--nv-primary);color:#fff}
+.btn-pri:hover{background:var(--nv-primary-hover)}
+.btn-pri:active{background:var(--nv-primary-active)}
+.btn-sec{background:var(--nv-surface);border-color:var(--nv-border-strong);color:var(--nv-text-2)}
+.btn-sec:hover{border-color:var(--nv-primary);color:var(--nv-primary);background:var(--nv-primary-weak)}
+.btn-danger{background:var(--nv-surface);border-color:var(--nv-border-strong);color:var(--nv-danger)}
+.btn-danger:hover{background:var(--nv-danger);border-color:var(--nv-danger);color:#fff}
+.btn-dis{background:var(--nv-gray-100);color:var(--nv-text-4);cursor:not-allowed}
+
+/* ========== 统计卡片：克制、无渐变 ========== */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.stat{background:var(--nv-surface);border:1px solid var(--nv-border);border-radius:var(--nv-radius-lg);padding:16px 18px;box-shadow:var(--nv-shadow-1)}
+.stat .label{font-size:13px;color:var(--nv-text-3);display:flex;align-items:center;gap:7px}
+.stat .label i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.stat .num{font-size:26px;font-weight:600;margin-top:6px;font-variant-numeric:tabular-nums}
+.stat .trend{font-size:12px;margin-top:2px}
+.up{color:var(--nv-success-text)} .down{color:var(--nv-danger-text)}
+
+/* ========== 卡片与表格 ========== */
+.card{background:var(--nv-surface);border:1px solid var(--nv-border);border-radius:var(--nv-radius-lg);box-shadow:var(--nv-shadow-1);margin-bottom:18px}
+.card-head{display:flex;align-items:center;padding:13px 18px;border-bottom:1px solid var(--nv-border)}
+.card-head b{font-size:14px;font-weight:600}
+.card-head .sp{flex:1}
+.card-body{padding:0 18px 14px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--nv-surface-2);color:var(--nv-text-2);font-weight:600;text-align:left;padding:10px 12px;border-bottom:1px solid var(--nv-border-strong);white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--nv-border);color:var(--nv-text-2);white-space:nowrap}
+tbody tr:hover{background:var(--nv-primary-weak)}
+tbody tr:last-child td{border-bottom:none}
+.link{color:var(--nv-primary);cursor:pointer}
+.link:hover{text-decoration:underline}
+.mono{font-variant-numeric:tabular-nums;color:var(--nv-text-3)}
+
+/* 状态：色点+文字 双编码 */
+.st{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:2px 10px;border-radius:3px;font-weight:500}
+.st i{width:6px;height:6px;border-radius:50%;display:inline-block}
+.st-on{background:var(--nv-success-weak);color:var(--nv-success-text)} .st-on i{background:var(--nv-success)}
+.st-off{background:var(--nv-gray-100);color:var(--nv-text-3)} .st-off i{background:var(--nv-gray-400)}
+.st-warn{background:var(--nv-warning-weak);color:var(--nv-warning-text)} .st-warn i{background:var(--nv-warning)}
+.st-err{background:var(--nv-danger-weak);color:var(--nv-danger-text)} .st-err i{background:var(--nv-danger)}
+.st-info{background:var(--nv-info-weak);color:var(--nv-info-text)} .st-info i{background:var(--nv-info)}
+
+.pager{display:flex;align-items:center;gap:6px;justify-content:flex-end;padding:12px 18px;font-size:13px;color:var(--nv-text-3)}
+.pager .pg{min-width:28px;height:28px;border-radius:var(--nv-radius);border:1px solid var(--nv-border-strong);display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--nv-surface)}
+.pager .pg:hover{border-color:var(--nv-primary);color:var(--nv-primary)}
+.pager .pg.cur{background:var(--nv-primary);border-color:var(--nv-primary);color:#fff}
+
+/* ========== 表单 ========== */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 24px;padding:16px 0}
+.fi label{display:block;font-size:13px;color:var(--nv-text-2);margin-bottom:6px}
+.fi label em{color:var(--nv-danger);font-style:normal;margin-left:2px}
+.fi input,.fi select,.fi textarea{width:100%;height:34px;border:1px solid var(--nv-border-strong);border-radius:var(--nv-radius);padding:0 10px;font-size:13px;font-family:var(--nv-font);color:var(--nv-text);background:var(--nv-surface);transition:border .15s,box-shadow .15s}
+.fi textarea{height:auto;padding:8px 10px;resize:vertical}
+.fi input:focus,.fi select:focus,.fi textarea:focus{outline:none;border-color:var(--nv-primary);box-shadow:0 0 0 3px rgba(30,92,174,.12)}
+.fi .hint{font-size:12px;color:var(--nv-text-4);margin-top:4px}
+.fi.full{grid-column:1/-1}
+.form-foot{display:flex;gap:10px;padding:14px 0 4px;border-top:1px solid var(--nv-border)}
+
+/* 工具条 */
+.toolbar{display:flex;align-items:center;gap:10px;padding:12px 18px;flex-wrap:wrap}
+.toolbar .sp{flex:1}
+.seg{display:inline-flex;border:1px solid var(--nv-border-strong);border-radius:var(--nv-radius);overflow:hidden}
+.seg span{padding:5px 12px;font-size:12px;color:var(--nv-text-3);cursor:pointer;background:var(--nv-surface)}
+.seg span+span{border-left:1px solid var(--nv-border-strong)}
+.seg span.on{background:var(--nv-primary);color:#fff}
+</style>
+</head>
+<body>
+
+<!-- 侧栏 -->
+<aside class="sidebar">
+  <div class="brand"><span class="logo">◆</span>应用管理平台</div>
+  <nav class="menu">
+    <div class="menu-item active"><span class="ico">▦</span>工作台</div>
+    <div class="menu-group">设备管理</div>
+    <div class="menu-item"><span class="ico">◉</span>设备台账<span class="arrow">›</span></div>
+    <div class="menu-item"><span class="ico">⚠</span>告警中心<span class="arrow">›</span></div>
+    <div class="menu-item"><span class="ico">▤</span>数据报表<span class="arrow">›</span></div>
+    <div class="menu-group">系统管理</div>
+    <div class="menu-item"><span class="ico">♟</span>用户管理</div>
+    <div class="menu-item"><span class="ico">⚙</span>权限设置</div>
+    <div class="menu-item"><span class="ico">◷</span>操作日志</div>
+  </nav>
+</aside>
+
+<!-- 主区域 -->
+<div class="main">
+  <header class="topbar">
+    <span class="crumb">设备管理 / <b>设备台账</b></span>
+    <div class="sp"></div>
+    <div class="search">🔍 搜索设备名称 / 编号</div>
+    <div class="iconbtn">♡</div>
+    <div class="iconbtn">⚙</div>
+    <div class="user"><span class="avatar">管</span>系统管理员 <span style="color:var(--nv-text-4)">▾</span></div>
+  </header>
+
+  <main class="content">
+    <div class="page-head">
+      <h1>设备台账</h1><span class="sub">共 4,216 台设备 · 更新于 10 分钟前</span>
+      <div class="sp"></div>
+      <button class="btn btn-sec">⬇ 导出</button>
+      <button class="btn btn-pri">＋ 新增设备</button>
+    </div>
+
+    <!-- 统计 -->
+    <div class="stats">
+      <div class="stat"><div class="label"><i style="background:var(--nv-primary)"></i>设备总数</div><div class="num">4,216</div><div class="trend up">▲ 本月 +3.2%</div></div>
+      <div class="stat"><div class="label"><i style="background:var(--nv-success)"></i>在线设备</div><div class="num">3,987</div><div class="trend up">▲ 在线率 94.6%</div></div>
+      <div class="stat"><div class="label"><i style="background:var(--nv-warning)"></i>待处理告警</div><div class="num">17</div><div class="trend down">▼ 较昨日 -5</div></div>
+      <div class="stat"><div class="label"><i style="background:var(--nv-danger)"></i>离线设备</div><div class="num">229</div><div class="trend down">▲ 需重点关注</div></div>
+    </div>
+
+    <!-- 表格卡片 -->
+    <div class="card">
+      <div class="toolbar">
+        <button class="btn btn-pri">＋ 新增</button>
+        <button class="btn btn-sec">批量导入</button>
+        <button class="btn btn-danger">删除</button>
+        <div class="sp"></div>
+        <div class="seg"><span class="on">舒适</span><span>标准</span><span>紧凑</span></div>
+      </div>
+      <table>
+        <thead><tr><th><input type="checkbox"></th><th>设备编号</th><th>设备名称</th><th>所属单位</th><th>安装位置</th><th>状态</th><th>电量</th><th>最近上报</th><th>操作</th></tr></thead>
+        <tbody>
+          <tr><td><input type="checkbox"></td><td class="mono">MJ-2024-0087</td><td>室温采集终端</td><td>市机关事务管理局</td><td>1号楼 3层</td><td><span class="st st-on"><i></i>在线</span></td><td>86%</td><td class="mono">2026-09-25 07:42</td><td><span class="link">详情</span> · <span class="link">编辑</span></td></tr>
+          <tr><td><input type="checkbox"></td><td class="mono">MJ-2024-0103</td><td>智能电表</td><td>市水务集团</td><td>配电室 B</td><td><span class="st st-warn"><i></i>告警</span></td><td>42%</td><td class="mono">2026-09-25 06:15</td><td><span class="link">详情</span> · <span class="link">处理</span></td></tr>
+          <tr><td><input type="checkbox"></td><td class="mono">MJ-2023-0561</td><td>门禁控制器</td><td>市图书馆</td><td>东门岗亭</td><td><span class="st st-off"><i></i>离线</span></td><td>—</td><td class="mono">2026-09-22 18:03</td><td><span class="link">详情</span> · <span class="link">重启</span></td></tr>
+          <tr><td><input type="checkbox"></td><td class="mono">MJ-2024-0218</td><td>烟感探测器</td><td>市档案馆</td><td>库房 2F</td><td><span class="st st-on"><i></i>在线</span></td><td>93%</td><td class="mono">2026-09-25 07:51</td><td><span class="link">详情</span> · <span class="link">编辑</span></td></tr>
+          <tr><td><input type="checkbox"></td><td class="mono">MJ-2024-0330</td><td>视频监控主机</td><td>市体育中心</td><td>中控室</td><td><span class="st st-info"><i></i>维护中</span></td><td>67%</td><td class="mono">2026-09-24 22:10</td><td><span class="link">详情</span> · <span class="link">编辑</span></td></tr>
+        </tbody>
+      </table>
+      <div class="pager">共 4,216 条 <span class="pg">‹</span><span class="pg cur">1</span><span class="pg">2</span><span class="pg">3</span><span class="pg">…</span><span class="pg">212</span><span class="pg">›</span></div>
+    </div>
+
+    <!-- 表单卡片 -->
+    <div class="card">
+      <div class="card-head"><b>新增设备</b><span class="sp"></span><span style="font-size:12px;color:var(--nv-text-4)">带 <em style="color:var(--nv-danger);font-style:normal">*</em> 为必填项</span></div>
+      <div class="card-body">
+        <div class="form-grid">
+          <div class="fi"><label>设备名称<em>*</em></label><input placeholder="请输入设备名称" value="室温采集终端"></div>
+          <div class="fi"><label>设备编号<em>*</em></label><input placeholder="系统自动生成" value="MJ-2024-0341"></div>
+          <div class="fi"><label>所属单位<em>*</em></label><select><option>市机关事务管理局</option><option>市水务集团</option></select></div>
+          <div class="fi"><label>安装位置</label><input placeholder="如：1号楼 3层"></div>
+          <div class="fi full"><label>备注说明</label><textarea rows="2" placeholder="选填，补充设备用途、采购信息等内容"></textarea><div class="hint">保存后将自动同步至设备台账，操作记录可在「操作日志」中查看。</div></div>
+        </div>
+        <div class="form-foot">
+          <button class="btn btn-pri">保 存</button>
+          <button class="btn btn-sec">取消</button>
+          <button class="btn btn-dis" style="margin-left:auto">保存中…</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>
