@@ -372,6 +372,17 @@
         });
     }
 
+    /* 勾选清单全选/清空（事件委托，表单页多选字段用） */
+    document.addEventListener('click', function (e) {
+        var t = e.target.closest ? e.target.closest('[data-nv-checkall],[data-nv-checknone]') : null;
+        if (!t) return;
+        var id = t.getAttribute('data-nv-checkall') || t.getAttribute('data-nv-checknone');
+        var box = document.getElementById(id);
+        if (!box) return;
+        var on = t.hasAttribute('data-nv-checkall');
+        $all('input[type="checkbox"]', box).forEach(function (c) { c.checked = on; });
+    });
+
     function init() {
         /* 1) 恢复用户偏好：三者都是「先读存储再落地」，与 nova.js 一致 */
         applyTheme(get('nova-theme', 'light'));

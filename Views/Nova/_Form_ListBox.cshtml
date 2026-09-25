@@ -1,4 +1,4 @@
-﻿@model ListBoxModel
+@model ListBoxModel
 @using NewLife;
 @using NewLife.Cube
 @using XCode;
@@ -10,11 +10,10 @@
     var type = value.GetType();
 
     var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
-    if (NewLife.Cube.CubeSetting.Current.BootstrapSelect)
-        atts.Add("class", "multiselect");
-    else
-        atts.Add("class", "nv-select");
-    atts.Add("multiple", "");
+    // 原生 select[multiple] 需要 Ctrl+Click，对业务用户不友好；Nova 一律渲染为勾选清单（tag 化复选）。
+    // 不再依赖 bootstrap-multiselect 插件（皮肤未内置，此前输出裸 select 挤成 4 行小框）。
+    var id = atts.ContainsKey("id") ? atts["id"] as String : name;
+    if (id.IsNullOrEmpty()) id = name;
 
     var selectedValues = Model.SelectedValues as String;
     var selectedList = selectedValues?.Split(",");
@@ -28,6 +27,37 @@
             break;
         }
     }
+
+    // 各分支统一收敛为 MultiSelectList，再由下方勾选清单渲染（提交格式与原生 ListBox 完全一致：name 重复出现）
+    MultiSelectList msl = null;
+    if (treeSample == null)
+    {
+        if (value is IEnumerable<SelectListItem> selectList)
+        {
+            msl = new MultiSelectList(selectList, "Value", "Text", selectedList);
+        }
+        else if (value is IEnumerable data && type.GetElementTypeEx().As(typeof(IEntity)))
+        {
+            IEntityFactory factory = null;
+            var dic = new Dictionary<String, String>();
+            foreach (IEntity entity in data)
+            {
+                if (factory == null) factory = entity.GetType().AsFactory();
+
+                var key = entity[factory.Unique.Name] + "";
+                dic[key] = entity + "";
+            }
+            msl = new MultiSelectList(dic, "Key", "Value", selectedList);
+        }
+        else if (value is IDictionary dic)
+        {
+            msl = new MultiSelectList(dic, "Key", "Value", selectedList);
+        }
+        else if (value is IEnumerable items)
+        {
+            msl = new MultiSelectList(items, selectedList);
+        }
+    }
 }
 @if (treeSample != null)
 {
@@ -35,30 +65,19 @@
     treeVd["TreeMultiple"] = true;
     @await Html.PartialAsync("_TreeSelect", Model, treeVd)
 }
-else if (value is IEnumerable<SelectListItem> selectList)
+else if (msl != null)
 {
-    @Html.ListBox(name, selectList, atts)
-}
-else if (value is IEnumerable data && type.GetElementTypeEx().As(typeof(IEntity)))
-{
-    //var vs = EntityExtension.ToDictionary(value);
-    //var vs = typeof(EntityExtension).Invoke("ToDictionary", value);
-    IEntityFactory factory = null;
-    var dic = new Dictionary<String, String>();
-    foreach (IEntity entity in data)
-    {
-        if (factory == null) factory = entity.GetType().AsFactory();
-
-        var key = entity[factory.Unique.Name] + "";
-        dic[key] = entity + "";
-    }
-    @Html.ListBox(name, new MultiSelectList(dic, "Key", "Value", selectedList), atts)
-}
-else if (value is IDictionary dic)
-{
-    @Html.ListBox(name, new MultiSelectList(dic, "Key", "Value", selectedList), atts)
-}
-else if (value is IEnumerable items)
-{
-    @Html.ListBox(name, new MultiSelectList(items, selectedList), atts)
+    <div class="nv-checklist-bar">
+        <a href="javascript:;" data-nv-checkall="@id">全选</a>
+        <a href="javascript:;" data-nv-checknone="@id">清空</a>
+    </div>
+    <div class="nv-checklist" id="@id" role="group" aria-label="多选列表">
+        @foreach (var it in msl)
+        {
+            <label class="nv-check-item">
+                <input type="checkbox" name="@name" value="@it.Value" checked="@it.Selected" />
+                <span>@it.Text</span>
+            </label>
+        }
+    </div>
 }

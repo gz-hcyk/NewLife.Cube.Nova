@@ -1,4 +1,4 @@
-﻿@model ListBoxModel
+@model ListBoxModel
 @using NewLife;
 @using NewLife.Cube
 @using XCode;
@@ -10,10 +10,9 @@
     var type = value.GetType();
 
     var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
-    if (NewLife.Cube.CubeSetting.Current.BootstrapSelect)
-        atts.Add("class", "multiselect");
-    else
-        atts.Add("class", "nv-select");
+    // Nova 未内置 bootstrap-multiselect 插件：单选统一走 nv-select 样式，
+    // 不再输出无样式裸 class="multiselect"（BootstrapSelect 设置只影响 ACE 皮肤）。
+    atts.Add("class", "nv-select");
 
     // 处理自动回发
     if (Model.AutoPostback) atts.Add("onchange", "$(this).parents('form').submit();");
