@@ -21,6 +21,7 @@
     // 预计算树形行数据：父指针表、有子节点集合。数据为当前页扁平行，前端按 data-nv-tree-* 属性组树
     IDictionary<String, String> treeParentOf = null;
     ISet<String> treeChildIds = null;
+    List<IEntity> treeRows = null;
     if (isTree)
     {
         treeParentOf = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
@@ -35,7 +36,73 @@
         {
             if (!kv.Value.IsNullOrEmpty()) treeChildIds.Add(kv.Value);
         }
+
+        // 树序输出：父在前子跟随（原输出按分页排序，子行散落在父行之前，树形不可读）。
+        // 兄弟按 Sort 列升序（无则按主键），LINQ OrderBy 稳定，同键保持原相对顺序。
+        // 兄弟按 Sort 列升序（无则按主键）。注意 FindByName 返回 FieldItem，其基类 Field
+        // 重载了 ==/!= 且返回 Expression（SQL 构造用），判空必须走 Object.ReferenceEquals。
+        var sortField = fact.Table.FindByName("Sort") as FieldItem;
+        Int64 SortKey(IEntity e)
+        {
+            Object v = Object.ReferenceEquals(sortField, null) ? e[ukey.Name] : e[sortField.Name];
+            return v.ToLong();
+        }
+        var treeById = new Dictionary<String, IEntity>(StringComparer.OrdinalIgnoreCase);
+        foreach (IEntity entity in (IEnumerable<IEntity>)Model)
+        {
+            var id = entity[ukey.Name]?.ToString();
+            if (!id.IsNullOrEmpty()) treeById[id] = entity;
+        }
+        var treeKidsOf = new Dictionary<String, List<IEntity>>(StringComparer.OrdinalIgnoreCase);
+        var treeRoots = new List<IEntity>();
+        foreach (IEntity entity in (IEnumerable<IEntity>)Model)
+        {
+            var pid = entity[treeParentColumn]?.ToString();
+            if (!pid.IsNullOrEmpty() && treeById.ContainsKey(pid))
+            {
+                if (!treeKidsOf.TryGetValue(pid, out var kids)) treeKidsOf[pid] = kids = new List<IEntity>();
+                kids.Add(entity);
+            }
+            else treeRoots.Add(entity);
+        }
+        foreach (var list in treeKidsOf.Values)
+        {
+            var sorted = list.OrderBy(SortKey).ThenBy(e => e[ukey.Name].ToLong()).ToList();
+            list.Clear(); list.AddRange(sorted);
+        }
+        // DFS 组装：父行在前、子树紧跟其后，折叠/缩进才连续可读
+        treeRows = new List<IEntity>();
+        void WalkTree(IEntity e)
+        {
+            treeRows.Add(e);
+            var id = e[ukey.Name]?.ToString();
+            if (id.IsNullOrEmpty()) return;
+            if (treeKidsOf.TryGetValue(id, out var kids)) foreach (var k in kids) WalkTree(k);
+        }
+        foreach (var r in treeRoots.OrderBy(SortKey).ThenBy(e => e[ukey.Name].ToLong())) WalkTree(r);
     }
+
+    // 树形切换钮所在列：优先 Name 主字段列，退回首个字符串列；都无时前端退回首个非复选列
+    Int32 treeLabelTdIndex = -1;
+    if (isTree)
+    {
+        var labelField = fields.FirstOrDefault(f => f.Name.EqualIgnoreCase("Name"))
+            ?? fields.FirstOrDefault(f => f.Type == typeof(String));
+        if (labelField != null)
+        {
+            var idx = 0;
+            foreach (var f in fields)
+            {
+                if (f.Name == labelField.Name)
+                {
+                    treeLabelTdIndex = idx + (set.EnableSelect && ukey != null ? 1 : 0);
+                    break;
+                }
+                idx++;
+            }
+        }
+    }
+    Object rowSource = isTree ? treeRows : Model;
 }
 @if (isTree)
 {
@@ -44,7 +111,7 @@
         <button type="button" class="nv-btn nv-btn-sm" data-nv-tree-expand="none">全部折叠</button>
     </div>
 }
-<table class="nv-table@(isTree ? " nv-tree-table" : "")">
+<table class="nv-table@(isTree ? " nv-tree-table" : "")"@Html.Raw(isTree && treeLabelTdIndex >= 0 ? " data-nv-tree-label=\"" + treeLabelTdIndex + "\"" : "")>
     <thead>
         <tr>
             @if (set.EnableSelect && ukey != null)
@@ -79,7 +146,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var entity in Model)
+        @foreach (var entity in (dynamic)rowSource)
         {
             // 树形行属性：主键、父键、深度（沿父链向上推算）、是否有子节点；平铺列表输出 null
             String treeAttrs = null;

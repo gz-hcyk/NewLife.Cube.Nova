@@ -124,11 +124,15 @@ try {
     Write-Output 'CHECK shell-page : FAIL(exception)'
 }
 
-# 5.7 department list page（ParentID 树形自动判定；回归：动态类型上调用 IsNullOrEmpty 扩展方法）
+# 5.7 department list page(ParentID 树形自动判定;回归:动态类型上调用 IsNullOrEmpty 扩展方法)
 try {
     $dept = Invoke-WebRequest -Uri ($base + '/Admin/Department') -UseBasicParsing -TimeoutSec 30 -WebSession $s
     Check 'dept-page' ($dept.StatusCode -eq 200)
     Check 'dept-tree-table' ($dept.Content -match 'nv-tree-table')
+    Check 'dept-tree-label-col' ($dept.Content -match 'data-nv-tree-label="\d+"')
+    # 树序:首行必须是根(depth=0)，否则父行散在子行之后，树形/折叠都错乱
+    $mFirst = [regex]::Match($dept.Content, 'data-nv-tree-depth="(\d+)"')
+    Check 'dept-tree-root-first' ($mFirst.Success -and $mFirst.Groups[1].Value -eq '0')
 } catch {
     Write-Output 'CHECK dept-page : FAIL(exception)'
 }

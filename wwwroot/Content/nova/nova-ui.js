@@ -772,14 +772,26 @@
             var depth = parseInt(tr.getAttribute('data-nv-tree-depth') || '0', 10);
             if (!has || depth < min) { min = depth; has = true; }
         });
+        var labelIdxAttr = table.getAttribute('data-nv-tree-label');
+        var labelIdx = labelIdxAttr == null || labelIdxAttr === '' ? -1 : parseInt(labelIdxAttr, 10);
         rows.forEach(function (tr) {
             var cell = null;
-            for (var i = 0; i < tr.children.length; i++) {
-                var td = tr.children[i];
-                if (td.tagName !== 'TD') continue;
-                if (td.querySelector('input[type="checkbox"][name="keys"]')) continue;
-                cell = td;
-                break;
+            if (labelIdx >= 0) {
+                // 服务端指定的树标签列（通常是名称列）：按列序取，跳过表尾操作列
+                var tds = [];
+                for (var i = 0; i < tr.children.length; i++) {
+                    if (tr.children[i].tagName === 'TD') tds.push(tr.children[i]);
+                }
+                cell = tds[labelIdx] || null;
+            }
+            if (!cell) {
+                for (var j = 0; j < tr.children.length; j++) {
+                    var td = tr.children[j];
+                    if (td.tagName !== 'TD') continue;
+                    if (td.querySelector('input[type="checkbox"][name="keys"]')) continue;
+                    cell = td;
+                    break;
+                }
             }
             if (!cell || cell.querySelector('.nv-tree-toggle')) return;
             cell.classList.add('nv-tree-cell');
