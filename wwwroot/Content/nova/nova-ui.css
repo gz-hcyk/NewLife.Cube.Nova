@@ -2478,11 +2478,17 @@ body.nv .form-actions .btn-danger:hover, body.nv .form-actions .btn-danger:focus
    这里按 Nova 卡片体系补最小样式，保证生产交付观感统一。 */
 .widget-grid { display:flex; flex-wrap:wrap; gap:var(--nv-sp-3); margin:0 0 var(--nv-sp-3); }
 .widget-col { flex:1 1 220px; min-width:0; }
-.widget-col-kpi { flex:0 1 200px; }
+/* KPI 卡忽略服务端保存的固定百分比宽，按内容自适应换行（响应式基准）；
+   flex-shrink 置 0，避免被同行的信息卡压缩、也不被拉伸成等高 */
+.widget-col-kpi { flex:1 0 180px; width:auto !important; }
 .widget-kpi {
  position:relative; display:flex; align-items:center; gap:12px;
  background:var(--nv-surface); border:1px solid var(--nv-border); border-radius:var(--nv-r-md);
  padding:14px 16px; box-shadow:var(--nv-sh-1); }
+/* 操作柄绝对定位于卡片右上角，不挤占图标/数值内容区 */
+.widget-kpi .widget-menu-wrap { position:absolute; top:8px; right:8px; margin-left:0; }
+.widget-kpi .widget-drag { position:absolute; top:8px; right:36px; }
+.widget-kpi-info { min-width:0; flex:1 1 auto; }
 .widget-kpi-icon {
  width:40px; height:40px; flex:0 0 40px; display:flex; align-items:center; justify-content:center;
  border-radius:10px; font-size:20px; }
@@ -2492,8 +2498,8 @@ body.nv .form-actions .btn-danger:hover, body.nv .form-actions .btn-danger:focus
 .widget-kpi-icon.k-orange, .widget-kpi-icon.k-o { background:var(--nv-warning-weak); color:var(--nv-warning); }
 .widget-kpi-icon.k-red { background:var(--nv-danger-weak); color:var(--nv-danger); }
 .widget-kpi-icon.k-grey { background:var(--nv-surface-3); color:var(--nv-text-3); }
-.widget-kpi-value { font-size:22px; font-weight:var(--nv-fw-bold,700); line-height:1.2; color:var(--nv-text); }
-.widget-kpi-label { font-size:var(--nv-fs-13); color:var(--nv-text-2); margin-top:2px; }
+.widget-kpi-value { font-size:22px; font-weight:var(--nv-fw-bold,700); line-height:1.2; color:var(--nv-text); white-space:nowrap; }
+.widget-kpi-label { font-size:var(--nv-fs-13); color:var(--nv-text-2); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .widget-kpi-trend { font-size:var(--nv-fs-12); color:var(--nv-text-4); }
 .widget-kpi-link { position:absolute; inset:0; }
 .widget-card {
@@ -2517,6 +2523,54 @@ body.nv .form-actions .btn-danger:hover, body.nv .form-actions .btn-danger:focus
  font-size:var(--nv-fs-13); color:var(--nv-text-2); text-decoration:none; white-space:nowrap; }
 .widget-menu-drop a:hover { background:var(--nv-surface-hover); color:var(--nv-primary); }
 .widget-menu-wrap { position:relative; margin-left:auto; }
+
+/* 工作台响应式（2026-09-25 自适应优化）：窄屏忽略服务端保存的列宽，按断点重排 */
+@media (max-width:1280px) {
+ .widget-grid > .widget-col:not(.widget-col-kpi) { width:auto !important; flex:1 1 calc(33.333% - var(--nv-sp-3)); }
+}
+@media (max-width:900px) {
+ .widget-grid > .widget-col:not(.widget-col-kpi) { flex:1 1 calc(50% - var(--nv-sp-3)); }
+ .cube-workbench .wb-banner { flex-direction:column; align-items:flex-start; gap:var(--nv-sp-3); }
+ .cube-workbench .wb-banner-right { flex-wrap:wrap; }
+}
+@media (max-width:560px) {
+ .widget-grid > .widget-col { width:auto !important; flex:1 1 100%; }
+}
+/* 工作台信息表（系统信息等）：标签列nowrap，值列允许断行，防止标签逐字竖排 */
+.cube-workbench .widget-table .w-name {
+ white-space:nowrap; width:1%; font-weight:var(--nv-fw-normal); color:var(--nv-text-3); }
+.cube-workbench .widget-table .w-value { word-break:break-all; }
+
+/* 欢迎横幅：通栏主色、白字（2026-09-25 对齐 ACE 工作台基准） */
+.cube-workbench .wb-banner {
+ display:flex; align-items:center; justify-content:space-between; gap:var(--nv-sp-3);
+ background:var(--nv-primary); border-radius:var(--nv-r-md); color:#fff;
+ padding:var(--nv-sp-4) var(--nv-sp-5); margin:0 0 var(--nv-sp-3); box-shadow:var(--nv-sh-1); flex-wrap:wrap; }
+.cube-workbench .wb-banner-left { display:flex; align-items:center; gap:var(--nv-sp-3); min-width:0; }
+.cube-workbench .wb-banner-avatar {
+ width:44px; height:44px; flex:0 0 44px; border-radius:var(--nv-r-sm); overflow:hidden;
+ background:rgba(255,255,255,.18); color:#fff; font-size:20px;
+ display:flex; align-items:center; justify-content:center; }
+.cube-workbench .wb-banner-avatar img { width:100%; height:100%; object-fit:cover; }
+.cube-workbench .wb-banner-greet { font-size:var(--nv-fs-16); font-weight:var(--nv-fw-semi); color:#fff; }
+.cube-workbench .wb-banner-sub { font-size:var(--nv-fs-12); color:rgba(255,255,255,.78); margin-top:2px; }
+.cube-workbench .wb-banner-right { display:flex; gap:var(--nv-sp-2); flex-wrap:wrap; }
+.cube-workbench .wb-banner-right .btn {
+ background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.38); color:#fff;
+ border-radius:var(--nv-r-sm); }
+.cube-workbench .wb-banner-right .btn:hover { background:rgba(255,255,255,.26); color:#fff; }
+
+/* 快捷入口：图标网格，图标在上文字在下（对齐 ACE 工作台基准） */
+.cube-workbench .widget-quicklinks {
+ display:grid; grid-template-columns:repeat(auto-fill,minmax(88px,1fr)); gap:var(--nv-sp-2); }
+.cube-workbench .quicklink-item {
+ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
+ padding:var(--nv-sp-3) var(--nv-sp-2); border-radius:var(--nv-r-sm);
+ color:var(--nv-text-2); text-decoration:none; text-align:center; }
+.cube-workbench .quicklink-item:hover { background:var(--nv-primary-wash); color:var(--nv-primary); }
+.cube-workbench .quicklink-item i { font-size:22px; color:var(--nv-primary); }
+.cube-workbench .quicklink-item span {
+ font-size:var(--nv-fs-12); max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
 /* ============================================================ 下拉筛选与多选下拉（2026-09-25）
    单选下拉（nv-selectpop）面板顶部筛选框；多选下拉（nv-multipop）= 筛选 + 全选/清空 + 勾选列表。 */

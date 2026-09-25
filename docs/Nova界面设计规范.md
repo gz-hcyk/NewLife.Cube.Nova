@@ -350,5 +350,8 @@
 | 用户编辑表单（下拉多选/部门选择/省市联动） | 5.3 / 5.7 | [runtime-userform](preview/runtime-userform.png) |
 | 角色编辑表单（权限树） | 5.3 | [runtime-roleform](preview/runtime-roleform.png) |
 | 日志列表（ACE 遗留视图覆写样例） | 8 | [runtime-log](preview/runtime-log.png) |
+| 工作台 Dashboard（桌面 1700） | 6.1 | [runtime-dash-desktop](preview/runtime-dash-desktop.png) |
+| 工作台 Dashboard（平板 1100） | 6.4 | [runtime-dash-tablet](preview/runtime-dash-tablet.png) |
+| 工作台 Dashboard（手机 560） | 6.4 | [runtime-dash-mobile](preview/runtime-dash-mobile.png) |
 
 复摄说明：`docs/preview/verify-demo.ps1` 内嵌全部检查项并在通过时刷新对应基线截图；单独复摄某组件时参照同目录已归档的 `_*shot*.ps1` 脚本模式（起站 → 登录 → 快照 → 停站），注意脚本需以 UTF-8 带 BOM 保存。
