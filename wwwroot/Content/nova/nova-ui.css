@@ -2405,20 +2405,22 @@ a.nv-kpi:hover {
    原型整页外壳侧边栏为政务藏青底 + 白色文字，激活项=主色实心块；此前为白底，属偏差，此处统一收编。 */
 .nv-sidebar {
  background:var(--nv-sidebar-bg); border-right:1px solid var(--nv-sidebar-border); }
-.nv-brand { color:#fff; border-bottom-color:var(--nv-sidebar-border); }
+body.nv .nv-brand, body.nv a.nv-brand { color:#fff; border-bottom-color:var(--nv-sidebar-border); }
 .nv-brand-sub { color:var(--nv-sidebar-text-dim); }
-.nv-menu-link { color:var(--nv-sidebar-text); }
-.nv-menu-link:hover { background:var(--nv-sidebar-hover); color:#fff; }
-.nv-menu-link:hover .nv-menu-ico { color:#fff; }
+/* 菜单文字色规则全部加 body.nv 前缀：叶子项是 <a> 输出，body.nv a(0,1,2) 会压过
+   裸 .nv-menu-link(0,1,0)，链接蓝渗进藏青底导致非激活叶子项几乎不可见。 */
+body.nv .nv-menu-link { color:var(--nv-sidebar-text); }
+body.nv .nv-menu-link:hover { background:var(--nv-sidebar-hover); color:#fff; text-decoration:none; }
+body.nv .nv-menu-link:hover .nv-menu-ico { color:#fff; }
 /* 激活项：主色实心块（替代原浅底+描边+竖条） */
-.nv-menu-item.is-active > .nv-menu-link {
+body.nv .nv-menu-item.is-active > .nv-menu-link {
  background:var(--nv-sidebar-active); color:#fff; box-shadow:none; }
-.nv-menu-item.is-active > .nv-menu-link::before { display:none; }
-.nv-menu-item.is-active > .nv-menu-link .nv-menu-ico { color:#fff; }
+body.nv .nv-menu-item.is-active > .nv-menu-link::before { display:none; }
+body.nv .nv-menu-item.is-active > .nv-menu-link .nv-menu-ico { color:#fff; }
 /* 子菜单：压暗文字，交互同主菜单 */
-.nv-submenu .nv-menu-link { color:var(--nv-sidebar-text-dim); }
-.nv-submenu .nv-menu-link:hover { background:var(--nv-sidebar-hover); color:#fff; }
-.nv-submenu .nv-menu-item.is-active > .nv-menu-link { background:var(--nv-sidebar-active); color:#fff; }
+body.nv .nv-submenu .nv-menu-link { color:var(--nv-sidebar-text-dim); }
+body.nv .nv-submenu .nv-menu-link:hover { background:var(--nv-sidebar-hover); color:#fff; }
+body.nv .nv-submenu .nv-menu-item.is-active > .nv-menu-link { background:var(--nv-sidebar-active); color:#fff; }
 .nv-menu-arrow { color:var(--nv-sidebar-text-dim); }
 .nv-sidebar-foot { color:var(--nv-sidebar-text-dim); border-top-color:var(--nv-sidebar-border); }
 

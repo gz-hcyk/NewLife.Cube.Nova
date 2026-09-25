@@ -49,6 +49,7 @@ $css = (Invoke-WebRequest -Uri ($base + '/Content/nova/nova-ui.css') -UseBasicPa
 Check 'css-served' ($css -match 'nv-primary')
 Check 'css-v3-solid-primary' ($css -match '--nv-grad-primary:#1e5cae')
 Check 'css-anchor-btn-guard' ($css -match 'body\.nv a\.nv-btn-primary')
+Check 'css-sidebar-anchor-guard' ($css -match 'body\.nv \.nv-menu-link \{ color:var\(--nv-sidebar-text\)')
 
 # 2. login page
 $login = Invoke-WebRequest -Uri ($base + '/Admin/User/Login') -UseBasicParsing -TimeoutSec 20 -SessionVariable s
