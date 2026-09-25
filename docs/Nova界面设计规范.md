@@ -331,3 +331,24 @@
 | 品牌 logo / 设备卡图标圆角 | 硬编码 9px / 10px | 令牌 `--nv-r-sm`（6px） |
 
 约束重申：品牌相关文案（产品名、单位名）一律由宿主项目注入，皮肤自身保持中性。
+
+---
+
+## 附录 C · 运行时落地参照截图（NovaDemo 实测）
+
+以 `gov-blue-preview.png` 高保真原型为基准的落地结果，全部摄于 NovaDemo 演示站（2026-09-25，Edge headless 1700 宽视口）。验收或改版时以本附录为组件参照；截图基线随 `docs/preview/` 目录纳入版本管理。
+
+| 组件 / 页面 | 规范章节 | 参照截图 |
+| --- | --- | --- |
+| 原型基准（政务蓝 v3 总览） | 附录 B | [gov-blue-preview](preview/gov-blue-preview.png) |
+| 外壳（侧栏 + 顶栏 + 面包屑） | 6.1 | [runtime-shell](preview/runtime-shell.png)、[runtime-shell-noactive](preview/runtime-shell-noactive.png) |
+| 列表页工具栏（双行：操作 / 筛选 + 关键字行尾） | 6.2 | [runtime-searchbar](preview/runtime-searchbar.png) |
+| 列表页整体（表格 + 分页） | 5.4 / 6.2 | [runtime-list](preview/runtime-list.png) |
+| 树形表格（部门，层级展开） | 5.6 | [runtime-dept-tree](preview/runtime-dept-tree.png) |
+| 分页条（页码按钮组 + 每页 + 跳至） | 5.4 | [runtime-pager](preview/runtime-pager.png) |
+| 表单页整体 | 6.3 | [runtime-form](preview/runtime-form.png) |
+| 用户编辑表单（下拉多选/部门选择/省市联动） | 5.3 / 5.7 | [runtime-userform](preview/runtime-userform.png) |
+| 角色编辑表单（权限树） | 5.3 | [runtime-roleform](preview/runtime-roleform.png) |
+| 日志列表（ACE 遗留视图覆写样例） | 8 | [runtime-log](preview/runtime-log.png) |
+
+复摄说明：`docs/preview/verify-demo.ps1` 内嵌全部检查项并在通过时刷新对应基线截图；单独复摄某组件时参照同目录已归档的 `_*shot*.ps1` 脚本模式（起站 → 登录 → 快照 → 停站），注意脚本需以 UTF-8 带 BOM 保存。
