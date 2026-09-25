@@ -110,9 +110,10 @@
     --nv-dur-fast:130ms; --nv-dur-base:200ms; --nv-dur-slow:280ms;
     --nv-ease:cubic-bezier(.4,0,.2,1); --nv-ease-out:cubic-bezier(.16,1,.3,1);
 
-    /* ============================================================ 10 密度（紧凑为默认） */
-    --nv-row-h-eff:var(--nv-row-h);
-    --nv-cell-py:9px;
+    /* ============================================================ 10 密度（紧凑为默认）
+       2026-09-26 按生产反馈再压一档：行高 40→34、单元格纵向内边距 9→6 */
+    --nv-row-h-eff:34px;
+    --nv-cell-py:6px;
     --nv-fs-table:var(--nv-fs-13);
     --nv-sp-section:var(--nv-sp-5);
 }
