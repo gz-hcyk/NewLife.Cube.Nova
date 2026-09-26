@@ -409,6 +409,14 @@ body.nv [data-bs-theme="dark"] .nv-header {
     border-radius:var(--nv-r-md); box-shadow:var(--nv-sh-1); overflow:hidden;
     transition:box-shadow var(--nv-dur-base) var(--nv-ease),border-color var(--nv-dur-base) var(--nv-ease),transform var(--nv-dur-base) var(--nv-ease-out);
 }
+/* 列表卡工具栏含「高级」等下拉：短列表时菜单高于卡片，须穿透 overflow 裁切 */
+.nv-card:has(> .nv-toolbar) {
+    overflow:visible;
+}
+.nv-card:has(> .nv-toolbar) > .nv-toolbar {
+    position:relative;
+    z-index:5;
+}
 .nv-card:hover {
  box-shadow:var(--nv-sh-2); }
 .nv-card + .nv-card {
