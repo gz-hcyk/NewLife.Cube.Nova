@@ -17,7 +17,7 @@
     {
         if (!item.IsStatic) continue;
 
-        var v = item.GetValue(null).ToLong();
+        var v = Convert.ToInt64(item.GetValue(null));
 
         var des = item.Name;
 
@@ -35,10 +35,12 @@
     // 通过 Html.ViewData[name]=(Int32)value，可以让  Html.DropDownList 优先拿到手动设置的值，就不会再从 ViewData.Model 里面找
     // 当然这里会有一个问题，如果外部同样设置ViewData[name]，则就会出现潜在的bug,所以把之前值保存到oldvalue
     var oldvalue = Html.ViewData[name];
-    Html.ViewData[name] = value.ToLong();
+    var selectedLong = 0L;
+    if (value != null) Int64.TryParse(Convert.ToString(value), out selectedLong);
+    Html.ViewData[name] = selectedLong;
 
     {
-        var data = new SelectList(dic, "Key", "Value", value.ToLong());
+        var data = new SelectList(dic, "Key", "Value", selectedLong);
         @Html.DropDownList(name, data, null, new { @class = "nv-select" })
     }
 
@@ -60,5 +62,7 @@ else
         var title = ViewHelper.FormatValue(Model.ItemType, value);
         if (!title.IsNullOrEmpty()) atts.Add("title", title);
     }
-    @Html.TextBox(name, value.ToLong(), Model.Format, atts)
+    var textLong = 0L;
+    if (value != null) Int64.TryParse(Convert.ToString(value), out textLong);
+    @Html.TextBox(name, textLong, Model.Format, atts)
 }

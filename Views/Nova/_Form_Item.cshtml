@@ -33,11 +33,12 @@
     }
     var display = dataField?.DisplayName ?? item.DisplayName;
 
-    // 优化对雪花Id的支持
-    if (des.IsNullOrEmpty() && item.Type == typeof(Int64) && itemModel.Value.ToLong() > 700_00000000_00000000)
+    // 优化对雪花Id的支持（Value 可能为 dynamic/string，禁用扩展 ToLong）
+    if (des.IsNullOrEmpty() && item.Type == typeof(Int64) && itemModel.Value != null
+        && Int64.TryParse(Convert.ToString(itemModel.Value), out var snowId) && snowId > 700_00000000_00000000)
     {
         var snow = new Snowflake();
-        if (snow.TryParse(itemModel.Value.ToLong(), out var time, out _, out _))
+        if (snow.TryParse(snowId, out var time, out _, out _))
         {
             des = time.ToString("yyyy-MM-dd HH:mm:ss.fff");
         }

@@ -7,8 +7,10 @@
     var page = ViewBag.Page as Pager;
 
     if (id.IsNullOrEmpty()) { id = "departmentId"; }
-    var departmentId = page[id];
-    var showValue = Department.FindByID(departmentId.ToInt())?.ToString();
+    // page 索引器结果可能为 dynamic string，禁止直接 .ToInt()
+    var departmentId = 0;
+    if (page != null) Int32.TryParse(Convert.ToString(page[id]), out departmentId);
+    var showValue = Department.FindByID(departmentId)?.ToString();
 
     var set = NewLife.Cube.CubeSetting.Current;
     var res = set.ResourceUrl;
