@@ -18,6 +18,7 @@
     if (value <= DateTime.MinValue || value.Year <= 1900) obj = "";
 
     // 日期（dateformat 供 nova-ui.js 的 Litepicker 接管，见 initDatePicker）
+    // Litepicker 仅可靠支持日期（YYYY-MM-DD）；含时分秒时不要挂 dateformat，避免 HH:mm:ss 字面量写回。
     if (Model.ItemType.EqualIgnoreCase("Date") || Model.ItemType.IsNullOrEmpty() && name.EndsWithIgnoreCase("Date", "day"))
     {
         if (value > DateTime.MinValue) obj = value.ToString("yyyy-MM-dd");
@@ -25,7 +26,8 @@
     }
     else
     {
-        atts["dateformat"] = "yyyy-MM-dd HH:mm:ss";
+        // 日期时间：服务端已格式化为 yyyy-MM-dd HH:mm:ss 文本，保持可提交，不挂 Litepicker
+        if (value > DateTime.MinValue) obj = value.ToString("yyyy-MM-dd HH:mm:ss");
     }
 }
 <span class="nv-input-affix"><i class="nv-ico nv-ico-sm" data-nv-ico="calendar"></i></span>

@@ -1418,22 +1418,23 @@
         if (!window.Litepicker) return;
         $all('input[dateformat]').forEach(function (el) {
             if (el.getAttribute('data-nv-lp') === '1') return;
+            var df = el.getAttribute('dateformat') || 'yyyy-MM-dd';
+            // Litepicker 无时间插件：含时分秒时不要接管，否则 format 里的 HH:mm:ss 会原样写回输入框，
+            // 提交变成 "2026-05-26 HH:mm:ss" 导致模型绑定失败。
+            if (/[Hh]|ii|ss/.test(df) && /[:：]/.test(df)) return;
             el.setAttribute('data-nv-lp', '1');
-            var df = el.getAttribute('dateformat') || 'yyyy-mm-dd hh:ii:ss';
             var fmt = df
                 .replace(/yyyy/g, 'YYYY').replace(/yy/g, 'YY')
                 .replace(/dd/g, 'DD')
                 .replace(/HH/g, 'HH').replace(/hh/g, 'hh')
                 .replace(/ii/g, 'mm').replace(/ss/g, 'ss');
-            var withTime = /[Hh]/.test(fmt);
             try {
                 new window.Litepicker({
                     element: el,
                     format: fmt,
                     lang: 'zh-CN',
                     singleMode: true,
-                    autoApply: !withTime,
-                    enableTime: withTime,
+                    autoApply: true,
                     tooltipText: { one: '天', other: '天' },
                     buttonText: { apply: '确定', cancel: '取消', previousMonth: '上月', nextMonth: '下月' }
                 });
