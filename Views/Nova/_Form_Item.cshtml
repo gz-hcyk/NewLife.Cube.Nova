@@ -81,22 +81,27 @@
                 }
             }
 
+            // Map 扩展属性（如 PlaceName）挂 DataSource 时，select 必须用可写外键名 MapField（PlaceID），
+            // 否则提交 name=PlaceName 无法回写实体。与 _Form_Map 口径一致。
+            var selectName = !item.MapField.IsNullOrEmpty() ? item.MapField : item.Name;
+            var selectValue = !item.MapField.IsNullOrEmpty() ? entity[item.MapField] : itemModel.Value;
+
             // 数据字段以s结尾，表示多选，其它单选
             if (item.ItemType.EqualIgnoreCase("singleSelect"))
             {
-                @await Html.PartialAsync(itemView ?? "_Form_DropDownList", new ListBoxModel(item.Name, ds, itemModel.Value))
+                @await Html.PartialAsync(itemView ?? "_Form_DropDownList", new ListBoxModel(selectName, ds, selectValue))
             }
             else if (item.ItemType.EqualIgnoreCase("multipleSelect"))
             {
-                @await Html.PartialAsync(itemView ?? "_Form_ListBox", new ListBoxModel(item.Name, ds, itemModel.Value))
+                @await Html.PartialAsync(itemView ?? "_Form_ListBox", new ListBoxModel(selectName, ds, selectValue))
             }
             else if (item.Name.EndsWith("s"))
             {
-                @await Html.PartialAsync(itemView ?? "_Form_ListBox", new ListBoxModel(item.Name, ds, itemModel.Value))
+                @await Html.PartialAsync(itemView ?? "_Form_ListBox", new ListBoxModel(selectName, ds, selectValue))
             }
             else
             {
-                @await Html.PartialAsync(itemView ?? "_Form_DropDownList", new ListBoxModel(item.Name, ds, itemModel.Value))
+                @await Html.PartialAsync(itemView ?? "_Form_DropDownList", new ListBoxModel(selectName, ds, selectValue))
             }
         }
         else
