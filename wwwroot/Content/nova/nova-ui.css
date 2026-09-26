@@ -476,6 +476,13 @@ body.nv a.nv-btn:hover { text-decoration:none; }
  background:transparent; border-color:transparent; color:var(--nv-text-2); padding:0 var(--nv-sp-2); }
 .nv-btn-ghost:hover:not(:disabled) {
  background:var(--nv-primary-wash); color:var(--nv-primary); }
+/* ghost+danger：列表「删除」等文字链。勿让 body.nv a.nv-btn-danger 的 #fff 盖住透明底导致看不见。 */
+.nv-btn-ghost.nv-btn-danger,
+body.nv a.nv-btn-ghost.nv-btn-danger {
+ background:transparent; border-color:transparent; color:var(--nv-danger); box-shadow:none; }
+.nv-btn-ghost.nv-btn-danger:hover:not(:disabled),
+body.nv a.nv-btn-ghost.nv-btn-danger:hover:not(:disabled) {
+ background:var(--nv-danger-weak); color:var(--nv-danger-text); }
 .nv-btn-link {
  background:transparent; border-color:transparent; color:var(--nv-primary); padding:0 4px; height:auto; }
 .nv-btn-link:hover:not(:disabled) {
