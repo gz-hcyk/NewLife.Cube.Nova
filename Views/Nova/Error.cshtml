@@ -1,6 +1,6 @@
 @model ErrorModel;
+@using NewLife;
 @using NewLife.Cube.ViewModels;
-@using Microsoft.AspNetCore.Mvc.Filters
 @{
     // 错误页走内容页布局（无导航），与 ACE 一致；不要指向外壳 _Frame，避免双重导航。
     Layout = "_Layout.cshtml";
@@ -11,13 +11,19 @@
     var ex = Model?.Exception;
     if (ex != null)
     {
+        var trueEx = ex.GetTrue();
         if (NewLife.Cube.CubeSetting.Current.Debug)
         {
             error = ex + "";
         }
         else
         {
-            error = "内部错误：" + ex.GetTrue().GetType().FullName;
+            // 生产默认只露类型名，排障几乎无信息。业务/数据层异常补上 Message。
+            var typeName = trueEx.GetType().FullName;
+            var msg = trueEx.Message;
+            error = msg.IsNullOrEmpty()
+                ? ("内部错误：" + typeName)
+                : ("内部错误：" + typeName + Environment.NewLine + msg);
         }
         error = error?.Replace("--->", "--->" + Environment.NewLine);
     }
