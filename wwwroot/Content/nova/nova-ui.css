@@ -1499,26 +1499,53 @@ body.nv .form-control:focus, body.nv .form-select:focus {
     border-color: var(--nv-primary);
     box-shadow: 0 0 0 3px var(--nv-primary-weak-2);
 }
-/* 框架原生 select（ForDropDownList 输出 class="form-control"）升级为完整 Nova 下拉观感：
-   去原生样式、自定义 chevron、统一 34px 高度与聚焦光环；打开态面板由 nv-selectpop 自绘 */
-body.nv select.form-control, body.nv select.form-select {
+/* 框架/业务裸 select 升级为完整 Nova 下拉观感（JS 增强前防闪，增强后由 nv-selectpop 接管）：
+   覆盖 form-control/form-select，以及搜索槽 .nv-field-ctl / .nv-filters / .nv-biz-* 内漏加 class 的 select */
+body.nv select.form-control,
+body.nv select.form-select,
+body.nv .nv-field-ctl > select:not(.nv-selectpop-native),
+body.nv .nv-filters select:not(.nv-selectpop-native),
+body.nv .nv-biz-filters select:not(.nv-selectpop-native),
+body.nv .nv-biz-searchbar select:not(.nv-selectpop-native) {
     -webkit-appearance: none; appearance: none;
     height: var(--nv-ctrl-h); padding: 0 30px 0 11px;
     color: var(--nv-text); background-color: var(--nv-surface);
+    border: 1px solid var(--nv-border-strong); border-radius: var(--nv-r-sm);
+    font-size: var(--nv-fs-13); width: 100%; box-sizing: border-box;
     background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7384' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
     background-repeat: no-repeat; background-position: right 9px center; background-size: 14px;
     transition: border-color var(--nv-dur-fast) var(--nv-ease), box-shadow var(--nv-dur-fast) var(--nv-ease);
 }
-body.nv select.form-control:hover, body.nv select.form-select:hover {
+body.nv select.form-control:hover,
+body.nv select.form-select:hover,
+body.nv .nv-field-ctl > select:not(.nv-selectpop-native):hover,
+body.nv .nv-filters select:not(.nv-selectpop-native):hover,
+body.nv .nv-biz-filters select:not(.nv-selectpop-native):hover,
+body.nv .nv-biz-searchbar select:not(.nv-selectpop-native):hover {
     border-color: var(--nv-gray-400, var(--nv-border-strong));
 }
-body.nv select.form-control:focus, body.nv select.form-select:focus {
+body.nv select.form-control:focus,
+body.nv select.form-select:focus,
+body.nv .nv-field-ctl > select:not(.nv-selectpop-native):focus,
+body.nv .nv-filters select:not(.nv-selectpop-native):focus,
+body.nv .nv-biz-filters select:not(.nv-selectpop-native):focus,
+body.nv .nv-biz-searchbar select:not(.nv-selectpop-native):focus {
     outline: none; border-color: var(--nv-border-focus, var(--nv-primary)); box-shadow: var(--nv-sh-focus);
 }
-body.nv select.form-control:disabled, body.nv select.form-select:disabled {
+body.nv select.form-control:disabled,
+body.nv select.form-select:disabled,
+body.nv .nv-field-ctl > select:not(.nv-selectpop-native):disabled,
+body.nv .nv-filters select:not(.nv-selectpop-native):disabled,
+body.nv .nv-biz-filters select:not(.nv-selectpop-native):disabled,
+body.nv .nv-biz-searchbar select:not(.nv-selectpop-native):disabled {
     background-color: var(--nv-surface-3); color: var(--nv-text-3); cursor: not-allowed;
 }
-body.nv [data-bs-theme="dark"] select.form-control, body.nv [data-bs-theme="dark"] select.form-select {
+body.nv [data-bs-theme="dark"] select.form-control,
+body.nv [data-bs-theme="dark"] select.form-select,
+body.nv [data-bs-theme="dark"] .nv-field-ctl > select:not(.nv-selectpop-native),
+body.nv [data-bs-theme="dark"] .nv-filters select:not(.nv-selectpop-native),
+body.nv [data-bs-theme="dark"] .nv-biz-filters select:not(.nv-selectpop-native),
+body.nv [data-bs-theme="dark"] .nv-biz-searchbar select:not(.nv-selectpop-native) {
     background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23aeb6c2' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
 }
 

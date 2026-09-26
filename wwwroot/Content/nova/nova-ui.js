@@ -1222,7 +1222,8 @@
     }
 
     /* ---------------- 原生单选下拉增强（nv-selectpop） ----------------
-       覆盖 .nv-select 与框架输出的 select.form-control/.form-select：闭合态与 Nova 下拉
+       覆盖 .nv-select、框架 select.form-control/.form-select，以及搜索/筛选槽
+       （.nv-field-ctl / .nv-filters / .nv-biz-*）内裸 select：闭合态与 Nova 下拉
        观感一致，打开态改为自绘面板（原生 popup 无法样式化）。原生 select 保留在组件内
        （裁剪隐藏），负责表单提交与内联 onchange 自动回发。 */
     var spBound = false;
@@ -1354,7 +1355,11 @@
     }
 
     function initSelectPop() {
-        $all('select.nv-select, select.form-control, select.form-select').forEach(buildSelectPop);
+        /* 显式令牌类 + 框架遗留 form-control/form-select + 搜索/筛选槽内裸 select（自定义 View 漏加 class 时兜底） */
+        $all(
+            'select.nv-select, select.form-control, select.form-select,' +
+            '.nv-field-ctl > select, .nv-filters select, .nv-biz-filters select, .nv-biz-searchbar select'
+        ).forEach(buildSelectPop);
         if (spBound) return;
         spBound = true;
         document.addEventListener('input', function (e) {
