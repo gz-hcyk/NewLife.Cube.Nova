@@ -39,10 +39,10 @@
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 
     <!-- Tabler v1.5.1 (Bootstrap 5.3.8, bundled) + Tabler Icons 2.22.0 -->
-    <link rel="stylesheet" href="@res/tabler/css/tabler.min.css" />
-    <link rel="stylesheet" href="@res/tabler/css/tabler-icons.min.css" />
+    <link rel="stylesheet" href="@NovaSkin.WithVersion(res + "/tabler/css/tabler.min.css")" />
+    <link rel="stylesheet" href="@NovaSkin.WithVersion(res + "/tabler/css/tabler-icons.min.css")" />
     <!-- Nova 主题层：原型设计体系原样落地 + MVC 落地适配层（见文件末尾） -->
-    <link rel="stylesheet" href="@res/nova/nova-ui.css" />
+    <link rel="stylesheet" href="@NovaSkin.WithVersion(res + "/nova/nova-ui.css")" />
 </head>
 <body class="nv nv-frame-page">
 
@@ -89,9 +89,9 @@
     <div class="nv-toast-host"></div>
 
     <!-- Tabler v1.5.1：Bootstrap 5.3.8 的 JS 已内置进 tabler.min.js（含 Popper） -->
-    <script src="@res/tabler/js/tabler.min.js"></script>
+    <script src="@NovaSkin.WithVersion(res + "/tabler/js/tabler.min.js")"></script>
     <!-- Nova 交互层（零 jQuery）：图标注入 / 主题 / 密度 / 侧栏 / 抽屉 / Toast / 批量条 -->
-    <script src="@res/nova/nova-ui.js"></script>
+    <script src="@NovaSkin.WithVersion(res + "/nova/nova-ui.js")"></script>
 
     <script>
         (function () {

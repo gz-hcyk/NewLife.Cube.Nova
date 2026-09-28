@@ -43,26 +43,26 @@
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 
     <!-- Tabler v1.5.1 (Bootstrap 5.3.8, bundled) + Tabler Icons 2.22.0 -->
-    <link rel="stylesheet" href="@res/tabler/css/tabler.min.css" />
-    <link rel="stylesheet" href="@res/tabler/css/tabler-icons.min.css" />
+    <link rel="stylesheet" href="@NovaSkin.WithVersion(res + "/tabler/css/tabler.min.css")" />
+    <link rel="stylesheet" href="@NovaSkin.WithVersion(res + "/tabler/css/tabler-icons.min.css")" />
     <!-- Nova 主题层：原型设计体系原样落地 + MVC 落地适配层（见文件末尾） -->
-    <link rel="stylesheet" href="@res/nova/nova-ui.css" />
+    <link rel="stylesheet" href="@NovaSkin.WithVersion(res + "/nova/nova-ui.css")" />
 
     <!-- 页面内联样式 -->
     @RenderSection("css", required: false)
 
     <!-- 遗留页面仍在用 jQuery 插件（bootstrap-treeview 等）。
          此处统一提供当前维护中的 3.7.1；新页面禁止新增 jQuery 依赖，一律使用原生 API 或 nova-ui.js。 -->
-    <script src="@res/js/jquery-3.7.1.min.js"></script>
+    <script src="@NovaSkin.WithVersion(res + "/js/jquery-3.7.1.min.js")"></script>
 
     @if (hasChart)
     {
-        <script src="@res/echarts/echarts.min.js"></script>
+        <script src="@NovaSkin.WithVersion(res + "/echarts/echarts.min.js")"></script>
         var themeName = set.EChartsTheme;
         if (themeName.EqualIgnoreCase("Default")) themeName = "";
         if (!themeName.IsNullOrEmpty())
         {
-            <script src="@res/echarts/theme/@(themeName).js"></script>
+            <script src="@NovaSkin.WithVersion(res + "/echarts/theme/" + themeName + ".js")"></script>
         }
     }
 </head>
@@ -90,11 +90,11 @@
 
     <!-- Tabler v1.5.1：Bootstrap 5.3.8 的 JS 已内置进 tabler.min.js（含 Popper），
          供下拉菜单/模态等 data-bs-* 组件使用；1.5 不再单独提供 bootstrap.bundle.min.js -->
-    <script src="@res/tabler/js/tabler.min.js"></script>
+    <script src="@NovaSkin.WithVersion(res + "/tabler/js/tabler.min.js")"></script>
     <!-- 日期控件：替代已停维护的 bootstrap-datetimepicker -->
-    <script src="@res/tabler/js/litepicker.js"></script>
+    <script src="@NovaSkin.WithVersion(res + "/tabler/js/litepicker.js")"></script>
     <!-- Nova 交互层（零 jQuery）：图标注入 / 主题 / 密度 / 批量条 / 通知槽 / 列表增强 -->
-    <script src="@res/nova/nova-ui.js"></script>
+    <script src="@NovaSkin.WithVersion(res + "/nova/nova-ui.js")"></script>
 
     @RenderSection("scripts", required: false)
 </body>

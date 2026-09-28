@@ -2,6 +2,7 @@
 @using NewLife;
 @using NewLife.Common;
 @using NewLife.Cube.Areas.Admin.Models;
+@using NewLife.Cube.Nova;
 @{
     // Nova 化登录页外壳（覆盖框架内置 Login.cshtml）。
     // 站点级 Areas 视图优先于框架内置视图，因此本文件一旦存在即生效。
@@ -30,7 +31,7 @@
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 
     <!-- Nova 设计体系令牌与组件（卡片与品牌区样式在本页及 _Login_Login.cshtml 内自包含） -->
-    <link href="@Url.Content("~/Content/nova/nova-ui.css")" rel="stylesheet" />
+    <link href="@NovaSkin.WithVersion(Url.Content("~/Content/nova/nova-ui.css"))" rel="stylesheet" />
 
     <script>
         // 主题预设：与皮肤共用 nova-theme 键；必须在样式渲染前同步执行，避免刷新时白闪。
