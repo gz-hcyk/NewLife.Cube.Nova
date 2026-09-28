@@ -2,6 +2,9 @@
 @using XCode
 @using XCode.Configuration
 @{
+    // 分部视图：嵌入 Role Edit 外层表单（_Form_Group → Partial），禁止再包 BeginForm。
+    // 嵌套 form 会令浏览器提前闭合外层表单，底部 _Form_Action「保存」成为孤儿按钮无响应。
+    // 权限勾选随外层 Edit POST，由 RoleController.Valid 读写 p*/pf*。
     Layout = null;
     ViewBag.Title = "角色权限";
     Role role = null;
@@ -10,7 +13,6 @@
         role = ((System.Reflection.PropertyInfo[])Model.GetType().GetProperties())[0].GetValue(Model, null);
     }
     var menus = Menu.Root.AllChilds;
-    var roleId = role?.ID ?? 0;
 }
 <script type="text/javascript">
     $(function () {
@@ -72,7 +74,7 @@
                 var parentkey = $this.attr('parentkey');
                 var obj = $("input[child$='" + parentkey + "']");
 
-                $("#" + obj.attr("id")).prop('checked', "");
+                $("#" + obj.attr("id")).prop("checked", "");
 
                 $this.attr("childchange", 0);
             }
@@ -119,69 +121,59 @@
     <div class="nv-card-head">
         <div class="nv-card-title">角色权限 — @role</div>
     </div>
-    @using (Html.BeginForm("SetPermission", "Role", new { id = roleId }, FormMethod.Post))
-    {
-        @Html.AntiForgeryToken()
-        <div class="nv-card-body">
-            <div class="nv-field" style="margin-bottom:0">
-                <label class="nv-field-label">授权</label>
-                <div style="flex:1;min-width:0;overflow-x:auto">
-                    <table class="nv-table nv-tree-perm">
-                        <thead>
+    <div class="nv-card-body">
+        <div class="nv-field" style="margin-bottom:0">
+            <label class="nv-field-label">授权</label>
+            <div style="flex:1;min-width:0;overflow-x:auto">
+                <table class="nv-table nv-tree-perm">
+                    <thead>
+                        <tr>
+                            <th>名称</th>
+                            <th>显示名</th>
+                            <th class="nv-td-mid" style="width:60px">授权</th>
+                            <th>操作权限</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var entity in menus)
+                        {
+                            var depth = entity.Deepth;
+                            var pad = depth * 18;
                             <tr>
-                                <th>名称</th>
-                                <th>显示名</th>
-                                <th class="nv-td-mid" style="width:60px">授权</th>
-                                <th>操作权限</th>
+                                <td><span style="display:inline-block;width:@(pad)px"></span>@entity.TreeNodeName</td>
+                                <td>@entity.DisplayName</td>
+                                <td class="nv-td-mid">@Html.CheckBox("p" + entity.ID, role.Has(entity.ID), new { @class = "authorize", @child = "auth_child" + entity.ID, @parentkey = "auth_child" + entity.ParentID, @childchange = 0 })</td>
+                                <td class="childpf">
+                                    @if (entity.Childs.Count == 0)
+                                    {
+                                        foreach (var item in entity.Permissions.OrderBy(e => e.Key))
+                                        {
+                                            var id = "pf" + entity.ID + "_" + ((Int32)item.Key);
+                                            <label class="nv-chk-inline" for="@id">
+                                                @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.ID, @proparentkey = "pro_" + item.Key + "_" + entity.ParentID, @prokey = "pro_" + (UInt32)PermissionFlags.All + "_" + entity.ParentID, @dataid = entity.ID })
+                                                <span>@item.Value</span>
+                                            </label>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        var rid = "pc_readonly_" + entity.ID;
+                                        var aid = "pc_all_" + entity.ID;
+                                        <label class="nv-chk-inline" for="@rid">
+                                            @Html.CheckBox(rid, false, new { @class = "pro_detail", @prochildkey = "pro_" + (UInt32)PermissionFlags.Detail + "_" + entity.ID })
+                                            <span>只读</span>
+                                        </label>
+                                        <label class="nv-chk-inline" for="@aid">
+                                            @Html.CheckBox(aid, false, new { @class = "pro_all", @prochildkey = "pro_" + (UInt32)PermissionFlags.All + "_" + entity.ID })
+                                            <span>全部</span>
+                                        </label>
+                                    }
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var entity in menus)
-                            {
-                                var depth = entity.Deepth;
-                                var pad = depth * 18;
-                                <tr>
-                                    <td><span style="display:inline-block;width:@(pad)px"></span>@entity.TreeNodeName</td>
-                                    <td>@entity.DisplayName</td>
-                                    <td class="nv-td-mid">@Html.CheckBox("p" + entity.ID, role.Has(entity.ID), new { @class = "authorize", @child = "auth_child" + entity.ID, @parentkey = "auth_child" + entity.ParentID, @childchange = 0 })</td>
-                                    <td class="childpf">
-                                        @if (entity.Childs.Count == 0)
-                                        {
-                                            foreach (var item in entity.Permissions.OrderBy(e => e.Key))
-                                            {
-                                                var id = "pf" + entity.ID + "_" + ((Int32)item.Key);
-                                                <label class="nv-chk-inline" for="@id">
-                                                    @Html.CheckBox(id, role.Has(entity.ID, (PermissionFlags)item.Key), new { @parentkey = "auth_child" + entity.ID, @proparentkey = "pro_" + item.Key + "_" + entity.ParentID, @prokey = "pro_" + (UInt32)PermissionFlags.All + "_" + entity.ParentID, @dataid = entity.ID })
-                                                    <span>@item.Value</span>
-                                                </label>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            var rid = "pc_readonly_" + entity.ID;
-                                            var aid = "pc_all_" + entity.ID;
-                                            <label class="nv-chk-inline" for="@rid">
-                                                @Html.CheckBox(rid, false, new { @class = "pro_detail", @prochildkey = "pro_" + (UInt32)PermissionFlags.Detail + "_" + entity.ID })
-                                                <span>只读</span>
-                                            </label>
-                                            <label class="nv-chk-inline" for="@aid">
-                                                @Html.CheckBox(aid, false, new { @class = "pro_all", @prochildkey = "pro_" + (UInt32)PermissionFlags.All + "_" + entity.ID })
-                                                <span>全部</span>
-                                            </label>
-                                        }
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                        }
+                    </tbody>
+                </table>
             </div>
         </div>
-        <div class="nv-card-foot">
-            <div class="nv-form-actions">
-                <button type="submit" class="nv-btn nv-btn-primary"><i class="nv-ico nv-ico-sm" data-nv-ico="save"></i>保存</button>
-                <button type="button" class="nv-btn" onclick="history.go(-1);"><i class="nv-ico nv-ico-sm" data-nv-ico="x"></i>取消</button>
-            </div>
-        </div>
-    }
+    </div>
 </div>
