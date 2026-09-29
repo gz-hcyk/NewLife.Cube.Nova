@@ -6,11 +6,17 @@ agent_created: true
 
 # Cube MVC · Nova 皮肤开发与维护（泰枢物联中台）
 
-## 0.0 技能本体归属
+## 0.0 技能归属与分发（权威源唯一，多端同步）
 
-- 本技能（`SKILL.md` + `references/` + `scripts/`）**随皮肤仓 git 一起版本管理**，路径：`NewLife.Cube.Nova/.workbuddy/skills/cube-mvc-nova/`。用户级 `~/.workbuddy/skills/` 不再持有副本。
-- 修改技能内容（含脚本）后，必须随皮肤仓一并提交（`git add .workbuddy/skills/cube-mvc-nova/...`），保持技能与皮肤代码同版本演进。
-- WorkBuddy 仅从「当前工作区」的 `.workbuddy/skills/` 自动加载项目级技能：在皮肤仓目录打开会话可自动加载；在 IoT 仓会话中需显式说「按 cube-mvc-nova 技能处理」并指向本路径。
+**权威源（唯一可编辑副本）**：本技能随皮肤仓 git 一起版本管理，路径：
+`G:\009repos\002MingJia\NewLife.Cube.Nova\.workbuddy\skills\cube-mvc-nova\`（`SKILL.md` + `references/` + `scripts/`）。
+
+- 修改技能内容（含脚本）**必须先改权威源**，并随皮肤仓一并提交（`git add .workbuddy/skills/cube-mvc-nova/...`），保持技能与皮肤代码同版本演进。
+- **分发副本（只读，禁止直接改）**，改权威源后必须同步：
+  1. 用户级 `~/.workbuddy/skills/cube-mvc-nova/`——供 WorkBuddy 任意会话（含团队子代理、IoT 仓会话）自动发现加载；
+  2. 其他 AI 编码工具（Claude Code、Cursor、Codex 等）——本技能采用开放 Agent Skills 标准（SKILL.md YAML frontmatter + 纯文本资产），把整个 `cube-mvc-nova/` 目录复制到目标工具的技能目录即可（如 Claude Code 的 `~/.claude/skills/`）；无法自动发现的智能体，直接在提示词中指向权威源 SKILL.md 路径并声明「按 cube-mvc-nova 技能处理」。
+- 本文档正文不依赖任何特定智能体：构建命令、验证脚本、提交规范均为通用 shell/Python/git 操作；`~` 与机器特定绝对路径（`G:\...`）按目标机器实际布局替换。
+- 同步命令参考（Git Bash）：`cp -r <权威源>/SKILL.md <权威源>/references <权威源>/scripts ~/.workbuddy/skills/cube-mvc-nova/`
 
 ## 0. 仓库拓扑与构建链（先读，决定一切操作顺序）
 
@@ -74,4 +80,11 @@ cd G:/009repos/002MingJia/NewLife.Cube.Nova && dotnet build -v q
 
 - `IoT/docs/66-Nova界面设计规范.md`：三层令牌、组件规格、令牌映射（§7）、无障碍。
 - `IoT/docs/81-物联中台数据大屏产品路线与风险评估.md` §3：大屏令牌扩展原则。
-- IoT 仓 `.workbuddy/memory/MEMORY.md`：铁律索引（含 15/19/23 条 Nova 相关）。
+- IoT 仓 `.workbuddy/memory/MEMORY.md`：项目工作记忆/铁律索引（含 15/19/23 条 Nova 相关），任何智能体执行前应读取并遵守。
+
+## 7. 外部智能体接入清单（一次性）
+
+1. 复制权威源目录到本工具技能目录（或直接引用其绝对路径）。
+2. 确认本机存在两仓（皮肤仓 + IoT 仓）与共享 Bin 目录，路径不符时先向用户确认实际布局再操作。
+3. 运行验证脚本需 Python 3.6+（仅标准库，无第三方依赖）：`python scripts/verify_token_fidelity.py --tokens <nova-tokens.css> --source <皮肤仓根>::wwwroot/Content/nova/nova-ui.css ...`。
+4. 遵守 §4 提交规范：两仓分别提交、禁 `git add -A`、中文提交信息走 UTF-8 无 BOM 文件 + `git commit -F`。
