@@ -881,7 +881,9 @@ body.nv [data-bs-theme="dark"] .nv-skel::after {
     box-shadow:var(--nv-sh-1);
 }
 .nv-notice-ico {
- flex:0 0 auto; margin-top:1px; }
+ /* 内联 SVG 无宽高时浏览器按默认 ~300×150 撑满，告警铃铛会盖住整页（生产实测） */
+ flex:0 0 20px; width:20px; height:20px; margin-top:1px; display:block; overflow:hidden;
+ stroke:currentColor; fill:none; }
 .nv-notice-body {
  flex:1 1 auto; min-width:0; }
 .nv-notice-title {
