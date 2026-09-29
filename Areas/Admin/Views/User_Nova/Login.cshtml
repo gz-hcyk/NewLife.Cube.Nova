@@ -30,7 +30,8 @@
     <title>@ViewBag.Title - @SysConfig.Current.DisplayName</title>
     <link href="~/favicon.ico" rel="shortcut icon" type="image/x-icon" />
 
-    <!-- Nova 设计体系令牌与组件（卡片与品牌区样式在本页及 _Login_Login.cshtml 内自包含） -->
+    <!-- Nova 设计令牌（唯一权威源）与组件层（卡片与品牌区样式在本页及 _Login_Login.cshtml 内自包含） -->
+    <link href="@NovaSkin.WithVersion(Url.Content("~/Content/nova/nova-tokens.css"))" rel="stylesheet" />
     <link href="@NovaSkin.WithVersion(Url.Content("~/Content/nova/nova-ui.css"))" rel="stylesheet" />
 
     <script>

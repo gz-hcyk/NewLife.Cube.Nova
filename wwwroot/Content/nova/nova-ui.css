@@ -1,6 +1,6 @@
 /*!
  * Nova 皮肤 —— 魔方(Cube) MVC 现代化主题层
- * 组成：原型设计体系（docs/66-Nova界面原型/assets/nova-ui.css）原样落地 + MVC 落地适配层
+ * 组成：设计令牌已独立至 nova-tokens.css（唯一权威令牌源，须先于本文件加载）；本文件 = 原型设计体系组件层 + MVC 落地适配层
  * 底座：Tabler v1.5.1 (Bootstrap 5.3.8) + Tabler Icons 2.22.0 —— 本文件在其之后加载
  * 契约：设计令牌 --nv-*、组件类名 .nv-*、data-* 属性与原型完全一致，不做改名
  * 适配：见文件末尾「MVC 落地适配层」（外壳别名 / Tabler 对齐 / Bootstrap3 垫片 / 双槽通知）
@@ -17,150 +17,11 @@
  *   .nv-frame #main .nv-bulkbar(.is-on/.nv-bulkbar-count b) .nv-table .nv-colpanel
  *   .nv-tree-node(.is-open/.is-active) .nv-tree-children .nv-toast-host .nv-toast
  *   [data-nv-ico][data-nv-act][data-nv-theme-ico][data-nv-density-val]
- *//* ============================================================ 1 色彩原语
-   主色锚定 #1e5cae（现网 #206bc4 加深一档，延续蓝色家族认知）；中性灰改为冷调蓝灰，营造科技气质 */:root {
-
-    /* 科技蓝阶（锚点 600 = 主色） */
-    --nv-blue-50:#e9f1fa;  --nv-blue-100:#d2e2f6; --nv-blue-200:#accdec; --nv-blue-300:#7cabe1;
-    --nv-blue-400:#4d88d1; --nv-blue-500:#2f6cbd; --nv-blue-600:#1e5cae; --nv-blue-700:#194b8c;
-    --nv-blue-800:#143c6e; --nv-blue-900:#102f56;
-
-    /* 冷调中性灰（替代通用灰：带极轻蓝相，更"设计过"） */
-    --nv-gray-0:#ffffff; --nv-gray-50:#f7f9fc; --nv-gray-100:#f1f4f9; --nv-gray-200:#e9edf3;
-    --nv-gray-300:#dde2ea; --nv-gray-400:#c2c9d4; --nv-gray-500:#9aa3b2; --nv-gray-600:#6b7384;
-    --nv-gray-700:#4c5464; --nv-gray-800:#333b49; --nv-gray-900:#1e2530;
-
-    --nv-green-50:#ebf5ee; --nv-green-100:#d5e9db; --nv-green-500:#2e8b52; --nv-green-600:#267a45; --nv-green-700:#1f6b3c;
-    --nv-amber-50:#faf3e3; --nv-amber-100:#f3e4c2; --nv-amber-500:#b97f1c; --nv-amber-600:#9c6a17; --nv-amber-700:#8a5d10;
-    --nv-orange-500:#c05e18; --nv-orange-600:#a54f14;
-    --nv-red-50:#f9ecec; --nv-red-100:#f2d4d4; --nv-red-500:#c04444; --nv-red-600:#a53737; --nv-red-700:#8f2d2d;
-    --nv-cyan-50:#e8f4f6; --nv-cyan-500:#0f7f95; --nv-cyan-600:#0b6072;
-
-    /* ============================================================ 2 语义令牌
-       组件层只许引用语义令牌，不许直接引用原语 */
-    --nv-primary:#1e5cae; --nv-primary-hover:#1a4f92; --nv-primary-active:#143c6e;
-    --nv-primary-rgb:30,92,174;
-    --nv-primary-weak:rgba(30,92,174,.08); --nv-primary-weak-2:rgba(30,92,174,.14);
-    --nv-primary-wash:rgba(30,92,174,.045);
-    /* 主色质感：政务简洁版一律纯色（2026-09 起渐变下线），令牌名保留以维持组件契约 */
-    --nv-grad-primary:#1e5cae;
-    --nv-grad-primary-hover:#194b8c;
-    --nv-on-primary:#ffffff;
-
-    --nv-success:#2e8b52; --nv-success-weak:#ebf5ee; --nv-success-text:#1f6b3c;
-    --nv-warning:#b97f1c; --nv-warning-weak:#faf3e3; --nv-warning-text:#8a5d10;
-    --nv-danger:#c04444; --nv-danger-weak:#f9ecec; --nv-danger-text:#8f2d2d;
-    --nv-info:#0f7f95; --nv-info-weak:#e8f4f6; --nv-info-text:#0b6072;
-
-    --nv-bg:#f6f8fb; --nv-bg-frame:#ffffff;
-    /* 深蓝侧边栏（gov-blue 高保真原型基准）：底政务藏青、文字白/淡、悬停白 10%、激活=主色实心块 */
-    --nv-sidebar-bg:#1a3564; --nv-sidebar-text:rgba(255,255,255,.88); --nv-sidebar-text-dim:rgba(255,255,255,.55);
-    --nv-sidebar-hover:rgba(255,255,255,.10); --nv-sidebar-active:#2f6fd0; --nv-sidebar-border:rgba(255,255,255,.10);
-    --nv-surface:#ffffff; --nv-surface-2:#f8fafd; --nv-surface-3:#f1f4f9;
-    --nv-surface-hover:var(--nv-primary-wash);
-    --nv-border:#e8ebf0; --nv-border-strong:#d8dde6;
-    --nv-text:#1e2530; --nv-text-2:#4c5464; --nv-text-3:#6b7384; --nv-text-4:#9aa3b2;
-    --nv-text-inverse:#ffffff; --nv-text-link:#1a4f92;
-
-    --nv-overlay:rgba(16,24,40,.42); --nv-tooltip-bg:#262d38; --nv-tooltip-text:#eef2f7;
-
-    /* ============================================================ 3 设备与业务状态色 */
-    --nv-st-online:#2e8b52;  --nv-st-online-weak:#ebf5ee;
-    --nv-st-offline:#9aa3b2; --nv-st-offline-weak:#f1f4f9;
-    --nv-st-alarm:#c04444;   --nv-st-alarm-weak:#f9ecec;
-    --nv-st-warn:#b97f1c;    --nv-st-warn-weak:#faf3e3;
-    --nv-st-busy:#1e5cae;    --nv-st-busy-weak:#e9f1fa;
-    --nv-st-pending:#c05e18; --nv-st-pending-weak:#f7ece4;
-    --nv-st-disabled:#6b7384;--nv-st-disabled-weak:#f1f4f9;
-
-    /* 电量分级 */
-    --nv-batt-sufficient:#2e8b52; --nv-batt-normal:#1e5cae; --nv-batt-warning:#b97f1c;
-    --nv-batt-critical:#c04444;   --nv-batt-unknown:#9aa3b2;
-
-    /* ============================================================ 4 字体（中文优先） */
-    --nv-font:"PingFang SC","Microsoft YaHei","Hiragino Sans GB","Source Han Sans SC","Noto Sans CJK SC",
-        system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-    --nv-font-mono:"JetBrains Mono","Cascadia Mono",Consolas,"SFMono-Regular","Courier New",monospace;
-
-    --nv-fs-11:11px; --nv-fs-12:12px; --nv-fs-13:13px; --nv-fs-14:14px;
-    --nv-fs-16:16px; --nv-fs-18:18px; --nv-fs-20:20px; --nv-fs-22:22px; --nv-fs-28:28px; --nv-fs-34:34px;
-    --nv-lh-tight:1.25; --nv-lh-snug:1.45; --nv-lh-body:1.6;
-    --nv-fw-normal:400; --nv-fw-medium:500; --nv-fw-semi:600; --nv-fw-bold:700;
-
-    /* ============================================================ 5 间距（4px 基数） */
-    --nv-sp-1:4px; --nv-sp-2:8px; --nv-sp-3:12px; --nv-sp-4:16px; --nv-sp-5:20px;
-    --nv-sp-6:24px; --nv-sp-8:32px; --nv-sp-10:40px; --nv-sp-12:48px; --nv-sp-16:64px;
-
-    /* ============================================================ 6 圆角（政务简洁：克制庄重 4–10px） */
-    --nv-r-xs:4px; --nv-r-sm:6px; --nv-r-md:8px; --nv-r-lg:10px; --nv-r-full:999px;
-
-    /* ============================================================ 7 阴影（分层柔影，政务版整体减淡） */
-    --nv-sh-1:0 1px 2px rgba(20,30,50,.05);
-    --nv-sh-2:0 1px 3px rgba(20,30,50,.06), 0 4px 10px -2px rgba(20,30,50,.05);
-    --nv-sh-3:0 12px 32px -12px rgba(20,30,50,.20), 0 4px 10px -6px rgba(20,30,50,.08);
-    --nv-sh-focus:0 0 0 3px rgba(30,92,174,.18);
-    --nv-sh-primary:0 2px 6px -2px rgba(30,92,174,.35);
-
-    /* ============================================================ 8 结构尺寸 */
-    --nv-sidebar-w:248px; --nv-sidebar-w-mini:68px; --nv-header-h:58px;
-    --nv-ctrl-h:34px; --nv-ctrl-h-lg:38px; --nv-row-h:40px; --nv-pad-page:24px;
-    --nv-z-sidebar:1030; --nv-z-header:1020; --nv-z-drawer:1050; --nv-z-modal:1060; --nv-z-toast:1070;
-
-    /* ============================================================ 9 动效 */
-    --nv-dur-fast:130ms; --nv-dur-base:200ms; --nv-dur-slow:280ms;
-    --nv-ease:cubic-bezier(.4,0,.2,1); --nv-ease-out:cubic-bezier(.16,1,.3,1);
-
-    /* ============================================================ 10 密度（紧凑为默认）
-       2026-09-26 按生产反馈再压一档：行高 40→34、单元格纵向内边距 9→6 */
-    --nv-row-h-eff:34px;
-    --nv-cell-py:6px;
-    --nv-fs-table:var(--nv-fs-13);
-    --nv-sp-section:var(--nv-sp-5);
-}
-[data-nv-density="standard"] {
-
-    --nv-row-h-eff:44px; --nv-cell-py:11px; --nv-fs-table:var(--nv-fs-14); --nv-sp-section:24px;
-}
-/* cozy 为历史键名，等价 comfortable（舒适档） */
-[data-nv-density="cozy"], [data-nv-density="comfortable"] {
-
-    --nv-row-h-eff:48px; --nv-cell-py:13px; --nv-fs-table:var(--nv-fs-14); --nv-sp-section:28px;
-}
-/* ============================================================ 11 暗色主题
-   深空蓝灰：更深的背景 + 略带蓝相的表面，比纯黑更"科技" */body.nv [data-bs-theme="dark"] {
-
-    --nv-blue-50:#0f1c2b; --nv-blue-100:#13283d; --nv-blue-200:#1b3b59;
-    --nv-bg:#0e1217; --nv-bg-frame:#12171d;
-    --nv-surface:#161b22; --nv-surface-2:#1b212a; --nv-surface-3:#222a34;
-    --nv-surface-hover:rgba(120,170,255,.07);
-    --nv-border:#262d38; --nv-border-strong:#323b48; --nv-border-focus:#5f9ae2;
-    --nv-text:#e6e9ef; --nv-text-2:#aeb6c2; --nv-text-3:#838c9b; --nv-text-4:#5e6675;
-    --nv-text-link:#7ab0f0;
-
-    --nv-primary:#4a8ad8; --nv-primary-hover:#5f9ae2; --nv-primary-active:#3d78c2;
-    --nv-primary-rgb:74,138,216;
-    --nv-primary-weak:rgba(74,138,216,.15); --nv-primary-weak-2:rgba(74,138,216,.22);
-    --nv-primary-wash:rgba(74,138,216,.07);
-    --nv-grad-primary:#4a8ad8;
-    --nv-grad-primary-hover:#5f9ae2;
-    --nv-sh-primary:0 2px 6px -2px rgba(74,138,216,.4);
-
-    --nv-success-weak:rgba(46,139,82,.16);   --nv-success-text:#6ed07f;
-    --nv-warning-weak:rgba(185,127,28,.16);  --nv-warning-text:#f0b74a;
-    --nv-danger-weak:rgba(192,68,68,.16);    --nv-danger-text:#ef7a7a;
-    --nv-info-weak:rgba(15,127,149,.16);     --nv-info-text:#5cc9dc;
-
-    --nv-st-online-weak:rgba(46,139,82,.16);  --nv-st-offline-weak:rgba(154,163,178,.14);
-    --nv-st-alarm-weak:rgba(192,68,68,.16);   --nv-st-warn-weak:rgba(185,127,28,.16);
-    --nv-st-busy-weak:rgba(74,138,216,.16);   --nv-st-pending-weak:rgba(192,94,24,.16);
-    --nv-st-disabled-weak:rgba(154,163,178,.14);
-
-    --nv-overlay:rgba(0,0,0,.62); --nv-tooltip-bg:#2a313c; --nv-tooltip-text:#e6e9ef;
-    --nv-sh-1:0 1px 2px rgba(0,0,0,.5);
-    --nv-sh-2:0 6px 16px -4px rgba(0,0,0,.55);
-    --nv-sh-3:0 20px 46px -14px rgba(0,0,0,.7);
-    --nv-sh-focus:0 0 0 3px rgba(74,138,216,.35);
-}
+/* ============================================================ 设计令牌（§1–11）
+ * 已独立至 nova-tokens.css（唯一权威令牌源）：
+ *   皮肤基座令牌 §1–10 + 业务域令牌 §11（自 Web nova-biz.css 归集提升）+ 暗色/密度/环境覆盖。
+ * 本文件不再定义任何 --nv-* 令牌，只消费；加载顺序：nova-tokens.css 必须先于本文件。
+ * ============================================================ */
 /* ============================================================ 12 基础重置 */*, *::before, *::after {
  box-sizing:border-box; }
 html {
@@ -1314,11 +1175,7 @@ body.nv [data-bs-theme="dark"] .nv-skeleton::after {
  background:var(--nv-orange-600,#d95a06); color:#fff; }
 /* ============================================================================
  * 29. 响应式
- * ==========================================================================*/@media (max-width:1200px)  {
-:root {
- --nv-pad-page:16px; --nv-sidebar-w:224px; }
-}
-@media (max-width:992px)  {
+ * ==========================================================================*/@media (max-width:992px)  {
 .nv-sidebar {
  position:fixed; left:0; top:0; bottom:0; z-index:var(--nv-z-drawer); transform:translateX(-100%); box-shadow:var(--nv-sh-3); }
 .nv-shell.is-drawer .nv-sidebar {
@@ -1379,8 +1236,6 @@ body.nv [data-bs-theme="dark"] .nv-skeleton::after {
  transform:none; }
 }
 @media (max-width:560px)  {
-:root {
- --nv-pad-page:12px; --nv-fs-table:var(--nv-fs-12); }
 .nv-dev-grid {
  grid-template-columns:minmax(0,1fr); }
 .nv-dc-kpis {
@@ -1412,8 +1267,6 @@ body.nv [data-bs-theme="dark"] .nv-skeleton::after {
  animation:none; }
 }
 @media (prefers-contrast:more)  {
-:root {
- --nv-border:#9aa3b2; --nv-border-strong:#6b7384; --nv-text-3:#4c5464; --nv-text-4:#4c5464; }
 .nv-btn {
  border-width:1px; }
 }
