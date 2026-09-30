@@ -1,0 +1,122 @@
+@model IList<XCode.Membership.Log>
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@{
+    // 列与 Ace Areas/Admin/Views/Log/_List_Data.cshtml 对齐，外壳用 Nova 表格。
+    var page = ViewBag.Page as Pager;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+    var today = DateTime.Today.ToString("yyyy-MM-dd ");
+    var showAction = this.Has(PermissionFlags.Detail);
+    var colCount = 11 + (set.EnableSelect ? 1 : 0) + (showAction ? 1 : 0);
+    var canAdd = set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert);
+    var listEmpty = Model == null || Model.Count == 0;
+
+    var queryFiltered = false;
+    var query = Context.Request.Query;
+    if (query != null)
+    {
+        var pagerNames = NewLife.Web.Pager._;
+        foreach (var kv in query)
+        {
+            if (kv.Key.EqualIgnoreCase(pagerNames.PageIndex, pagerNames.PageSize, pagerNames.Sort, pagerNames.Desc)) continue;
+            if (kv.Value.ToString().IsNullOrEmpty()) continue;
+            queryFiltered = true;
+            break;
+        }
+    }
+}
+<table class="nv-table">
+    <thead>
+        <tr>
+            @if (set.EnableSelect)
+            {
+                <th class="nv-th nv-td-sticky" style="width:38px"><input type="checkbox" id="chkAll" data-nv-checkall="keys" title="全选" aria-label="全选本页" /></th>
+            }
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("Category"))">类别</a></th>
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("Action"))">操作</a></th>
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("Success"))">成功</a></th>
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("Remark"))">详细信息</a></th>
+            <th class="nv-th nv-td-mid" title="追踪标识。用于记录调用链追踪标识，在APM查找调用链"><a href="@Html.Raw(page.GetSortUrl("TraceId"))">追踪</a></th>
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("LinkID"))">关联</a></th>
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("UserName"))">用户名</a></th>
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("CreateIP"))">IP地址</a></th>
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("CreateAddress"))">物理地址</a></th>
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("CreateTime"))">时间</a></th>
+            <th class="nv-th nv-td-mid">附近</th>
+            @if (showAction)
+            {
+                <th class="nv-th nv-td-mid">操作</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @if (listEmpty)
+        {
+            <tr class="nv-empty-row">
+                <td colspan="@colCount">
+                    <div class="nv-empty" role="status">
+                        <div class="nv-empty-ico">
+                            <i class="nv-ico" data-nv-ico="@(queryFiltered ? "search" : "folder")" aria-hidden="true"></i>
+                        </div>
+                        <div class="nv-empty-title">@(queryFiltered ? "无匹配结果" : "暂无数据")</div>
+                        <div class="nv-empty-desc">@(queryFiltered ? "当前筛选条件下没有记录，可清空条件后重试。" : "当前列表还没有记录。")</div>
+                        @if (queryFiltered)
+                        {
+                            <div class="nv-empty-actions">
+                                <a class="nv-btn nv-btn-sm" href="@Context.Request.Path.Value" title="清空全部筛选与分页条件">
+                                    <i class="nv-ico nv-ico-sm" data-nv-ico="refresh" aria-hidden="true"></i>重置
+                                </a>
+                            </div>
+                        }
+                        else if (canAdd && page != null)
+                        {
+                            <div class="nv-empty-actions">
+                                @Html.ActionLink("添加", "Add", page.GetRouteValue(), new { @class = "nv-btn nv-btn-primary nv-btn-sm" }.ToDictionary())
+                            </div>
+                        }
+                    </div>
+                </td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var entity in Model)
+            {
+                <tr>
+                    @if (set.EnableSelect)
+                    {
+                        <td class="nv-td-sticky nv-td-mid"><input type="checkbox" name="keys" value="@entity.ID" aria-label="选择该行" /></td>
+                    }
+                    <td class="nv-td-mid">@entity.Category</td>
+                    <td class="nv-td-mid">@entity.Action</td>
+                    <td class="nv-td-mid">
+                        @await Html.PartialAsync("_Icon_Boolean", entity.Success)
+                    </td>
+                    <td style="max-width:600px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;" title="@entity.Remark">@entity.Remark</td>
+                    <td class="nv-td-mid">
+                        @if (!entity.TraceId.IsNullOrEmpty())
+                        {
+                            <a class="nv-link" href="@StarHelper.BuildUrl(entity.TraceId)" title="链路追踪，用于APM性能追踪定位，还原该事件的调用链" target="_blank">追踪</a>
+                        }
+                    </td>
+                    <td class="nv-td-num">@entity.LinkID.ToString("n0")</td>
+                    <td>@entity.UserName</td>
+                    <td>@entity.CreateIP</td>
+                    <td>@entity.CreateIP.IPToAddress()</td>
+                    <td class="nv-td-mid" style="max-width:150px">@entity.CreateTime.ToFullString("").TrimPrefix(today)</td>
+                    <td class="nv-td-mid">
+                        <a class="nv-link" href="?act=near&id=@entity.ID&range=10" title="前后10行日志">附近</a>
+                    </td>
+                    @if (showAction)
+                    {
+                        <td class="nv-td-actions">
+                            @await Html.PartialAsync("_List_Data_Action", (Object)entity)
+                        </td>
+                    }
+                </tr>
+            }
+        }
+    </tbody>
+</table>

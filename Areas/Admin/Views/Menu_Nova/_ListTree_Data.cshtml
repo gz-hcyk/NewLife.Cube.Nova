@@ -1,0 +1,147 @@
+@model IList<XCode.Membership.Menu>
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@{
+    // 列与 Ace Areas/Admin/Views/Menu/_ListTree_Data.cshtml 对齐（父级钻取 + 升降），外壳用 Nova 表格。
+    var fact = ViewBag.Factory as IEntityFactory;
+    var page = ViewBag.Page as Pager;
+    var parentId = page["parentId"].ToInt(-1);
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+    var showOps = this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete);
+    var colCount = 9 + (set.EnableSelect ? 1 : 0) + (showOps ? 3 : 0);
+    var canAdd = set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert);
+    var listEmpty = Model == null || Model.Count == 0;
+
+    var queryFiltered = false;
+    var query = Context.Request.Query;
+    if (query != null)
+    {
+        var pagerNames = NewLife.Web.Pager._;
+        foreach (var kv in query)
+        {
+            if (kv.Key.EqualIgnoreCase(pagerNames.PageIndex, pagerNames.PageSize, pagerNames.Sort, pagerNames.Desc)) continue;
+            if (kv.Value.ToString().IsNullOrEmpty()) continue;
+            queryFiltered = true;
+            break;
+        }
+    }
+}
+<table class="nv-table">
+    <thead>
+        <tr>
+            @if (set.EnableSelect)
+            {
+                <th class="nv-th nv-td-sticky" style="width:38px"><input type="checkbox" id="chkAll" data-nv-checkall="keys" title="全选" aria-label="全选本页" /></th>
+            }
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("ID"))">编号</a></th>
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("TreeNodeName"))">节点名</a></th>
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("Icon"))">图标</a></th>
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("DisplayName"))">显示名</a></th>
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("Url"))">链接</a></th>
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("Sort"))">排序</a></th>
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("Visible"))">可见</a></th>
+            <th class="nv-th nv-td-mid" title="必要。必要的菜单，必须至少有角色拥有这些权限，如果没有则自动授权给系统角色"><a href="@Html.Raw(page.GetSortUrl("Necessary"))">必要</a></th>
+            <th class="nv-th nv-td-mid" title="权限子项。逗号分隔，每个权限子项名值竖线分隔"><a href="@Html.Raw(page.GetSortUrl("Permission"))">权限子项</a></th>
+            @if (showOps)
+            {
+                <th class="nv-th nv-td-mid">升</th>
+                <th class="nv-th nv-td-mid">降</th>
+                <th class="nv-th nv-td-mid">操作</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @if (listEmpty)
+        {
+            <tr class="nv-empty-row">
+                <td colspan="@colCount">
+                    <div class="nv-empty" role="status">
+                        <div class="nv-empty-ico">
+                            <i class="nv-ico" data-nv-ico="@(queryFiltered ? "search" : "folder")" aria-hidden="true"></i>
+                        </div>
+                        <div class="nv-empty-title">@(queryFiltered ? "无匹配结果" : "暂无数据")</div>
+                        <div class="nv-empty-desc">@(queryFiltered ? "当前筛选条件下没有记录，可清空条件后重试。" : "当前列表还没有记录。")</div>
+                        @if (queryFiltered)
+                        {
+                            <div class="nv-empty-actions">
+                                <a class="nv-btn nv-btn-sm" href="@Context.Request.Path.Value" title="清空全部筛选与分页条件">
+                                    <i class="nv-ico nv-ico-sm" data-nv-ico="refresh" aria-hidden="true"></i>重置
+                                </a>
+                            </div>
+                        }
+                        else if (canAdd && page != null)
+                        {
+                            <div class="nv-empty-actions">
+                                @Html.ActionLink("添加", "Add", page.GetRouteValue(), new { @class = "nv-btn nv-btn-primary nv-btn-sm" }.ToDictionary())
+                            </div>
+                        }
+                    </div>
+                </td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var entity in Model)
+            {
+                var p = entity.Parent as IEntityTree;
+                if (p == null)
+                {
+                    p = fact.EntityType.GetValue("Root") as IEntityTree;
+                }
+                var id = entity.ID;
+                <tr>
+                    @if (set.EnableSelect)
+                    {
+                        <td class="nv-td-sticky nv-td-mid"><input type="checkbox" name="keys" value="@entity.ID" aria-label="选择该行" /></td>
+                    }
+                    <td class="nv-td-mid">@entity.ID</td>
+                    <td><a class="nv-link" href="?parentId=@entity.ID">@entity.TreeNodeName</a></td>
+                    <td class="nv-td-mid" title="@entity.Icon">
+                        @if (entity.Icon.StartsWithIgnoreCase("fa-"))
+                        {
+                            <i class="fa @entity.Icon" aria-hidden="true"></i>
+                        }
+                        else
+                        {
+                            @entity.Icon
+                        }
+                    </td>
+                    <td>@entity.DisplayName</td>
+                    <td>@entity.Url</td>
+                    <td class="nv-td-num">@entity.Sort.ToString("n0")</td>
+                    <td class="nv-td-mid">
+                        @await Html.PartialAsync("_Icon_Boolean", entity.Visible)
+                    </td>
+                    <td class="nv-td-mid">
+                        @await Html.PartialAsync("_Icon_Boolean", entity.Necessary)
+                    </td>
+                    <td>@entity.Permission</td>
+                    @if (showOps)
+                    {
+                        <td class="nv-td-mid">
+                            @if (p != null && p.Childs != null && p.Childs.Count > 0 && entity != p.Childs[0])
+                            {
+                                <a href="@Url.Action("Up", new { id, parentId })" title="上移">
+                                    @await Html.PartialAsync("_Icon_Arrow", true)
+                                </a>
+                            }
+                        </td>
+                        <td class="nv-td-mid">
+                            @if (p != null && p.Childs != null && p.Childs.Count > 0 && entity != p.Childs[p.Childs.Count - 1])
+                            {
+                                <a href="@Url.Action("Down", new { id, parentId })" title="下移">
+                                    @await Html.PartialAsync("_Icon_Arrow", false)
+                                </a>
+                            }
+                        </td>
+                        <td class="nv-td-actions">
+                            @await Html.PartialAsync("_List_Data_Action", (Object)entity)
+                        </td>
+                    }
+                </tr>
+            }
+        }
+    </tbody>
+</table>
