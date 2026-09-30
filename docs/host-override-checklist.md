@@ -74,6 +74,15 @@ Static: Physical WebRoot 优先于 Embedded；window.nv.* 公开面不删
 
 `window.nv` 公开面至少包括：`theme`、`density`、`sidebar`、`drawer`、`toast`、`icons`、`nav`、`refreshBulk`，以及适配层追加的 `bulkCount` / `bulkClear`。`toast(msg, kind)` 签名不变。
 
+## D. 工作台与内容页眉（阶段 5）
+
+| # | 步骤 | 期望 |
+| --- | --- | --- |
+| D1 | `Theme=Skin=Nova`，打开 `/Admin/Index/Dashboard` | 命中 `Index_Nova/Dashboard`（欢迎横幅 → KPI → 性能监控 → 系统信息 → 其余卡）。`CubeSetting.StartPage` 未改；`Index_Nova/Main` 仍单独可达 |
+| D2 | 隐藏 / 恢复 / 重置布局 | 仍是 `HideWidget` / `SaveOrder` / `ResetLayout`。拖拽用内嵌 SortableJS（不依赖宿主 `jquery-ui.custom.min.js`） |
+| D3 | 部件视图 | 有 `Widgets_Nova/{Name}.cshtml` 时优先；否则回退 Ace `Widgets/{Name}.cshtml`。本库不附带三件套副本 |
+| D4 | 全局 `EnableNavbar=true` 的列表 / 表单 | 内容页顶出现面包屑 + 标题；`EnableNavbar=false` 无页头。`EnableFooter` 控制 `_Layout_Footer`。外壳 `#crumbTail` 仍在 |
+
 ## 本阶段明确不测 / 不做
 
 - 自定义 `data-confirm` Modal（仍是 `window.confirm`）

@@ -1,0 +1,57 @@
+@* AI 诊断结果弹窗。主题查找先命中本文件，再才是框架 Views/Shared/_AiDiagnoseModal。
+   契约与 ai-insight.js 的 CubeAI.diagnose 对齐：#aiDiagnoseModal / #aiDiagnoseContent /
+   #aiDiagnoseSubtitle / #aiDiagStatus，以及 $('#…').modal('show')（nova-ui.js initCompat 垫到 Tabler Modal）。
+   同时写 data-bs-dismiss 与 data-dismiss，关闭按钮两条路径都能关。 *@
+<div class="modal fade" id="aiDiagnoseModal" tabindex="-1" role="dialog" aria-labelledby="aiDiagnoseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="aiDiagnoseModalLabel">
+                    <i class="fa fa-stethoscope"></i> AI 诊断
+                    <small id="aiDiagnoseSubtitle"></small>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" data-dismiss="modal" aria-label="关闭"></button>
+            </div>
+            <div class="modal-body" id="aiDiagnoseContent">
+                <div class="text-center nv-ai-diag-wait">
+                    <i class="fa fa-spinner fa-spin fa-3x"></i>
+                    <p>AI 正在诊断系统，请稍候...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <span id="aiDiagStatus"></span>
+                <button type="button" class="btn btn-sm" data-bs-dismiss="modal" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    #aiDiagnoseModal .modal-header {
+        background: var(--nv-primary, #1e5cae);
+        color: #fff;
+        border-bottom: 0;
+    }
+    #aiDiagnoseModal .modal-title { display: flex; align-items: center; gap: 8px; }
+    #aiDiagnoseModal .modal-title small { color: rgba(255,255,255,.78); font-weight: 400; }
+    #aiDiagnoseModal .modal-body { max-height: 70vh; line-height: 1.8; }
+    #aiDiagnoseModal .modal-footer { justify-content: space-between; }
+    #aiDiagnoseModal #aiDiagStatus { color: var(--nv-text-3, #999); }
+    #aiDiagnoseModal .nv-ai-diag-wait { padding: 40px 0; color: var(--nv-text-3, #999); }
+    #aiDiagnoseModal .nv-ai-diag-wait .ti,
+    #aiDiagnoseModal .nv-ai-diag-wait .fa { color: var(--nv-primary, #1e5cae); font-size: 2rem; }
+    #aiDiagnoseContent h2 { font-size: 18px; border-bottom: 2px solid var(--nv-primary, #1e5cae); padding-bottom: 8px; margin-top: 24px; margin-bottom: 12px; }
+    #aiDiagnoseContent h3 { font-size: 15px; margin-top: 16px; margin-bottom: 8px; }
+    #aiDiagnoseContent p { margin-bottom: 10px; }
+    #aiDiagnoseContent table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+    #aiDiagnoseContent table th, #aiDiagnoseContent table td { border: 1px solid var(--nv-border, #ddd); padding: 6px 10px; text-align: left; font-size: 13px; }
+    #aiDiagnoseContent table th { background: var(--nv-surface-2, #f5f5f5); font-weight: 600; }
+    #aiDiagnoseContent ul, #aiDiagnoseContent ol { padding-left: 20px; margin-bottom: 10px; }
+    #aiDiagnoseContent li { margin-bottom: 4px; }
+    #aiDiagnoseContent code { background: var(--nv-surface-2, #f0f0f0); padding: 2px 6px; border-radius: 3px; font-size: 90%; }
+    #aiDiagnoseContent pre { background: var(--nv-surface-2, #f8f8f8); border: 1px solid var(--nv-border, #e0e0e0); border-radius: 4px; padding: 12px; overflow-x: auto; }
+    #aiDiagnoseContent blockquote { border-left: 4px solid var(--nv-primary, #1e5cae); padding: 8px 16px; margin: 12px 0; background: var(--nv-primary-wash, #f4f7fb); }
+</style>
+
+@* 加载 AI 洞察脚本，定义 window.CubeAI（含 diagnose）。脚本由魔方宿主提供（/js/ai-insight.js），皮肤不内置副本。 *@
+<script src="~/js/ai-insight.js"></script>

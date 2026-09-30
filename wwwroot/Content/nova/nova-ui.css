@@ -2565,3 +2565,68 @@ body.nv .form-actions .btn-danger:hover, body.nv .form-actions .btn-danger:focus
 }
 .nv-detail-head .nv-form-title { margin-bottom: 0; }
 #nv-login-notice[hidden] { display: none !important; }
+
+/* 阶段 5：内容页眉组合（EnableNavbar）。页头在 .nv-body 内、main 外。 */
+.nv-page-head-main {
+  min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+}
+
+/* 阶段 5：工作台补齐。卡片骨架 / KPI / 横幅 / 快捷入口 / Monitor·SysInfo 仍用既有规则。
+   这里只补 Ace 部件标记里库存 CSS 没有的块，以及隐藏面板、紫色 KPI、拖拽占位。 */
+.cube-workbench .widget-header,
+.cube-workbench .widget-drag { cursor: move; }
+.cube-workbench .widget-kpi-icon.k-purple { background: var(--nv-primary-weak-2); color: var(--nv-primary); }
+.cube-workbench .widget-kpi-icon.k-primary { background: var(--nv-primary-weak); color: var(--nv-primary); }
+.cube-workbench .wb-banner-right .btn-solid {
+  background: var(--nv-text-inverse); border-color: var(--nv-text-inverse); color: var(--nv-primary);
+}
+.cube-workbench .wb-banner-right .btn-solid:hover { background: var(--nv-text-inverse); color: var(--nv-primary); opacity: .9; }
+.cube-workbench .widget-error { color: var(--nv-danger); font-size: var(--nv-fs-13); padding: var(--nv-sp-2); }
+.cube-workbench .widget-grid .widget-placeholder {
+  opacity: .55; background: var(--nv-primary-wash);
+  outline: 1px dashed var(--nv-primary); border-radius: var(--nv-r-md);
+}
+.cube-workbench .wb-hidden-pop {
+  position: relative; z-index: 40; max-width: 420px; margin: 0 0 var(--nv-sp-3) auto;
+  background: var(--nv-surface); border: 1px solid var(--nv-border); border-radius: var(--nv-r-md);
+  box-shadow: var(--nv-sh-2);
+}
+.cube-workbench .wb-hidden-title {
+  padding: 8px 12px; font-size: var(--nv-fs-13); font-weight: var(--nv-fw-semi);
+  border-bottom: 1px solid var(--nv-border);
+}
+.cube-workbench .wb-hidden-list { list-style: none; margin: 0; padding: 4px 0; max-height: 260px; overflow: auto; }
+.cube-workbench .wb-hidden-list li {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 6px 12px; font-size: var(--nv-fs-13);
+}
+.cube-workbench .wb-hidden-list li:hover { background: var(--nv-surface-hover); }
+.cube-workbench .wb-hidden-foot {
+  padding: 6px 12px; border-top: 1px solid var(--nv-border); text-align: right; font-size: var(--nv-fs-12);
+}
+.cube-workbench .wb-hidden-foot a { color: var(--nv-text-3); text-decoration: none; }
+.cube-workbench .wb-hidden-foot a:hover { color: var(--nv-primary); }
+.cube-workbench .widget-sub-title {
+  font-size: var(--nv-fs-13); font-weight: var(--nv-fw-semi); margin: 12px 0 6px;
+}
+.cube-workbench .widget-list { list-style: none; margin: 0; padding: 0; }
+.cube-workbench .widget-list li {
+  display: flex; align-items: center; gap: 8px; padding: 5px 0;
+  border-bottom: 1px dashed var(--nv-border); font-size: var(--nv-fs-12);
+  overflow: hidden; white-space: nowrap;
+}
+.cube-workbench .widget-list li:last-child { border-bottom: 0; }
+.cube-workbench .widget-list .list-time { color: var(--nv-text-3); flex-shrink: 0; }
+.cube-workbench .widget-list .list-name { font-weight: var(--nv-fw-semi); flex-shrink: 0; }
+.cube-workbench .widget-list .list-action { color: var(--nv-primary); flex-shrink: 0; }
+.cube-workbench .widget-list li.list-empty { color: var(--nv-text-3); justify-content: center; padding: 10px 0; }
+.cube-workbench .widget-more { text-align: right; font-size: var(--nv-fs-12); }
+.cube-workbench .widget-more a { color: var(--nv-text-link); text-decoration: none; }
+.cube-workbench .profile-main { display: flex; align-items: center; gap: 14px; padding: 8px 0 12px; }
+.cube-workbench .profile-avatar {
+  width: 56px; height: 56px; border-radius: var(--nv-r-full); flex-shrink: 0;
+  background: var(--nv-primary); color: var(--nv-text-inverse); font-size: 24px;
+  display: flex; align-items: center; justify-content: center;
+}
+.cube-workbench .profile-name { font-weight: var(--nv-fw-semi); }
+.cube-workbench .profile-role { font-size: var(--nv-fs-12); color: var(--nv-text-3); margin-top: 2px; }
