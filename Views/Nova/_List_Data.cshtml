@@ -132,6 +132,22 @@
         + (set.EnableSelect && ukey != null ? 1 : 0)
         + (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete) ? 1 : 0);
     var canAdd = set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert);
+
+    // 关键字 q，或除分页/排序以外的查询条件：空结果视为「无匹配」，否则「暂无数据」。
+    // 不改动上面的 listEmpty / RetrieveTotalCount / colCount 判定。
+    var queryFiltered = false;
+    var query = Context.Request.Query;
+    if (query != null)
+    {
+        var pagerNames = NewLife.Web.Pager._;
+        foreach (var kv in query)
+        {
+            if (kv.Key.EqualIgnoreCase(pagerNames.PageIndex, pagerNames.PageSize, pagerNames.Sort, pagerNames.Desc)) continue;
+            if (kv.Value.ToString().IsNullOrEmpty()) continue;
+            queryFiltered = true;
+            break;
+        }
+    }
 }
 @if (isTree)
 {
@@ -179,9 +195,21 @@
         {
             <tr class="nv-empty-row">
                 <td colspan="@colCount">
-                    <div class="nv-empty">
-                        <div class="nv-empty-title">暂无数据</div>
-                        @if (canAdd && page != null)
+                    <div class="nv-empty" role="status">
+                        <div class="nv-empty-ico">
+                            <i class="nv-ico" data-nv-ico="@(queryFiltered ? "search" : "folder")" aria-hidden="true"></i>
+                        </div>
+                        <div class="nv-empty-title">@(queryFiltered ? "无匹配结果" : "暂无数据")</div>
+                        <div class="nv-empty-desc">@(queryFiltered ? "当前筛选条件下没有记录，可清空条件后重试。" : "当前列表还没有记录。")</div>
+                        @if (queryFiltered)
+                        {
+                            <div class="nv-empty-actions">
+                                <a class="nv-btn nv-btn-sm" href="@Context.Request.Path.Value" title="清空全部筛选与分页条件">
+                                    <i class="nv-ico nv-ico-sm" data-nv-ico="refresh" aria-hidden="true"></i>重置
+                                </a>
+                            </div>
+                        }
+                        else if (canAdd && page != null)
                         {
                             <div class="nv-empty-actions">
                                 @Html.ActionLink("添加", "Add", page.GetRouteValue(), new { @class = "nv-btn nv-btn-primary nv-btn-sm" }.ToDictionary())

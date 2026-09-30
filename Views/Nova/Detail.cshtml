@@ -20,5 +20,24 @@
     </div>
 }
 @* 卡片由 _Form_Body 渲染（详情为只读形态，同构不分组一张卡），此处不再包外层卡片 *@
+@{
+    var formTitle = ViewBag.Title as String;
+    var rv = entity.GetRouteKey();
+    var canEdit = !set.IsReadOnly && this.Has(PermissionFlags.Update);
+}
+<div class="nv-detail-head">
+    <div class="nv-form-title">@(formTitle.IsNullOrEmpty() ? "详情" : formTitle)</div>
+    <div class="nv-page-actions">
+        @if (canEdit)
+        {
+            <a class="nv-btn nv-btn-primary nv-btn-sm" href="@Url.Action("Edit", rv)">
+                <i class="nv-ico nv-ico-sm" data-nv-ico="edit" aria-hidden="true"></i>编辑
+            </a>
+        }
+        <button type="button" class="nv-btn nv-btn-sm" onclick="history.go(-1);">
+            <i class="nv-ico nv-ico-sm" data-nv-ico="chevron_left" aria-hidden="true"></i>返回
+        </button>
+    </div>
+</div>
 @await Html.PartialAsync("_Form_Body", entity)
 @await Html.PartialAsync("_Form_Footer", entity)

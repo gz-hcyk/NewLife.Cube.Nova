@@ -28,7 +28,24 @@
     @using (Html.BeginForm("Update", null))
     {
         @Html.AntiForgeryToken()
-        @Html.ValidationSummary(true)
+        @* 模型级错误（原 ValidationSummary(true)）：字段错误仍在各 _ObjectForm_Field 就地显示。Bootstrap tabs 保持不变。 *@
+        var modelLevel = ViewData.ModelState
+            .Where(kv => kv.Key.IsNullOrEmpty())
+            .SelectMany(kv => kv.Value.Errors)
+            .Where(e => !e.ErrorMessage.IsNullOrEmpty())
+            .ToList();
+        if (modelLevel.Count > 0)
+        {
+            <div class="nv-notice nv-notice-danger" role="alert" style="margin:var(--nv-sp-4) var(--nv-sp-4) 0">
+                <i class="nv-ico nv-notice-ico" data-nv-ico="alert" aria-hidden="true"></i>
+                <div class="nv-notice-body">
+                    @foreach (var error in modelLevel)
+                    {
+                        <div class="nv-notice-text">@error.ErrorMessage</div>
+                    }
+                </div>
+            </div>
+        }
         if (dic.Count > 1)
         {
             var i = 0;
