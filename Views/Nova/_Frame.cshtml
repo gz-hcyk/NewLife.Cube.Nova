@@ -32,6 +32,19 @@
 <html lang="zh-CN" data-bs-theme="light" data-nv-density="compact">
 <head>
     <meta charset="utf-8" />
+    <script>
+        (function () {
+            try {
+                var t = localStorage.getItem('nova-theme');
+                var dark = t === 'dark' ||
+                    (t === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.setAttribute('data-bs-theme', dark ? 'dark' : 'light');
+                var d = localStorage.getItem('nova-density');
+                if (d !== 'cozy' && d !== 'comfortable' && d !== 'standard' && d !== 'compact') d = 'compact';
+                document.documentElement.setAttribute('data-nv-density', d);
+            } catch (e) {}
+        })();
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="description" content="新生命团队,NewLife,魔方,Cube,XCode" />
@@ -63,6 +76,7 @@
 
             <div class="nv-sidebar-foot">
                 <span>@ver</span>
+                <span>设计令牌 v2 · 内嵌资源 · 内容页兼容遗留 jQuery</span>
             </div>
         </aside>
 

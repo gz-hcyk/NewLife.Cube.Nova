@@ -2671,3 +2671,13 @@ body.nv .form-actions .btn-danger:hover, body.nv .form-actions .btn-danger:focus
 .nv-multipop-item.is-on { color:var(--nv-primary); font-weight:var(--nv-fw-medium); }
 .nv-multipop-item.is-disabled { color:var(--nv-text-4); cursor:not-allowed; }
 .nv-multipop-check { width:14px; height:14px; margin:0; accent-color:var(--nv-primary); cursor:pointer; flex:none; }
+
+/* Phase 1：列表空状态行 + 登录页提示槽。只追加，不改既有令牌与类名。 */
+.nv-table tbody tr.nv-empty-row > td {
+  padding: 0; border-bottom: 0; background: transparent;
+  text-align: center; vertical-align: middle;
+}
+.nv-table tbody tr.nv-empty-row .nv-empty {
+  padding: var(--nv-sp-12) var(--nv-sp-4);
+}
+#nv-login-notice[hidden] { display: none !important; }
