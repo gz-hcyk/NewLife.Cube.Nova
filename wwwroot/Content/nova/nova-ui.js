@@ -169,7 +169,18 @@
     }
     function applyDrawer(on) {
         var shell = document.querySelector('.nv-shell');
-        if (shell) shell.classList.toggle('is-drawer', !!on);
+        var open = !!on;
+        if (shell) shell.classList.toggle('is-drawer', open);
+        /* 汉堡与抽屉开合同步；本阶段不做焦点陷阱 */
+        $all('[data-nv-act="burger"]').forEach(function (btn) {
+            btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        });
+    }
+    /* 菜单分组按钮的 aria-expanded 必须跟着 .is-open，含兄弟关闭 */
+    function setMenuExpanded(item, open) {
+        if (!item) return;
+        var btn = item.querySelector(':scope > button[data-nv-act="menu"]');
+        if (btn) btn.setAttribute('aria-expanded', open ? 'true' : 'false');
     }
 
     /* ------------------------------------------------------------ 表格全选 */
@@ -213,7 +224,12 @@
             /* 只匹配直接子级链接：li 内 querySelector 会命中子菜单后代，
                导致父分组在孩子激活时被连带标成 is-active（双高亮） */
             var a = li.querySelector(':scope > .nv-menu-link[data-nav]');
-            li.classList.toggle('is-active', !!a && a.getAttribute('data-nav') === path);
+            var on = !!a && a.getAttribute('data-nav') === path;
+            li.classList.toggle('is-active', on);
+            if (a) {
+                if (on) a.setAttribute('aria-current', 'page');
+                else a.removeAttribute('aria-current');
+            }
         });
         $all('.nv-menu-item.is-active').forEach(function (li) {
             var p = li.parentElement;
@@ -227,9 +243,15 @@
                     var ownerItem = owner && owner.closest ? owner.closest('.nv-menu-item') : null;
                     /* 展开所属一级菜单，收起同级其他菜单 */
                     $all('.nv-menu-item.is-open').forEach(function (o) {
-                        if (o !== ownerItem) o.classList.remove('is-open');
+                        if (o !== ownerItem) {
+                            o.classList.remove('is-open');
+                            setMenuExpanded(o, false);
+                        }
                     });
-                    if (ownerItem) ownerItem.classList.add('is-open');
+                    if (ownerItem) {
+                        ownerItem.classList.add('is-open');
+                        setMenuExpanded(ownerItem, true);
+                    }
                     break;
                 }
                 p = p.parentElement;
@@ -256,7 +278,10 @@
         var ico = kind === 'success' ? 'check' : kind === 'danger' ? 'alert' : kind === 'warning' ? 'alert' : 'info';
         var el = document.createElement('div');
         el.className = 'nv-toast' + (kind ? ' nv-toast-' + kind : '');
-        el.innerHTML = '<i class="nv-ico nv-toast-ico" data-nv-ico="' + ico + '"></i><span>' + msg + '</span>';
+        /* 危险类走 assertive，其余 polite；不改 window.nv.toast(msg, kind) 签名 */
+        el.setAttribute('role', 'status');
+        el.setAttribute('aria-live', kind === 'danger' ? 'assertive' : 'polite');
+        el.innerHTML = '<i class="nv-ico nv-toast-ico" data-nv-ico="' + ico + '" aria-hidden="true"></i><span>' + msg + '</span>';
         host.appendChild(el);
         hydrateIcons(el);
         setTimeout(function () {
@@ -439,8 +464,14 @@
                 var item = t.closest('.nv-menu-item');
                 if (item) {
                     var open = item.classList.contains('is-open');
-                    $all('.nv-menu-item.is-open').forEach(function (li) { if (li !== item) li.classList.remove('is-open'); });
+                    $all('.nv-menu-item.is-open').forEach(function (li) {
+                        if (li !== item) {
+                            li.classList.remove('is-open');
+                            setMenuExpanded(li, false);
+                        }
+                    });
                     item.classList.toggle('is-open', !open);
+                    setMenuExpanded(item, item.classList.contains('is-open'));
                 }
             } else if (act === 'drawer' || act === 'modal') {
                 var sel = t.getAttribute('data-target');
@@ -544,6 +575,19 @@
 
         /* 7) 首屏批量条状态校正 */
         refreshBulk();
+
+        /* 8) 窄屏抽屉：Escape 关闭。浮层（菜单搜索 / TreeSelect / SelectPop / MultiPop / 下拉）自己消费 Escape 时不抢。 */
+        if (document.querySelector('.nv-shell')) {
+            document.addEventListener('keydown', function (e) {
+                if (e.key !== 'Escape') return;
+                var shell = document.querySelector('.nv-shell.is-drawer');
+                if (!shell) return;
+                if (document.querySelector('.nv-treeselect.is-open, .nv-selectpop.is-open, .nv-multipop.is-open, .dropdown-menu.show, .nv-modal.is-on, .nv-drawer.is-on')) return;
+                var tgt = e.target;
+                if (tgt && tgt.id === 'nvMenuSearch' && tgt.value) return;
+                applyDrawer(false);
+            }, true);
+        }
     }
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
@@ -678,15 +722,21 @@
             if (hit && href.length > bestLen) { best = a; bestLen = href.length; }
         });
 
+        $all('.nv-menu-link[data-nav][aria-current="page"]').forEach(function (a) { a.removeAttribute('aria-current'); });
         $all('.nv-menu-item.is-active').forEach(function (li) { li.classList.remove('is-active'); });
         if (!best) return;
 
         var item = best.closest ? best.closest('.nv-menu-item') : best.parentElement;
         if (!item) return;
         item.classList.add('is-active');
+        best.setAttribute('aria-current', 'page');
         var p = item.parentElement;
         while (p && p !== document.body) {
-            if (p.classList && p.classList.contains('nv-menu-item')) p.classList.add('is-open');
+            if (p.classList && p.classList.contains('nv-menu-item')) {
+                p.classList.add('is-open');
+                var btn = p.querySelector(':scope > button[data-nv-act="menu"]');
+                if (btn) btn.setAttribute('aria-expanded', 'true');
+            }
             p = p.parentElement;
         }
     }

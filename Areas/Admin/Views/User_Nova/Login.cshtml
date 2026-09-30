@@ -256,6 +256,12 @@
                 for (var i = 0; i < panes.length; i++) {
                     panes[i].classList.toggle('active', panes[i] === pane);
                 }
+                var triggers = document.querySelectorAll('a[data-nv-tab]');
+                for (var j = 0; j < triggers.length; j++) {
+                    var h = triggers[j].getAttribute('data-nv-tab') || triggers[j].getAttribute('href') || '';
+                    if (h && h.charAt(0) !== '#') h = '#' + h;
+                    triggers[j].setAttribute('aria-selected', h === hash ? 'true' : 'false');
+                }
             }
 
             document.addEventListener('click', function (e) {
@@ -267,7 +273,7 @@
                 e.preventDefault();
                 activateTab(hash);
             });
-            if (location.hash) activateTab(location.hash);
+            activateTab(location.hash || '#Login');
 
             var pwd = document.getElementById('password');
             var eye = document.getElementById('pwd-eye');

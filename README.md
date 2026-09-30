@@ -58,6 +58,14 @@ app.UseCube(app.Environment)
 
 将本项目 `Views/` 或 `Areas/Admin/Views/` 下任意 `.cshtml` 复制到宿主项目的对应路径即可覆写。宿主文件优先，无需修改本库源码。
 
+## 宿主覆写与回归
+
+静态资源由 `CompositeFileProvider` 提供：宿主 WebRoot 物理文件优先，未命中再回退内嵌资源。视图按相同相对路径覆写 RCL。库存布局经 `NovaSkin.WithVersion` 追加 `?v=`。`nova-tokens.css` 与 `nova-ui.css` 需成对加载。
+
+内容页主区域是 `<main id="nv-main" class="nv-container">`。`.nv-container` 与 `.nv-body > .nv-container` 仍然命中；`div.nv-container` 不再命中。外壳跳过链接指向 iframe `#main`。跨文档读屏对 iframe 内焦点支持有限，非嵌入打开的内容页自带该 `<main>`。
+
+手工回归（原装冒烟、部分覆写矩阵、契约冻结）见 [docs/host-override-checklist.md](docs/host-override-checklist.md)。
+
 ## 许可协议
 
 本项目基于 [MIT License](LICENSE) 开源，可自由用于商业及个人项目。
