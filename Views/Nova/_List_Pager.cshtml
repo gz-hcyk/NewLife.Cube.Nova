@@ -15,47 +15,46 @@
 }
 @if (pager != null && pager.TotalCount > 0)
 {
-    <div class="nv-pager">
+    @* 整条分页包在同一 form 内：PageSize 下拉必须属于该 form。
+       旧实现把 select 放在 form 外，change 时 cloneNode 会丢选中态，始终提交第一项 5。 *@
+    <form action="@act?@pager.GetBaseUrl(true, true, false)" method="post" role="form" class="nv-pager">
         <div class="nv-pager-meta">
             <span>共 <b>@pager.TotalCount.ToString("n0")</b> 条</span>
             <span>当前第 <b>@pager.PageIndex.ToString("n0")</b>/@pager.PageCount.ToString("n0") 页</span>
         </div>
-        <div class="nv-pager-nums">
-            <form action="@act?@pager.GetBaseUrl(true, true, false)" method="post" role="form" class="nv-pager-form">
-                <span class="nv-pager-size">
-                    每页
-                    <select class="nv-select" id="PageSize" name="PageSize" aria-label="每页条数">
-                        <option value="5">5</option>
-                        <option value="10">10</option>
-                        <option value="20">20</option>
-                        <option value="30">30</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                        <option value="500">500</option>
-                        <option value="1000">1000</option>
-                    </select>
-                </span>
-                <div class="nv-pages" aria-label="分页">
-                    @Html.Raw(PageBtn(pager.GetPage("首页"), "nv-page-edge"))
-                    @Html.Raw(PageBtn(pager.GetPage("上一页")))
-                    @Html.Raw(PageBtn(pager.GetPage("下一页")))
-                    @Html.Raw(PageBtn(pager.GetPage("尾页"), "nv-page-edge"))
-                </div>
-                <span class="nv-pager-jump">
-                    跳至 <input class="nv-input" name="PageIndex" type="text" value="@pager.PageIndex" aria-label="跳转到第几页" /> 页
-                    <button type="submit" class="nv-btn nv-btn-sm">GO</button>
-                </span>
-            </form>
+        <div class="nv-pager-nums nv-pager-form">
+            <span class="nv-pager-size">
+                每页
+                <select class="nv-select" id="PageSize" name="PageSize" aria-label="每页条数">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="500">500</option>
+                    <option value="1000">1000</option>
+                </select>
+            </span>
+            <div class="nv-pages" aria-label="分页">
+                @Html.Raw(PageBtn(pager.GetPage("首页"), "nv-page-edge"))
+                @Html.Raw(PageBtn(pager.GetPage("上一页")))
+                @Html.Raw(PageBtn(pager.GetPage("下一页")))
+                @Html.Raw(PageBtn(pager.GetPage("尾页"), "nv-page-edge"))
+            </div>
+            <span class="nv-pager-jump">
+                跳至 <input class="nv-input" name="PageIndex" type="text" value="@pager.PageIndex" aria-label="跳转到第几页" /> 页
+                <button type="submit" class="nv-btn nv-btn-sm">GO</button>
+            </span>
         </div>
-    </div>
+    </form>
     <script>
         (function () {
             'use strict';
-            // 页大小：回显当前值 + 改变即提交（原实现依赖 jQuery，这里改为原生）
             var sel = document.getElementById('PageSize');
             if (!sel || !sel.form) return;
             sel.value = '@pager.PageSize';
-            // 页大小已在 .nv-pager-form 内，改变即随该表单提交
+            // PageSize 与整条分页同属外层 form，改变即提交
             sel.addEventListener('change', function () { sel.form.submit(); });
         })();
     </script>
