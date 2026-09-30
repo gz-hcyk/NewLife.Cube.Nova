@@ -1644,8 +1644,20 @@
         });
     }
 
+    /* 字段校验：把 data-nv-invalid 接到真实控件的 aria-invalid / aria-describedby */
+    function initFieldInvalid() {
+        document.querySelectorAll('[data-nv-invalid]').forEach(function (wrap) {
+            var id = wrap.getAttribute('data-nv-describedby');
+            var el = wrap.querySelector('input:not([type=hidden]),select,textarea');
+            if (!el) return;
+            el.setAttribute('aria-invalid', 'true');
+            if (id) el.setAttribute('aria-describedby', id);
+        });
+    }
+
     /* ---------------------------------------------------------------- ⑤ 启动 */
     function boot() {
+        initFieldInvalid();
         initNotice();
         initMenuSync();
         initRowDoubleClick();

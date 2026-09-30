@@ -1,8 +1,9 @@
 @using XCode
 @using XCode.Membership;
 @{
-    var entity = Model as IEntity;
-    var isNew = entity.IsNullKey;
+    // 与 _Form_Header 一致：以路由 Action 判定新增。Int32 主键为 0 时 IsNullKey 会误判成新增。
+    var act = ViewContext.RouteData.Values["action"] as String;
+    var isNew = act.EqualIgnoreCase("Add");
 }
 @if (this.Has(PermissionFlags.Insert, PermissionFlags.Update))
 {
@@ -10,7 +11,7 @@
        .nv-form-actions 自带 sticky + 顶部分隔线，这里补全边框与圆角使其自成一条。 *@
     <div class="nv-form-actions" style="margin:0;border:1px solid var(--nv-border);border-radius:var(--nv-r-md)">
         <button type="submit" class="nv-btn nv-btn-primary">
-            <i class="nv-ico nv-ico-sm" data-nv-ico="@(isNew ? "plus" : "save")"></i>@(isNew ? "新增" : "保存")
+            <i class="nv-ico nv-ico-sm" data-nv-ico="@(isNew ? "plus" : "save")"></i>@(isNew ? "添加" : "保存")
         </button>
         <button type="button" class="nv-btn" onclick="history.go(-1);">
             <i class="nv-ico nv-ico-sm" data-nv-ico="x"></i>取消

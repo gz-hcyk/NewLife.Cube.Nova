@@ -13,6 +13,47 @@
     var treeSet = fact?.EntityType.GetValue("Setting") as IEntityTreeSetting;
     var keyField = treeSet != null && !treeSet.Key.IsNullOrEmpty() ? treeSet.Key : fk?.Name;
     var parentField = treeSet?.Parent;
+
+    // 空列表判定与 _List_Data 对齐，但不引入列表页的 ParentID 自动组树。升/降两列始终计入 colspan。
+    Boolean listEmpty;
+    if (page != null && page.TotalCount > 0)
+    {
+        listEmpty = false;
+    }
+    else if (page != null && page.RetrieveTotalCount)
+    {
+        listEmpty = page.TotalCount == 0;
+    }
+    else if (Model is System.Collections.IEnumerable seq)
+    {
+        var it = seq.GetEnumerator();
+        try { listEmpty = !it.MoveNext(); }
+        finally { (it as IDisposable)?.Dispose(); }
+    }
+    else
+    {
+        listEmpty = Model == null;
+    }
+
+    var colCount = fields.Count
+        + (set.EnableSelect ? 1 : 0)
+        + 2
+        + (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete) ? 1 : 0);
+    var canAdd = set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert);
+
+    var queryFiltered = false;
+    var query = Context.Request.Query;
+    if (query != null)
+    {
+        var pagerNames = NewLife.Web.Pager._;
+        foreach (var kv in query)
+        {
+            if (kv.Key.EqualIgnoreCase(pagerNames.PageIndex, pagerNames.PageSize, pagerNames.Sort, pagerNames.Desc)) continue;
+            if (kv.Value.ToString().IsNullOrEmpty()) continue;
+            queryFiltered = true;
+            break;
+        }
+    }
 }
 <div class="nv-tree-tools">
     <button type="button" class="nv-btn nv-btn-sm" data-nv-tree-expand="all">全部展开</button>
@@ -55,6 +96,36 @@
         </tr>
     </thead>
     <tbody>
+        @if (listEmpty)
+        {
+            <tr class="nv-empty-row">
+                <td colspan="@colCount">
+                    <div class="nv-empty" role="status">
+                        <div class="nv-empty-ico">
+                            <i class="nv-ico" data-nv-ico="@(queryFiltered ? "search" : "folder")" aria-hidden="true"></i>
+                        </div>
+                        <div class="nv-empty-title">@(queryFiltered ? "无匹配结果" : "暂无数据")</div>
+                        <div class="nv-empty-desc">@(queryFiltered ? "当前筛选条件下没有记录，可清空条件后重试。" : "当前列表还没有记录。")</div>
+                        @if (queryFiltered)
+                        {
+                            <div class="nv-empty-actions">
+                                <a class="nv-btn nv-btn-sm" href="@Context.Request.Path.Value" title="清空全部筛选与分页条件">
+                                    <i class="nv-ico nv-ico-sm" data-nv-ico="refresh" aria-hidden="true"></i>重置
+                                </a>
+                            </div>
+                        }
+                        else if (canAdd && page != null)
+                        {
+                            <div class="nv-empty-actions">
+                                @Html.ActionLink("添加", "Add", page.GetRouteValue(), new { @class = "nv-btn nv-btn-primary nv-btn-sm" }.ToDictionary())
+                            </div>
+                        }
+                    </div>
+                </td>
+            </tr>
+        }
+        else
+        {
         @foreach (IEntityTree entity in Model)
         {
             var p = entity.Parent as IEntityTree;
@@ -116,6 +187,7 @@
                     </td>
                 }
             </tr>
+        }
         }
     </tbody>
 </table>

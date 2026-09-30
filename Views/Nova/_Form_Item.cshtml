@@ -46,7 +46,7 @@
 }
 <div class="nv-field @(err > 0 ? "has-error" : "")">
     <label class="nv-field-label" for="@item.Name" title="@display">@display</label>
-    <div class="nv-field-ctl">
+    <div class="nv-field-ctl" data-nv-invalid="@(err > 0 ? "true" : null)" data-nv-describedby="@(err > 0 ? "nv-err-" + item.Name : null)">
         @if (dataSource != null)
         {
             var ds = dataSource(entity);
@@ -180,8 +180,8 @@
     </div>
     @if (err > 0)
     {
-        <div class="nv-field-error">
-            <i class="nv-ico nv-ico-sm" data-nv-ico="alert"></i>
+        <div class="nv-field-error" id="nv-err-@item.Name" role="alert">
+            <i class="nv-ico nv-ico-sm" data-nv-ico="alert" aria-hidden="true"></i>
             <span>@Html.ValidationMessage(item.Name)</span>
         </div>
     }

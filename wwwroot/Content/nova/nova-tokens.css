@@ -169,11 +169,13 @@
 [data-nv-density="standard"] {
 
     --nv-row-h-eff:44px; --nv-cell-py:11px; --nv-fs-table:var(--nv-fs-14); --nv-sp-section:24px;
+    --nv-ctrl-h:36px; --nv-ctrl-h-lg:40px;
 }
-/* cozy 为历史键名，等价 comfortable（舒适档） */
+/* cozy 为历史键名，等价 comfortable（舒适档）。紧凑档沿用 :root 的 34px，不在此覆盖。 */
 [data-nv-density="cozy"], [data-nv-density="comfortable"] {
 
     --nv-row-h-eff:48px; --nv-cell-py:13px; --nv-fs-table:var(--nv-fs-14); --nv-sp-section:28px;
+    --nv-ctrl-h:38px; --nv-ctrl-h-lg:42px;
 }
 /* ============================================================ 12 暗色主题
    深空蓝灰：更深的背景 + 略带蓝相的表面，比纯黑更"科技" */body.nv [data-bs-theme="dark"] {

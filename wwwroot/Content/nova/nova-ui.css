@@ -1224,7 +1224,10 @@ body.nv [data-bs-theme="dark"] .nv-skeleton::after {
  position:static; }
 .nv-pager {
  flex-wrap:wrap; justify-content:center; gap:var(--nv-sp-1); }
-.nv-pager .nv-pager-nums {
+/* 窄屏只收起跳页与首页/尾页；页码组必须留下上一页/下一页，禁止整段 .nv-pager-nums { display:none } */
+.nv-pager-jump {
+ display:none; }
+.nv-page-edge {
  display:none; }
 .nv-notice {
  flex-wrap:wrap; }
@@ -2539,6 +2542,14 @@ body.nv .form-actions .btn-danger:hover, body.nv .form-actions .btn-danger:focus
   text-align: center; vertical-align: middle;
 }
 .nv-table tbody tr.nv-empty-row .nv-empty {
-  padding: var(--nv-sp-12) var(--nv-sp-4);
+  padding: var(--nv-sp-8) var(--nv-sp-4);
 }
+.nv-empty-row .nv-empty-ico .nv-ico {
+  width: 44px; height: 44px; flex-basis: 44px;
+}
+.nv-detail-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: var(--nv-sp-3); margin-bottom: var(--nv-sp-4);
+}
+.nv-detail-head .nv-form-title { margin-bottom: 0; }
 #nv-login-notice[hidden] { display: none !important; }
