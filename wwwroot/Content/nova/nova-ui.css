@@ -829,13 +829,13 @@ body.nv a.nv-notice-go:hover {
 }
 .nv-modal {
 
-    position:fixed; left:50%; top:12vh; transform:translate(-50%,-12px); z-index:var(--nv-z-modal);
+    position:fixed; left:50%; top:50%; transform:translate(-50%,calc(-50% - 12px)); z-index:var(--nv-z-modal);
     width:min(528px,92vw); background:var(--nv-surface); border:1px solid var(--nv-border);
     border-radius:var(--nv-r-lg); box-shadow:var(--nv-sh-3);
     opacity:0; pointer-events:none; transition:opacity var(--nv-dur-base) var(--nv-ease),transform var(--nv-dur-base) var(--nv-ease);
 }
 .nv-modal.is-on {
- opacity:1; pointer-events:auto; transform:translate(-50%,0); }
+ opacity:1; pointer-events:auto; transform:translate(-50%,-50%); }
 .nv-modal-body {
  padding:var(--nv-sp-4); }
 .nv-toast-host {
