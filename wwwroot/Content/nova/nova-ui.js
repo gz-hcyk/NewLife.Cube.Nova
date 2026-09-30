@@ -1,6 +1,6 @@
 /*!
  * Nova 皮肤交互层 —— 零 jQuery，原型 nova-ui.js + MVC 落地适配脚本
- * 契约：window.nv { theme, density, sidebar, drawer, toast, icons, nav, refreshBulk, reveal, countUp, gauge, live }
+ * 契约：window.nv { theme, density, sidebar, drawer, toast, confirm, icons, nav, refreshBulk, reveal, countUp, gauge, live }
  * 兼容：window.Nova { refresh, applyTheme, highlight }
  * 详见文件末尾「MVC 落地适配脚本」注释。
  */
@@ -851,7 +851,7 @@
      * Cube.js（jQuery）在 ACE 等皮肤拦截 [data-action] 发起 ajax；Nova 布局
      * 不加载 Cube.js，此处用原生 fetch 补齐同一契约，行为对齐：
      *   data-fields="keys"  → 序列化同名控件（勾选集合），keys 并入跨页记忆
-     *   data-confirm        → 确认后执行
+     *   data-confirm        → nv.confirm 后执行（DOM/异常回退 window.confirm）
      *   data-method         → GET/POST（默认 GET）
      *   响应 { message|data, url, time } → toast 提示；url=[refresh] 刷新，否则跳转
      * 覆盖：批量操作条按钮、行内 删除/恢复、高级菜单（删除选中/同步/备份…）、
@@ -930,6 +930,193 @@
             });
     }
 
+    /* ------------------------------------------- ④d2 自定义确认框（data-confirm）
+     * 内容文档 JS 注入单例，策略同 toast-host：宿主覆写 Layout 也不会丢节点。
+     * 复用 .nv-modal / .nv-modal-mask。这不是 Tabler/Bootstrap .modal，勿与 initCompat 混用。
+     * 正文与标题只用 textContent。创建失败、节点残缺或打开抛错 → window.confirm。
+     * 不替换全局 window.confirm。打开期间忽略第二次打开，避免双击连发两次 fetch。
+     * ---------------------------------------------------------------- */
+    var confirmPending = null;
+    var confirmKeyBound = false;
+
+    function isDanger(el) {
+        return !!(el && el.matches && el.matches('.nv-btn-danger, .nv-link-danger'));
+    }
+
+    function getConfirmEls() {
+        var mask = document.getElementById('nvConfirmMask');
+        var modal = document.getElementById('nvConfirm');
+        if (!mask || !modal) return null;
+        if (!mask.classList.contains('nv-modal-mask') || !modal.classList.contains('nv-modal')) return null;
+        if (modal.getAttribute('role') !== 'dialog') return null;
+        var title = document.getElementById('nvConfirmTitle');
+        var msgEl = document.getElementById('nvConfirmMsg');
+        var cancel = modal.querySelector('[data-nv-confirm-cancel]');
+        var ok = modal.querySelector('[data-nv-confirm-ok]');
+        if (!title || !msgEl || !cancel || !ok) return null;
+        if (!modal.contains(title) || !modal.contains(msgEl) || !modal.contains(cancel) || !modal.contains(ok)) return null;
+        return { mask: mask, modal: modal, title: title, msg: msgEl, cancel: cancel, ok: ok };
+    }
+
+    function closeConfirmUi() {
+        var mask = document.getElementById('nvConfirmMask');
+        var modal = document.getElementById('nvConfirm');
+        if (mask) {
+            mask.classList.remove('is-on');
+            mask.hidden = true;
+        }
+        if (modal) {
+            modal.classList.remove('is-on');
+            modal.hidden = true;
+        }
+    }
+
+    function finishConfirm(ok) {
+        var pending = confirmPending;
+        if (!pending) {
+            closeConfirmUi();
+            return;
+        }
+        confirmPending = null;
+        var trigger = pending.trigger;
+        try {
+            closeConfirmUi();
+        } finally {
+            if (trigger && typeof trigger.focus === 'function' && document.documentElement.contains(trigger)) {
+                try { trigger.focus(); } catch (e) { }
+            }
+            try { pending.resolve(!!ok); } catch (e2) { }
+        }
+    }
+
+    function ensureConfirmDom() {
+        if (getConfirmEls()) return;
+        /* 残缺节点不修补，交给 confirmDialog 回退 window.confirm */
+        if (document.getElementById('nvConfirmMask') || document.getElementById('nvConfirm')) return;
+        if (!document.body) return;
+
+        var mask = document.createElement('div');
+        mask.className = 'nv-modal-mask';
+        mask.id = 'nvConfirmMask';
+        mask.hidden = true;
+
+        var modal = document.createElement('div');
+        modal.className = 'nv-modal';
+        modal.id = 'nvConfirm';
+        modal.hidden = true;
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', 'nvConfirmTitle');
+
+        var head = document.createElement('div');
+        head.className = 'nv-modal-head';
+        var title = document.createElement('h2');
+        title.className = 'nv-modal-title';
+        title.id = 'nvConfirmTitle';
+        title.textContent = '确认';
+        head.appendChild(title);
+
+        var body = document.createElement('div');
+        body.className = 'nv-modal-body';
+        var msgEl = document.createElement('p');
+        msgEl.id = 'nvConfirmMsg';
+        body.appendChild(msgEl);
+
+        var foot = document.createElement('div');
+        foot.className = 'nv-modal-foot';
+        var cancel = document.createElement('button');
+        cancel.type = 'button';
+        cancel.className = 'nv-btn';
+        cancel.setAttribute('data-nv-confirm-cancel', '');
+        cancel.textContent = '取消';
+        var ok = document.createElement('button');
+        ok.type = 'button';
+        ok.className = 'nv-btn nv-btn-primary';
+        ok.setAttribute('data-nv-confirm-ok', '');
+        ok.textContent = '确定';
+        foot.appendChild(cancel);
+        foot.appendChild(ok);
+
+        modal.appendChild(head);
+        modal.appendChild(body);
+        modal.appendChild(foot);
+
+        cancel.addEventListener('click', function () { finishConfirm(false); });
+        ok.addEventListener('click', function () { finishConfirm(true); });
+        mask.addEventListener('click', function () { finishConfirm(false); });
+
+        if (!confirmKeyBound) {
+            confirmKeyBound = true;
+            document.addEventListener('keydown', function (e) {
+                if (e.key !== 'Escape' || !confirmPending) return;
+                var dlg = document.getElementById('nvConfirm');
+                if (!dlg || !dlg.classList.contains('is-on')) return;
+                e.preventDefault();
+                e.stopPropagation();
+                finishConfirm(false);
+            }, true);
+        }
+
+        try {
+            document.body.appendChild(mask);
+            document.body.appendChild(modal);
+        } catch (e) {
+            if (mask.parentNode) mask.parentNode.removeChild(mask);
+            if (modal.parentNode) modal.parentNode.removeChild(modal);
+            throw e;
+        }
+    }
+
+    function openConfirm(msg, opts) {
+        opts = opts || {};
+        if (confirmPending) return Promise.resolve(false);
+        var els = getConfirmEls();
+        if (!els) return Promise.resolve(window.confirm(msg));
+        return new Promise(function (resolve) {
+            var settled = false;
+            function done(v) {
+                if (settled) return;
+                settled = true;
+                resolve(!!v);
+            }
+            confirmPending = { trigger: opts.trigger || null, resolve: done };
+            try {
+                els.title.textContent = '确认';
+                els.cancel.textContent = '取消';
+                els.ok.textContent = '确定';
+                /* 属性正文可能不可信，禁止 innerHTML */
+                els.msg.textContent = msg == null ? '' : String(msg);
+                var danger = opts.danger != null ? !!opts.danger : isDanger(opts.trigger);
+                els.ok.className = danger ? 'nv-btn nv-btn-danger' : 'nv-btn nv-btn-primary';
+                els.mask.hidden = false;
+                els.modal.hidden = false;
+                els.mask.classList.add('is-on');
+                els.modal.classList.add('is-on');
+                try { els.cancel.focus(); } catch (eFocus) { }
+            } catch (err) {
+                confirmPending = null;
+                try { closeConfirmUi(); } catch (e2) { }
+                try { done(window.confirm(msg)); }
+                catch (e3) { done(false); }
+            }
+        });
+    }
+
+    function confirmDialog(msg, opts) {
+        try {
+            ensureConfirmDom();
+            if (!getConfirmEls()) {
+                try { closeConfirmUi(); } catch (e1) { }
+                return Promise.resolve(window.confirm(msg));
+            }
+            return openConfirm(msg, opts || {});
+        } catch (e) {
+            try { closeConfirmUi(); } catch (e1) { }
+            try { return Promise.resolve(window.confirm(msg)); }
+            catch (e2) { return Promise.resolve(false); }
+        }
+    }
+
     function initBulkAction() {
         /* 挂到 window.nv，供批量条“取消选择”与工具栏脚本使用 */
         if (window.nv) {
@@ -943,8 +1130,12 @@
             if (!el || el.disabled) return;
             e.preventDefault();
             var cf = el.getAttribute('data-confirm');
-            if (cf) { if (window.confirm(cf)) doClickAction(el); }
-            else doClickAction(el);
+            if (cf) {
+                confirmDialog(cf, { danger: isDanger(el), trigger: el })
+                    .then(function (ok) { if (ok) doClickAction(el); });
+            } else {
+                doClickAction(el);
+            }
         });
         document.addEventListener('change', function (e) {
             var el = e.target;
@@ -1729,6 +1920,7 @@
     if (window.nv) {
         window.nv.bulkCount = bulkCount;
         window.nv.bulkClear = bulkClear;
+        window.nv.confirm = confirmDialog;
     }
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
