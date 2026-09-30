@@ -25,9 +25,15 @@
 
   <!-- 静态资源（tabler / nova / jquery）作为嵌入资源打包进程序集。
        运行时由宿主项目用 NewLife.Cube.Extensions.CubeEmbeddedFileProvider 以 /Content/... 对外提供，
-       与 NewLife.Cube.Tabler 皮肤项目完全一致的机制。 -->
+       与 NewLife.Cube.Tabler 皮肤项目完全一致的机制。
+       同时 CopyToOutputDirectory：OutputPath（..\..\Bin\NewLife.Cube.Nova）旁的 wwwroot 必须与源同步，
+       否则跨机构建/旧 Bin 旁路会缺 nova-tokens.css，或残留他机 staticwebassets 清单。 -->
   <ItemGroup>
     <EmbeddedResource Include="wwwroot\**\*" />
+    <Content Update="wwwroot\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
   <!-- _ace_ref 为框架 ACE/Shared 原版视图的本地参考副本，不参与 Razor 编译与打包 -->
   <ItemGroup>
