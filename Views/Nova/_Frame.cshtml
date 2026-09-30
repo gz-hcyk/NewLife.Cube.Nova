@@ -15,14 +15,20 @@
     if (String.IsNullOrEmpty(main)) main = set.StartPage;
     if (String.IsNullOrEmpty(main)) main = "~/Admin/Index/Main";
 
+    var cfg = SysConfig.Current;
+    var sysName = cfg?.DisplayName + "";
     var title = ViewBag.Title + "";
-    if (set.TitlePrefix && title != "" && !title.Contains(" - "))
+    // CubeIndex 未设 ViewBag.Title 时，原先因 title=="" 跳过 TitlePrefix，浏览器标签空白。
+    // 空标题回退为系统显示名；有页面标题再按 TitlePrefix 追加品牌后缀。
+    if (String.IsNullOrWhiteSpace(title))
     {
-        title += " - " + SysConfig.Current.DisplayName;
+        title = sysName;
+    }
+    else if (set.TitlePrefix && !title.Contains(" - ") && !String.IsNullOrWhiteSpace(sysName))
+    {
+        title += " - " + sysName;
     }
 
-    var cfg = SysConfig.Current;
-    var sysName = cfg == null ? "" : cfg.DisplayName;
     var ver = typeof(CubeSetting).Assembly.GetName().Version;
 
     // 通用通知槽的 ViewData 键：与业务侧（Web/Services/LicenseNoticeHelper.cs）约定的松契约

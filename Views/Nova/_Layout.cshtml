@@ -11,13 +11,19 @@
     var set = CubeSetting.Current;
     var pageSetting = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 
-    // 页眉用原始业务名；document title 才在需要时拼上系统名
+    // 页眉用原始业务名；document title 才在需要时拼上系统名。
+    // CubeIndex/空标题时原先因 title=="" 跳过 TitlePrefix，浏览器标签空白 → 回退系统显示名。
     var pageTitle = ViewBag.Title + "";
     var pageDesc = ViewBag.HeaderContent + "";
+    var sysName = SysConfig.Current.DisplayName + "";
     var title = pageTitle;
-    if (set.TitlePrefix && title != "" && !title.Contains(" - "))
+    if (String.IsNullOrWhiteSpace(title))
     {
-        title += " - " + SysConfig.Current.DisplayName;
+        title = sysName;
+    }
+    else if (set.TitlePrefix && !title.Contains(" - ") && !String.IsNullOrWhiteSpace(sysName))
+    {
+        title += " - " + sysName;
     }
 
     var res = set.ResourceUrl;
