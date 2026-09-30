@@ -9,6 +9,15 @@
         <div class="nv-card-sub">@AppDomain.CurrentDomain.FriendlyName · @asms.Count() 个</div>
     </div>
     <div class="nv-card-body nv-card-flush">
+        @if (!asms.Any())
+        {
+            <div class="nv-ops-empty">
+                <div class="nv-empty-title">没有程序集</div>
+                <div class="nv-empty-desc">当前应用域没有可列出的程序集。</div>
+            </div>
+        }
+        else
+        {
         <div class="nv-table-wrap">
             <table class="nv-table">
                 <thead>
@@ -38,6 +47,7 @@
                 </tbody>
             </table>
         </div>
+        }
     </div>
     <div class="nv-card-foot">
         <a class="nv-link" href="@Url.Action("Main")">返回运维中心</a>

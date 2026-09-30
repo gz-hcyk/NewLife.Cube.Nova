@@ -8,7 +8,22 @@
 @using System.Runtime.Versioning;
 @using NewLife.Common;
 @using XCode.DataAccessLayer;
-@{
+@if (Model?.Tables == null || !Model.Tables.Any())
+{
+    <div class="nv-card">
+        <div class="nv-card-head">
+            <div class="nv-card-title">数据表列表</div>
+        </div>
+        <div class="nv-card-body">
+            <div class="nv-empty" role="status">
+                <div class="nv-empty-title">没有数据表</div>
+                <div class="nv-empty-desc">当前数据库里没有可列出的表。</div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
     foreach (var item in Model.Tables)
     {
         var table = item.Table;
@@ -17,7 +32,7 @@
                 <div class="nv-card-title">@table.DisplayName（@table.TableName）<span class="nv-card-sub">[@item.Count]</span></div>
             </div>
             <div class="nv-card-body">
-                <div style="overflow-x:auto">
+                <div class="nv-table-wrap">
                     <table class="nv-table">
                         <thead>
                             <tr>

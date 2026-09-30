@@ -37,7 +37,20 @@
 
         <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" class="cube-login nv-login-form" method="post" id="cube-login">
             <input type="hidden" id="pkey_container" value="@value" />
-            @Html.ValidationSummary()
+            @if (ViewData.ModelState.Values.Any(st => st.Errors.Count > 0))
+            {
+                <div class="nv-notice nv-notice-danger" role="alert">
+                    <div class="nv-notice-body">
+                        @foreach (var item in ViewData.ModelState.Values)
+                        {
+                            foreach (var error in item.Errors)
+                            {
+                                <div class="nv-notice-text">@error.ErrorMessage</div>
+                            }
+                        }
+                    </div>
+                </div>
+            }
             @if (set.AllowLogin)
             {
                 <input type="hidden" name="pubKey" />
@@ -147,18 +160,10 @@
 
     .nv-login-form { margin: 0; }
 
-    /* 框架 ValidationSummary 输出 .validation-summary-errors，这里收敛到 Nova 观感 */
-    .nv-login .validation-summary-errors {
-        margin: 0 0 16px;
-        padding: 10px 12px;
-        border-left: 3px solid var(--nv-danger, #d63939);
-        border-radius: var(--nv-r-sm, 8px);
-        background: var(--nv-danger-wash, #fff5f5);
-        color: var(--nv-danger-text, #b42318);
-        font-size: var(--nv-fs-13, 13px);
-        line-height: 1.6;
+    /* 校验错误走 .nv-notice；间距用令牌。登录页不加载 nova-ui.js，故不放 data-nv-ico。 */
+    .nv-login .nv-notice {
+        margin: 0 0 var(--nv-sp-4);
     }
-    .nv-login .validation-summary-errors ul { margin: 0; padding-left: 18px; }
 
     .nv-login .nv-field { margin-bottom: 16px; }
     .nv-login .nv-field-label {
@@ -183,7 +188,7 @@
     .nv-login .nv-input {
         box-sizing: border-box;
         width: 100%;
-        height: 42px;
+        height: var(--nv-ctrl-h-lg);
         padding: 0 12px;
         border: 1px solid var(--nv-border, #e6e8eb);
         border-radius: var(--nv-r-md, 10px);
@@ -249,7 +254,7 @@
 
     .nv-login .nv-login-submit {
         width: 100%;
-        height: 42px;
+        height: var(--nv-ctrl-h-lg);
         border: 0;
         border-radius: var(--nv-r-md, 10px);
         font-size: var(--nv-fs-14, 14px);
@@ -258,7 +263,7 @@
     }
 
     .nv-login .nv-login-tip {
-        margin: 16px 0 0;
+        margin: var(--nv-sp-4) 0 0;
         padding: 10px 12px;
         font-size: var(--nv-fs-13, 13px);
         line-height: 1.6;

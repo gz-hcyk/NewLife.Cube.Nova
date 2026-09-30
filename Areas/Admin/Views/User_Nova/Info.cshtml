@@ -21,11 +21,32 @@
         @await Html.PartialAsync("_User_Nav")
         @if (ViewBag.StatusMessage != null)
         {
-            <div class="nv-alert nv-alert-success">@ViewBag.StatusMessage</div>
+            var bad = ViewData.ModelState.Values.Any(st => st.Errors.Count > 0);
+            <div class="nv-notice @(bad ? "nv-notice-danger" : "nv-notice-success")" role="@(bad ? "alert" : "status")" style="margin-bottom:var(--nv-sp-3)">
+                <i class="nv-ico nv-notice-ico" data-nv-ico="@(bad ? "alert" : "check")" aria-hidden="true"></i>
+                <div class="nv-notice-body">
+                    <div class="nv-notice-title">@ViewBag.StatusMessage</div>
+                </div>
+                <button type="button" class="nv-notice-close" onclick="var n=this.closest('.nv-notice'); if(n) n.remove();" aria-label="关闭">&times;</button>
+            </div>
         }
         @using (Html.BeginForm("Info", null, new { id = Model[fact.Unique.Name] }, FormMethod.Post, null, new { enctype = "multipart/form-data" }))
         {
-            @Html.ValidationSummary()
+            if (ViewData.ModelState.Values.Any(st => st.Errors.Count > 0))
+            {
+                <div class="nv-notice nv-notice-danger" role="alert" style="margin-bottom:var(--nv-sp-3)">
+                    <i class="nv-ico nv-notice-ico" data-nv-ico="alert" aria-hidden="true"></i>
+                    <div class="nv-notice-body">
+                        @foreach (var item in ViewData.ModelState.Values)
+                        {
+                            foreach (var error in item.Errors)
+                            {
+                                <div class="nv-notice-text">@error.ErrorMessage</div>
+                            }
+                        }
+                    </div>
+                </div>
+            }
             <div class="nv-form-grid">
                 @if (!user.Avatar.IsNullOrEmpty())
                 {

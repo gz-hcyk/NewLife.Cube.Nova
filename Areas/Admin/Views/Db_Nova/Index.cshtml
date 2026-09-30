@@ -12,7 +12,16 @@
         <div class="nv-card-title">数据库管理</div>
     </div>
     <div class="nv-card-body">
-        <div style="overflow-x:auto">
+        @if (dbs == null || dbs.Count == 0)
+        {
+            <div class="nv-empty" role="status">
+                <div class="nv-empty-title">没有数据库连接</div>
+                <div class="nv-empty-desc">尚未注册可用的数据库连接。请先在配置中登记后再查看备份与表结构。</div>
+            </div>
+        }
+        else
+        {
+        <div class="nv-table-wrap">
             <table class="nv-table">
                 <thead>
                     <tr>
@@ -42,7 +51,7 @@
                         <tr>
                             <td>@item.Name</td>
                             <td>@item.Type</td>
-                            <td style="max-width:600px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;" title="@str2">@str</td>
+                            <td class="nv-td-clip" title="@str2">@str</td>
                             <td class="nv-td-mid">@item.Version</td>
                             <td class="nv-td-mid">@item.Driver</td>
                             <td class="nv-td-mid">@item.DriverVersion</td>
@@ -56,5 +65,6 @@
                 </tbody>
             </table>
         </div>
+        }
     </div>
 </div>

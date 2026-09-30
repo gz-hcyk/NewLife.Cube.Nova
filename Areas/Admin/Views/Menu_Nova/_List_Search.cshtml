@@ -12,6 +12,6 @@
     <label class="nv-field-label" for="parentId">父级</label>
     <div class="nv-field-ctl">
         @Html.DropDownList("parentId", new SelectList(ms.ToDictionary(e => e.ID, e => e + ""), "Key", "Value", page["parentId"]), "全部",
-            new Dictionary<String, Object> { ["class"] = "nv-select", ["onchange"] = "$(this).parents('form').submit();" })
+            new Dictionary<String, Object> { ["class"] = "nv-select", ["onchange"] = "this.form.submit();" })
     </div>
 </div>

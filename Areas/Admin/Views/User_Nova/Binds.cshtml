@@ -23,7 +23,7 @@
             <label class="nv-field-label">名称</label>
             <input class="nv-input" value="@Model.Name" disabled="disabled" />
         </div>
-        @if (ms.Count > 0)
+        @if (ms != null && ms.Count > 0)
         {
             <div class="nv-field">
                 <label class="nv-field-label">第三方绑定</label>
@@ -47,6 +47,13 @@
                         }
                     }
                 </ul>
+            </div>
+        }
+        else
+        {
+            <div class="nv-empty" role="status">
+                <div class="nv-empty-title">没有第三方登录</div>
+                <div class="nv-empty-desc">尚未启用 OAuth 提供商，暂时无法绑定第三方账号。</div>
             </div>
         }
     </div>

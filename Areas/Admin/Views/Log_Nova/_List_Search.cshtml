@@ -9,14 +9,14 @@
     <label class="nv-field-label" for="category">类别</label>
     <div class="nv-field-ctl">
         @Html.DropDownList("category", new SelectList(Log.FindAllCategoryName(), "Key", "Value", page["category"]), "全部",
-            new Dictionary<String, Object> { ["class"] = "nv-select", ["onchange"] = "$(this).parents('form').submit();" })
+            new Dictionary<String, Object> { ["class"] = "nv-select", ["onchange"] = "this.form.submit();" })
     </div>
 </div>
 <div class="nv-field">
     <label class="nv-field-label" for="act">操作</label>
     <div class="nv-field-ctl">
         @Html.DropDownList("act", new SelectList(Log.FindAllActionName(), "Key", "Value", page["act"]), "全部",
-            new Dictionary<String, Object> { ["class"] = "nv-select", ["onchange"] = "$(this).parents('form').submit();" })
+            new Dictionary<String, Object> { ["class"] = "nv-select", ["onchange"] = "this.form.submit();" })
     </div>
 </div>
 @await Html.PartialAsync("_Enable", "success")
