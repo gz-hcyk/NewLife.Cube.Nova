@@ -1,0 +1,135 @@
+@model IList<NewLife.Cube.Entity.UserToken>
+@using NewLife;
+@using NewLife.Web;
+@using XCode;
+@using XCode.Configuration;
+@{
+    // 列与 Ace Areas/Admin/Views/UserToken/_List_Data.cshtml 对齐，外壳用 Nova 表格。
+    var page = ViewBag.Page as Pager;
+    var set = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
+    var showAction = this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete);
+    var colCount = 15 + (set.EnableSelect ? 1 : 0) + (showAction ? 1 : 0);
+    var canAdd = set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert);
+    var listEmpty = Model == null || Model.Count == 0;
+
+    var queryFiltered = false;
+    var query = Context.Request.Query;
+    if (query != null)
+    {
+        var pagerNames = NewLife.Web.Pager._;
+        foreach (var kv in query)
+        {
+            if (kv.Key.EqualIgnoreCase(pagerNames.PageIndex, pagerNames.PageSize, pagerNames.Sort, pagerNames.Desc)) continue;
+            if (kv.Value.ToString().IsNullOrEmpty()) continue;
+            queryFiltered = true;
+            break;
+        }
+    }
+}
+<table class="nv-table">
+    <thead>
+        <tr>
+            @if (set.EnableSelect)
+            {
+                <th class="nv-th nv-td-sticky" style="width:38px"><input type="checkbox" id="chkAll" data-nv-checkall="keys" title="全选" aria-label="全选本页" /></th>
+            }
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("Token"))">令牌</a></th>
+            <th class="nv-th nv-td-mid" title="地址。锁定该令牌只能访问该资源路径"><a href="@Html.Raw(page.GetSortUrl("Url"))">地址</a></th>
+            <th class="nv-th nv-td-mid">页面</th>
+            <th class="nv-th nv-td-mid">Json数据</th>
+            <th class="nv-th nv-td-mid">Xml数据</th>
+            <th class="nv-th nv-td-mid">Csv数据</th>
+            <th class="nv-th nv-td-mid">Excel数据</th>
+            <th class="nv-th nv-td-mid" title="用户。本地用户"><a href="@Html.Raw(page.GetSortUrl("UserID"))">用户</a></th>
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("Expire"))">过期时间</a></th>
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("Enable"))">启用</a></th>
+            <th class="nv-th nv-td-mid" title="次数。该令牌使用次数"><a href="@Html.Raw(page.GetSortUrl("Times"))">分享次数</a></th>
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("LastIP"))">最后地址</a></th>
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("LastTime"))">最后时间</a></th>
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("UpdateIP"))">更新地址</a></th>
+            <th class="nv-th nv-td-mid"><a href="@Html.Raw(page.GetSortUrl("UpdateTime"))">更新时间</a></th>
+            @if (showAction)
+            {
+                <th class="nv-th nv-td-mid">操作</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @if (listEmpty)
+        {
+            <tr class="nv-empty-row">
+                <td colspan="@colCount">
+                    <div class="nv-empty" role="status">
+                        <div class="nv-empty-ico">
+                            <i class="nv-ico" data-nv-ico="@(queryFiltered ? "search" : "folder")" aria-hidden="true"></i>
+                        </div>
+                        <div class="nv-empty-title">@(queryFiltered ? "无匹配结果" : "暂无数据")</div>
+                        <div class="nv-empty-desc">@(queryFiltered ? "当前筛选条件下没有记录，可清空条件后重试。" : "当前列表还没有记录。")</div>
+                        @if (queryFiltered)
+                        {
+                            <div class="nv-empty-actions">
+                                <a class="nv-btn nv-btn-sm" href="@Context.Request.Path.Value" title="清空全部筛选与分页条件">
+                                    <i class="nv-ico nv-ico-sm" data-nv-ico="refresh" aria-hidden="true"></i>重置
+                                </a>
+                            </div>
+                        }
+                        else if (canAdd && page != null)
+                        {
+                            <div class="nv-empty-actions">
+                                @Html.ActionLink("添加", "Add", page.GetRouteValue(), new { @class = "nv-btn nv-btn-primary nv-btn-sm" }.ToDictionary())
+                            </div>
+                        }
+                    </div>
+                </td>
+            </tr>
+        }
+        else
+        {
+            @foreach (var entity in Model)
+            {
+                var url = entity.Url + "";
+                var queryString = "";
+                var p = url.IndexOf('?');
+                if (p >= 0)
+                {
+                    queryString = url.Substring(p);
+                    url = url.Substring(0, p);
+                }
+                if (!queryString.IsNullOrEmpty())
+                    queryString += "&token=" + entity.Token;
+                else
+                    queryString += "?token=" + entity.Token;
+
+                <tr>
+                    @if (set.EnableSelect)
+                    {
+                        <td class="nv-td-sticky nv-td-mid"><input type="checkbox" name="keys" value="@entity.ID" aria-label="选择该行" /></td>
+                    }
+                    <td>@entity.Token</td>
+                    <td style="max-width:400px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;" title="@entity.Url">@entity.Url</td>
+                    <td class="nv-td-mid"><a class="nv-link" href="@(url + "/Html" + queryString)" target="_blank">页面</a></td>
+                    <td class="nv-td-mid"><a class="nv-link" href="@(url + "/Json" + queryString)" target="_blank">Json数据</a></td>
+                    <td class="nv-td-mid"><a class="nv-link" href="@(url + "/Xml" + queryString)" target="_blank">Xml数据</a></td>
+                    <td class="nv-td-mid"><a class="nv-link" href="@(url + "/Csv" + queryString)" target="_blank">Csv数据</a></td>
+                    <td class="nv-td-mid"><a class="nv-link" href="@(url + "/Excel" + queryString)" target="_blank">Excel数据</a></td>
+                    <td class="nv-td-mid">@entity.UserName</td>
+                    <td class="nv-td-mid">@entity.Expire.ToFullString("")</td>
+                    <td class="nv-td-mid">
+                        @await Html.PartialAsync("_Icon_Boolean", entity.Enable)
+                    </td>
+                    <td class="nv-td-num">@entity.Times.ToString("n0")</td>
+                    <td>@entity.LastIP.IPToAddress()</td>
+                    <td class="nv-td-mid">@entity.LastTime.ToFullString("")</td>
+                    <td class="nv-td-mid">@entity.UpdateIP.IPToAddress()</td>
+                    <td class="nv-td-mid">@entity.UpdateTime</td>
+                    @if (showAction)
+                    {
+                        <td class="nv-td-actions">
+                            @await Html.PartialAsync("_List_Data_Action", (Object)entity)
+                        </td>
+                    }
+                </tr>
+            }
+        }
+    </tbody>
+</table>
