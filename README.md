@@ -1,6 +1,6 @@
 # NewLife.Cube.Nova
 
-魔方（NewLife.Cube）Nova 主题皮肤包 —— 基于 Tabler v1.0.0-beta19 / Bootstrap 5，提供一套完整的 Razor 视图与静态资源，支持视图覆写与主题切换。
+魔方（NewLife.Cube）Nova 主题皮肤包 —— 基于 Tabler **v1.5.1**（**v1.0.0-beta19 → v1.5.1**，Bootstrap 5.3.8），提供一套完整的 Razor 视图与静态资源，支持视图覆写与主题切换。
 
 ## 项目简介
 
@@ -8,7 +8,7 @@
 
 ## 特性
 
-- 🎨 基于 Tabler v1.0.0-beta19 + Bootstrap 5 的现代化后台界面
+- 🎨 基于 Tabler v1.5.1（由 v1.0.0-beta19 升级，Bootstrap 5.3.8）+ Tabler Icons 的现代化后台界面
 - 📦 Razor Class Library 打包，视图与静态资源全部内嵌，引用即用
 - 🔄 支持视图覆写与主题切换
 - 📱 响应式布局，兼容移动端（含移动端登录页 MLogin）
@@ -20,9 +20,9 @@
 | --- | --- |
 | .NET 8.0 | 目标框架 |
 | NewLife.Cube.Core 6.15.2026.901 | 魔方核心库 |
-| Tabler v1.0.0-beta19 | UI 框架 |
-| Bootstrap 5 | 前端框架 |
-| jQuery | JS 基础库 |
+| Tabler v1.5.1 | UI 框架（Bootstrap 5.3.8；由 v1.0.0-beta19 升级，与 `tabler.min.css` 文件头一致） |
+| Tabler Icons | 图标字体（`tabler-icons.min.css`） |
+| jQuery 3.7.1 | 仅内容页遗留插件兼容（如 bootstrap-treeview）；新页面不新增 jQuery 依赖 |
 
 ## 目录结构
 
@@ -51,6 +51,8 @@ app.UseCube(app.Environment)
 ```
 
 静态资源由 `UseNova` 内置的 `CubeEmbeddedFileProvider` 自动提供：优先读取宿主 WebRoot 物理文件，未命中时回退到程序集内嵌资源，因此可以在宿主项目中放置同名文件实现视图 / 资源的覆写。
+
+视图分层与魔方 ACE 一致：桌面 `CubeIndex` 与移动端 `MCubeIndex` 共用整页外壳 `Views/Nova/_Frame.cshtml`（侧栏 + 顶栏 + iframe）；iframe 内的列表 / 表单 / 详情走无导航的 `_Layout.cshtml`，避免菜单重复。宿主物理文件始终优先于内嵌资源。
 
 ## 视图覆写
 

@@ -4,7 +4,7 @@
     <OutputType>Library</OutputType>
     <TargetFramework>net8.0</TargetFramework>
     <AssemblyTitle>魔方Nova主题</AssemblyTitle>
-    <Description>魔方 Nova 皮肤包（基于 Tabler v1.0.0-beta19 / Bootstrap 5），提供 Razor 视图与静态资源，支持视图覆写与主题切换。作为 Razor Class Library 被宿主项目引用。</Description>
+    <Description>魔方 Nova 皮肤包（基于 Tabler v1.5.1 / Bootstrap 5.3.8，由 v1.0.0-beta19 升级；含 Tabler Icons；jQuery 3.7.1 仅作内容页遗留兼容），提供 Razor 视图与静态资源，支持视图覆写与主题切换。作为 Razor Class Library 被宿主项目引用。</Description>
     <Copyright>©2026 NewLife.Cube.Nova</Copyright>
     <VersionPrefix>1.0</VersionPrefix>
     <VersionSuffix>$([System.DateTime]::Now.ToString(`yyyy.MMdd`))</VersionSuffix>

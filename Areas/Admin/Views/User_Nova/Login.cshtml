@@ -7,12 +7,12 @@
     // Nova 化登录页外壳（覆盖框架内置 Login.cshtml）。
     // 站点级 Areas 视图优先于框架内置视图，因此本文件一旦存在即生效。
     //
-    // 与框架版的三点差异：
-    //   1. 样式：改用 Nova 设计体系（nova-ui.css 令牌 + 卡片内联样式），
-    //      不再引入 Cube.css；bootstrap.min.js 仍保留，以免破坏注册/找回密码等 tab 的原有行为。
+    // 与框架版的差异：
+    //   1. 样式：改用 Nova 设计体系（nova-ui.css 令牌 + 卡片内联样式），不再引入 Cube.css。
+    //      本页不加载 jQuery / bootstrap.min.js（库内 wwwroot 没有这两份文件）；登录/注册 tab 由原生脚本切换。
     //   2. 布局：左右分栏（品牌展示区 + 登录卡片），移动端自动折叠为单栏卡片。
     //   3. 新增密码明文 / 密文切换（#pwd-eye），只改可见输入框 type，提交链路不变。
-    //   4. 主题跟随皮肤偏好（localStorage nova-theme），避免登录页与站内观感割裂。
+    //   4. 主题与密度跟随皮肤偏好（localStorage nova-theme / nova-density），避免登录页与站内观感割裂。
     Layout = null;
     ViewBag.Title = "登录";
 
@@ -24,6 +24,22 @@
 <html lang="zh-CN">
 <head>
     <meta charset="utf-8" />
+    <script>
+        // 主题/密度预设：与皮肤共用 nova-theme、nova-density，必须在样式表之前同步执行。
+        // 未设置主题时跟随系统深色模式；密度缺省为紧凑。
+        // comfortable / standard 与 nova-ui.js 三档一致，避免刷新时先闪回紧凑再被脚本改回。
+        (function () {
+            try {
+                var t = localStorage.getItem('nova-theme');
+                var dark = t === 'dark' ||
+                    (t === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.setAttribute('data-bs-theme', dark ? 'dark' : 'light');
+                var d = localStorage.getItem('nova-density');
+                if (d !== 'cozy' && d !== 'comfortable' && d !== 'standard' && d !== 'compact') d = 'compact';
+                document.documentElement.setAttribute('data-nv-density', d);
+            } catch (e) {}
+        })();
+    </script>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -33,19 +49,6 @@
     <!-- Nova 设计令牌（唯一权威源）与组件层（卡片与品牌区样式在本页及 _Login_Login.cshtml 内自包含） -->
     <link href="@NovaSkin.WithVersion(Url.Content("~/Content/nova/nova-tokens.css"))" rel="stylesheet" />
     <link href="@NovaSkin.WithVersion(Url.Content("~/Content/nova/nova-ui.css"))" rel="stylesheet" />
-
-    <script>
-        // 主题预设：与皮肤共用 nova-theme 键；必须在样式渲染前同步执行，避免刷新时白闪。
-        // 未设置过偏好时跟随系统深色模式。
-        (function () {
-            try {
-                var t = localStorage.getItem('nova-theme');
-                var dark = t === 'dark' ||
-                    (t === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-                if (dark) document.documentElement.setAttribute('data-bs-theme', 'dark');
-            } catch (e) { /* 隐私模式下 localStorage 不可用，忽略 */ }
-        })();
-    </script>
 
     <style>
         html, body { height: 100%; }
@@ -152,8 +155,7 @@
         }
         .nv-login-wrap { width: 100%; max-width: 400px; }
 
-        /* 未引入 bootstrap.min.css（避免与 Nova 冲突），这里补回 tab 显隐所需的最小规则；
-           bootstrap.min.js 仍负责切换 active 类，保证注册/找回密码 tab 行为不变 */
+        /* 未引入 bootstrap.min.css / bootstrap.min.js。tab 显隐只靠 .active，由本页原生脚本切换。 */
         .tab-content > .tab-pane { display: none; }
         .tab-content > .tab-pane.active { display: block; }
 
@@ -210,6 +212,12 @@
 
         <main class="nv-login-main">
             <div class="nv-login-wrap">
+                <div id="nv-login-notice" class="nv-notice nv-notice-danger" role="alert" hidden style="margin-bottom:16px">
+                    <div class="nv-notice-body">
+                        <div class="nv-notice-title">无法登录</div>
+                        <div class="nv-notice-text" id="nv-login-notice-text"></div>
+                    </div>
+                </div>
                 <div class="tab-content">
                     @await Html.PartialAsync("_Login_Login", Model)@*登录页*@
                     @* 找回密码：框架内置 Login.cshtml 会渲染 _Login_Forgot，但该分部视图不在站点源码中
@@ -227,13 +235,40 @@
         </main>
     </div>
 
-    <script src="@res/js/jquery-3.6.0.min.js"></script>
-    <script src="@res/bootstrap/js/bootstrap.min.js"></script>
     <script src="@res/js/md5.js"></script>
     <script src="@res/js/jsencrypt.min.js"></script>
 
     <script>
         (function () {
+            function showNotice(msg) {
+                var box = document.getElementById('nv-login-notice');
+                var text = document.getElementById('nv-login-notice-text');
+                if (text) text.textContent = msg || '';
+                if (box) box.hidden = !msg;
+            }
+
+            function activateTab(hash) {
+                if (!hash) return;
+                if (hash.charAt(0) !== '#') hash = '#' + hash;
+                var pane = document.getElementById(hash.substring(1));
+                if (!pane || !pane.classList.contains('tab-pane')) return;
+                var panes = document.querySelectorAll('.tab-content > .tab-pane');
+                for (var i = 0; i < panes.length; i++) {
+                    panes[i].classList.toggle('active', panes[i] === pane);
+                }
+            }
+
+            document.addEventListener('click', function (e) {
+                var a = e.target && e.target.closest ? e.target.closest('a[data-nv-tab], a.nv-login-link[href^="#"]') : null;
+                if (!a) return;
+                var hash = a.getAttribute('data-nv-tab') || a.getAttribute('href') || '';
+                if (hash && hash.charAt(0) !== '#') hash = '#' + hash;
+                if (!hash || hash === '#') return;
+                e.preventDefault();
+                activateTab(hash);
+            });
+            if (location.hash) activateTab(location.hash);
+
             var pwd = document.getElementById('password');
             var eye = document.getElementById('pwd-eye');
 
@@ -271,8 +306,8 @@
                 var hidden = document.getElementById('pwd');
                 var pkey = document.getElementById('pkey_container');
 
-                if (!username || !username.value) { alert('请输入用户名'); username && username.focus(); return; }
-                if (!password || !password.value) { alert('请输入密码'); password && password.focus(); return; }
+                if (!username || !username.value) { showNotice('请输入用户名'); username && username.focus(); return; }
+                if (!password || !password.value) { showNotice('请输入密码'); password && password.focus(); return; }
 
                 if (hidden) {
                     var key = pkey ? pkey.value : '';
