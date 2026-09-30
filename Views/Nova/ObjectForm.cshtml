@@ -55,7 +55,7 @@
                     @foreach (var item in dic)
                     {
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link @(i == 0 ? "active" : "")" type="button" data-bs-toggle="tab" data-bs-target="#nvObj@(i)" role="tab">@item.Key</button>
+                            <button class="nav-link @(i == 0 ? "active" : "")" type="button" id="nvObjTab@(i)" data-bs-toggle="tab" data-bs-target="#nvObj@(i)" role="tab" aria-controls="nvObj@(i)" aria-selected="@(i == 0 ? "true" : "false")">@item.Key</button>
                         </li>
                         i++;
                     }
@@ -64,7 +64,7 @@
             <div class="tab-content">
                 @foreach (var group in dic)
                 {
-                    <div class="tab-pane fade @(j == 0 ? "show active" : "")" id="nvObj@(j)" role="tabpanel">
+                    <div class="tab-pane fade @(j == 0 ? "show active" : "")" id="nvObj@(j)" role="tabpanel" aria-labelledby="nvObjTab@(j)">
                         <div class="nv-card-body">
                             <div class="nv-form-grid">
                                 @foreach (var pi in group.Value)

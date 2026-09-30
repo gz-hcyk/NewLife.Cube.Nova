@@ -20,7 +20,7 @@
     var key = pDic.Key;
     var value = pDic.Value;
 }
-<div class="tab-pane fade in active" id="Login">
+<div class="tab-pane fade in active" id="Login" role="tabpanel">
     <div class="nv-login">
         <div class="nv-login-brand">
             @if (!set.Logo.IsNullOrEmpty())
@@ -103,7 +103,7 @@
                     </label>
                     @if (set.AllowRegister)
                     {
-                        <a href="#Register" data-nv-tab="#Register" class="nv-login-link">我要注册</a>
+                        <a href="#Register" data-nv-tab="#Register" class="nv-login-link" aria-selected="false">我要注册</a>
                     }
                 </div>
 

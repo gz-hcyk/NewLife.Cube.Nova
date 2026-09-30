@@ -64,7 +64,7 @@
         <tr>
             @if (set.EnableSelect)
             {
-                <th class="nv-th nv-td-sticky" style="width:38px"><input type="checkbox" id="chkAll" data-nv-checkall="keys" title="全选" /></th>
+                <th class="nv-th nv-td-sticky" style="width:38px"><input type="checkbox" id="chkAll" data-nv-checkall="keys" title="全选" aria-label="全选本页" /></th>
             }
             @foreach (var item in fields)
             {
@@ -139,7 +139,7 @@
             <tr class="@(fields.GetRowClass?.Invoke(entity))" data-nv-tree-id="@id" data-nv-tree-parent="@parentId" data-nv-tree-depth="@entity.Deepth" data-nv-tree-branch="@(branch ? 1 : 0)">
                 @if (set.EnableSelect)
                 {
-                    <td class="nv-td-sticky nv-td-mid"><input type="checkbox" name="keys" value="@entity[fk.Name]" /></td>
+                    <td class="nv-td-sticky nv-td-mid"><input type="checkbox" name="keys" value="@entity[fk.Name]" aria-label="选择该行" /></td>
                 }
                 @foreach (var item in fields)
                 {

@@ -5,7 +5,7 @@
    因此这里必须保持「无导航」，否则菜单会在外层与 iframe 内各出现一次（双重菜单）。
    契约仍与 ACE 布局一致（PageSetting / ViewBag.Charts / ViewBag.HeaderContent），
    可在 CubeSetting.Theme 之间自由切换而不改任何业务代码。
-   内容区结构与原型 pages/*.html 一致：.nv-body > .nv-container。
+   内容区结构：.nv-body > main#nv-main.nv-container（class 仍为 nv-container，兼容宿主选择器 .nv-body > .nv-container）。
    2026-09 生产化调整：全部内容页（列表/表单/详情/自定义）不再渲染页眉（面包屑+标题）与页脚，
    政务客户要求界面简洁；PageSetting.EnableNavbar / EnableFooter 开关保留但 Nova 布局忽略之。 *@
 @{
@@ -92,9 +92,9 @@
             <div class="nv-notice-host" data-nv-notice-when="top">@pageNotice</div>
         }
 
-        <div class="nv-container">
+        <main id="nv-main" class="nv-container">
             @RenderBody()
-        </div>
+        </main>
     </div>
 
     <div class="nv-toast-host"></div>

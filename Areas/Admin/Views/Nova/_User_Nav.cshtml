@@ -27,12 +27,13 @@
     dic["日志"] = $"/Admin/Log?userId={userId}";
     dic["通知记录"] = $"/Admin/NotificationRecord?userId={userId}";
 }
-<div class="nv-tabnav">
+<nav class="nv-tabnav" aria-label="用户中心">
     @foreach (var item in dic)
     {
         var url = item.Value + "";
         var p = url.IndexOf('?');
         var v = p > 0 ? url.Substring(0, p) : url;
-        <a class="nv-tabnav-item @(path.EqualIgnoreCase(v) ? "is-active" : "")" href="@url">@item.Key</a>
+        var on = path.EqualIgnoreCase(v);
+        <a class="nv-tabnav-item @(on ? "is-active" : "")" href="@url" aria-current="@(on ? "page" : null)">@item.Key</a>
     }
-</div>
+</nav>
