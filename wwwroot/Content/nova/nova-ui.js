@@ -369,23 +369,61 @@
     /* Font Awesome → Tabler 图标映射：框架 widget 页（Dashboard 等）用 fa 字体而 Nova 不内置 FA，
        统一换成随皮肤加载的 tabler 图标（ti 类），避免渲染成空心方框。 */
     var FA_MAP = {
-        arrows: 'arrows-move', 'ellipsis-v': 'dots-vertical', 'eye-slash': 'eye-off', 'clock-o': 'clock',
-        database: 'database', 'exclamation-triangle': 'alert-triangle', 'file-text': 'file-text',
-        'file-text-o': 'file-text', heartbeat: 'heartbeat', history: 'history', home: 'home',
-        'line-chart': 'chart-line', navicon: 'menu-2', refresh: 'refresh', server: 'server',
-        'sign-in': 'login', signal: 'signal', spinner: 'loader', stethoscope: 'stethoscope', tachometer: 'dashboard',
-        'th-large': 'layout-grid', undo: 'arrow-back-up', user: 'user', 'user-circle': 'user-circle',
-        'user-circle-o': 'user-circle', 'user-plus': 'user-plus', 'user-secret': 'user-circle',
-        users: 'users', wrench: 'tools',
+        arrows: 'arrows-move', 'ellipsis-v': 'dots-vertical', 'ellipsis-h': 'dots', 'eye-slash': 'eye-off', 'clock-o': 'clock',
+        database: 'database', 'exclamation-triangle': 'alert-triangle', warning: 'alert-triangle', 'file-text': 'file-text',
+        'file-text-o': 'file-text', 'file-o': 'file', file: 'file', heartbeat: 'heartbeat', history: 'history', home: 'home',
+        'line-chart': 'chart-line', 'bar-chart': 'chart-bar', 'bar-chart-o': 'chart-bar', 'pie-chart': 'chart-pie', 'area-chart': 'chart-area',
+        navicon: 'menu-2', bars: 'menu-2', reorder: 'menu-2', refresh: 'refresh', server: 'server',
+        'sign-in': 'login', 'sign-out': 'logout', signal: 'antenna-bars-5', spinner: 'loader', 'circle-o-notch': 'loader',
+        stethoscope: 'stethoscope', tachometer: 'dashboard', dashboard: 'dashboard',
+        'th-large': 'layout-grid', th: 'layout-grid', 'th-list': 'list', 'list-alt': 'list-details', 'list-ul': 'list', 'list-ol': 'list-numbers',
+        undo: 'arrow-back-up', user: 'user', 'user-o': 'user', 'user-circle': 'user-circle',
+        'user-circle-o': 'user-circle', 'user-plus': 'user-plus', 'user-secret': 'user-circle', 'user-times': 'user-x',
+        users: 'users', group: 'users', wrench: 'tools',
+        /* 菜单常用 Font Awesome（未加载 FA 字体时换成 Tabler） */
+        desktop: 'device-desktop', laptop: 'device-laptop', tablet: 'device-tablet', mobile: 'device-mobile', 'mobile-phone': 'device-mobile',
+        television: 'device-tv', tv: 'device-tv', cog: 'settings', gear: 'settings', cogs: 'settings', gears: 'settings',
+        list: 'list', table: 'table', folder: 'folder', 'folder-o': 'folder', 'folder-open': 'folder', 'folder-open-o': 'folder',
+        key: 'key', lock: 'lock', unlock: 'lock-open', 'unlock-alt': 'lock-open', shield: 'shield', sitemap: 'sitemap',
+        cube: 'box', cubes: 'box-multiple', book: 'book', calendar: 'calendar', 'calendar-o': 'calendar', bell: 'bell', 'bell-o': 'bell',
+        envelope: 'mail', 'envelope-o': 'mail', search: 'search', plus: 'plus', minus: 'minus', edit: 'edit', pencil: 'pencil',
+        'pencil-square-o': 'edit', trash: 'trash', 'trash-o': 'trash', download: 'download', upload: 'upload', eye: 'eye',
+        globe: 'world', link: 'link', chain: 'link', unlink: 'unlink', 'chain-broken': 'unlink', cloud: 'cloud',
+        'cloud-download': 'cloud-download', 'cloud-upload': 'cloud-upload', code: 'code', bug: 'bug',
+        info: 'info-circle', 'info-circle': 'info-circle', question: 'help', 'question-circle': 'help',
+        check: 'check', times: 'x', close: 'x', remove: 'x', ban: 'ban',
+        image: 'photo', 'picture-o': 'photo', photo: 'photo', camera: 'camera', print: 'printer',
+        tag: 'tag', tags: 'tags', comment: 'message', 'comment-o': 'message', comments: 'messages', 'comments-o': 'messages', phone: 'phone',
+        star: 'star', 'star-o': 'star', heart: 'heart', 'heart-o': 'heart', flag: 'flag', 'flag-o': 'flag', filter: 'filter',
+        'power-off': 'power', bolt: 'bolt', flash: 'bolt', 'map-marker': 'map-pin', map: 'map', 'map-o': 'map',
+        building: 'building', 'building-o': 'building', briefcase: 'briefcase', 'external-link': 'external-link',
+        copy: 'copy', 'files-o': 'copy', clone: 'copy', clipboard: 'clipboard', save: 'device-floppy', 'floppy-o': 'device-floppy',
+        plug: 'plug', 'hdd-o': 'device-sd-card', terminal: 'terminal-2', rocket: 'rocket', tasks: 'list-check',
+        'id-card': 'id', 'id-card-o': 'id', 'address-card': 'id', 'address-book': 'address-book',
+        qrcode: 'qrcode', barcode: 'barcode', money: 'cash', rmb: 'currency-yuan', cny: 'currency-yuan', dollar: 'currency-dollar',
+        'credit-card': 'credit-card', 'shopping-cart': 'shopping-cart', gift: 'gift', certificate: 'certificate',
+        'graduation-cap': 'school', university: 'building-bank', bank: 'building-bank', 'life-ring': 'lifebuoy', support: 'lifebuoy',
+        medkit: 'first-aid-kit', wifi: 'wifi', archive: 'archive', bookmark: 'bookmark', 'bookmark-o': 'bookmark',
+        'puzzle-piece': 'puzzle', legal: 'gavel', gavel: 'gavel', share: 'share', repeat: 'repeat', columns: 'columns',
+        'keyboard-o': 'keyboard', 'mouse-pointer': 'pointer', sliders: 'adjustments-horizontal', magic: 'wand',
+        'lightbulb-o': 'bulb', industry: 'building-factory', truck: 'truck', 'file-pdf-o': 'pdf', 'file-excel-o': 'file-spreadsheet',
+        'file-word-o': 'file-text', 'file-code-o': 'file-code', 'file-archive-o': 'file-zip', 'file-image-o': 'photo',
+        'check-square': 'square-check', 'check-square-o': 'square-check', 'caret-down': 'caret-down', 'caret-right': 'caret-right',
+        'caret-left': 'caret-left', 'caret-up': 'caret-up', 'chevron-down': 'chevron-down', 'chevron-right': 'chevron-right',
+        'chevron-left': 'chevron-left', 'chevron-up': 'chevron-up', 'angle-down': 'chevron-down', 'angle-right': 'chevron-right',
+        'angle-left': 'chevron-left', 'angle-up': 'chevron-up', 'arrow-left': 'arrow-left', 'arrow-right': 'arrow-right',
+        'arrow-up': 'arrow-up', 'arrow-down': 'arrow-down',
         /* AI 助手浮窗 / 诊断弹窗（_AIAssistant.cshtml 与核心工作台视图） */
-        expand: 'arrows-maximize', compress: 'arrows-minimize', times: 'x', 'paper-plane': 'send',
-        trash: 'trash', 'check-circle': 'circle-check', 'exclamation-circle': 'alert-circle', inbox: 'inbox'
+        expand: 'arrows-maximize', compress: 'arrows-minimize', 'paper-plane': 'send',
+        'check-circle': 'circle-check', 'exclamation-circle': 'alert-circle', inbox: 'inbox'
     };
+    /* 未映射的 fa-* 用中性圆点，不用齿轮（齿轮专留给 cog/settings）。 */
+    var FA_FALLBACK = 'point';
     function remapFaIcons(root) {
         $all('.fa', root).forEach(function (el) {
             var m = el.className.match(/\bfa-([a-z0-9-]+)\b/);
             if (!m) return;
-            el.className = 'ti ti-' + (FA_MAP[m[1]] || 'settings');
+            el.className = 'ti ti-' + (FA_MAP[m[1]] || FA_FALLBACK);
         });
     }
 

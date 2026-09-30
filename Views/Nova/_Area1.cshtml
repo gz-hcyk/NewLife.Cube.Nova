@@ -10,7 +10,7 @@
     if (id.IsNullOrEmpty() && Model is DataField df) id = df.Name;
     if (id.IsNullOrEmpty()) id = "areaId";
 
-    // Entity/page ?????? dynamic/string????? .ToInt()?RuntimeBinderException?
+    // Entity/page 取值可能是 dynamic/string，避免 .ToInt() 触发 RuntimeBinderException
     var areaId = 0;
     if (efield?.Entity != null)
         Int32.TryParse(Convert.ToString(efield.Entity[id]), out areaId);
@@ -33,13 +33,13 @@
 
     var ver = typeof(ControllerBaseX).Assembly.GetName().Version;
 }
-@* ?????? city-picker?jQuery ???????? .nv-field??????????? *@
+@* 地区联动仍走 city-picker（jQuery 插件），外层迁到 .nv-field，插件初始化逻辑不变。 *@
 <link href="@res/city_picker/city-picker.css" rel="stylesheet">
 <div class="nv-field">
-    <label class="nv-field-label" for="@(id)">?????</label>
+    <label class="nv-field-label" for="@(id)">请选择省</label>
     <div class="nv-field-ctl">
         <i class="nv-ico nv-ico-sm nv-input-affix" data-nv-ico="pin"></i>
-        <input class="nv-input" readonly type="text" id="@(id)" name="@(id)" value="@areaId" data-path="@areaIds" data-toggle="city-picker" placeholder="?????" data-level="province">
+        <input class="nv-input" readonly type="text" id="@(id)" name="@(id)" value="@areaId" data-path="@areaIds" data-toggle="city-picker" placeholder="请选择省" data-level="province">
     </div>
 </div>
 <script src="@res/city_picker/city-picker.js?v=@ver"></script>

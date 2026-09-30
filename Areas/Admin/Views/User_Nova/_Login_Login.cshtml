@@ -29,7 +29,12 @@
             }
             else
             {
-                <img src="/logo.png" alt="@set.DisplayName" />
+                @* LoginLogo 为空时不请求 /logo.png，改用内嵌标记，避免 404。 *@
+                <span class="nv-login-mark" role="img" aria-label="@set.DisplayName">
+                    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" />
+                    </svg>
+                </span>
             }
         </div>
         <div class="nv-login-eyebrow">账号密码登录</div>
@@ -141,6 +146,16 @@
 
     .nv-login-brand { text-align: center; margin-bottom: 18px; }
     .nv-login-brand img { max-height: 56px; max-width: 100%; object-fit: contain; }
+    .nv-login-mark {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: var(--nv-r-md, 10px);
+        background: var(--nv-primary, #1e5cae);
+        color: #fff;
+    }
 
     .nv-login-eyebrow {
         text-align: center;

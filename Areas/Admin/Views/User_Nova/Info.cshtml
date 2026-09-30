@@ -113,9 +113,13 @@
                     </div>
                 </div>
                 <div class="nv-field">
-                    <label class="nv-field-label">头像</label>
+                    <label class="nv-field-label" for="Avatar">头像</label>
                     <div class="nv-field-ctl">
-                        <input accept="image/*" id="Avatar" name="Avatar" type="file" class="nv-input" />
+                        <div class="nv-file">
+                            <input accept="image/*" id="Avatar" name="Avatar" type="file" class="nv-file-hidden" onchange="var n=this.files&&this.files[0]?this.files[0].name:'';var s=document.getElementById('AvatarFileName');if(s)s.textContent=n||'未选择文件';" />
+                            <label class="nv-btn" for="Avatar">选择文件</label>
+                            <span class="nv-file-name" id="AvatarFileName">未选择文件</span>
+                        </div>
                     </div>
                 </div>
                 <div class="nv-field">
