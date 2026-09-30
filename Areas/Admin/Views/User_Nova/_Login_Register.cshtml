@@ -18,7 +18,20 @@
         <div class="nv-login-title">@set.DisplayName 注册</div>
 
         <form action="@Url.Action("Register", "User", new { r = set.ReturnUrl })" class="nv-login-form" method="post" id="cube-register">
-            @Html.ValidationSummary()
+            @if (ViewData.ModelState.Values.Any(st => st.Errors.Count > 0))
+            {
+                <div class="nv-notice nv-notice-danger" role="alert">
+                    <div class="nv-notice-body">
+                        @foreach (var item in ViewData.ModelState.Values)
+                        {
+                            foreach (var error in item.Errors)
+                            {
+                                <div class="nv-notice-text">@error.ErrorMessage</div>
+                            }
+                        }
+                    </div>
+                </div>
+            }
 
             <div class="nv-field">
                 <label class="nv-field-label" for="reg_email">邮箱</label>

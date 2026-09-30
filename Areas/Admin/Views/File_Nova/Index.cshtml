@@ -35,7 +35,7 @@
             }
         </form>
         <div style="height:var(--nv-sp-4)"></div>
-        <div style="overflow-x:auto">
+        <div class="nv-table-wrap">
             <table class="nv-table">
                 <thead>
                     <tr>
@@ -48,6 +48,19 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @if (fs == null || fs.Count == 0)
+                    {
+                        <tr class="nv-empty-row">
+                            <td colspan="6">
+                                <div class="nv-empty" role="status">
+                                    <div class="nv-empty-title">此目录为空</div>
+                                    <div class="nv-empty-desc">当前路径下没有文件或子目录。</div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
                     @foreach (var item in fs)
                     {
                         <tr>
@@ -100,6 +113,7 @@
                                 <td></td>
                             }
                         </tr>
+                    }
                     }
                 </tbody>
             </table>

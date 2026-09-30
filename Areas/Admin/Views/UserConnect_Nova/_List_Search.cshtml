@@ -12,6 +12,6 @@
     <label class="nv-field-label" for="provider">提供商</label>
     <div class="nv-field-ctl">
         @Html.DropDownList("provider", new SelectList(providers, "Key", "Value", page["provider"]), "全部",
-            new Dictionary<String, Object> { ["class"] = "nv-select", ["onchange"] = "$(this).parents('form').submit();" })
+            new Dictionary<String, Object> { ["class"] = "nv-select", ["onchange"] = "this.form.submit();" })
     </div>
 </div>

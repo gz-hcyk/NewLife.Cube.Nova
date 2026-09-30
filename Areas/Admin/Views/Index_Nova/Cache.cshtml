@@ -12,7 +12,10 @@
     <div class="nv-card-body">
         @if (memory == null)
         {
-            <div class="nv-ops-empty">当前缓存不是 MemoryCache，条目数不可读。类型：@Cache.GetType().FullName</div>
+            <div class="nv-ops-empty">
+                <div class="nv-empty-title">无法读取缓存条目</div>
+                <div class="nv-empty-desc">当前缓存不是 MemoryCache，条目数不可读。类型：@Cache.GetType().FullName</div>
+            </div>
         }
         else
         {

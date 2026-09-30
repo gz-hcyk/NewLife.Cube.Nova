@@ -296,7 +296,10 @@
             <div class="nv-card-body">
                 @if (shortcuts.Count == 0)
                 {
-                    <div class="nv-ops-empty">当前账号没有可进入的基础数据菜单。</div>
+                    <div class="nv-ops-empty">
+                        <div class="nv-empty-title">没有可进入的基础数据</div>
+                        <div class="nv-empty-desc">当前账号没有可进入的基础数据菜单。</div>
+                    </div>
                 }
                 else
                 {
@@ -332,7 +335,10 @@
         <div class="nv-card-body nv-card-flush">
             @if (dbs.Count == 0)
             {
-                <div class="nv-ops-empty">没有已注册的数据库连接。</div>
+                <div class="nv-ops-empty">
+                    <div class="nv-empty-title">没有数据库连接</div>
+                    <div class="nv-empty-desc">没有已注册的数据库连接。</div>
+                </div>
             }
             else
             {
@@ -378,7 +384,10 @@
         <div class="nv-card-body nv-card-flush">
             @if (recent.Count == 0)
             {
-                <div class="nv-ops-empty">这两天没有审计记录。</div>
+                <div class="nv-ops-empty">
+                    <div class="nv-empty-title">没有近期审计</div>
+                    <div class="nv-empty-desc">这两天没有审计记录。</div>
+                </div>
             }
             else
             {
@@ -421,6 +430,15 @@
             <a class="nv-link" href="@Url.Action("Main", new { id = "Assembly" })">全部程序集</a>
         </div>
         <div class="nv-card-body nv-card-flush">
+            @if (!myAsms.Any())
+            {
+                <div class="nv-ops-empty">
+                    <div class="nv-empty-title">没有本目录组件</div>
+                    <div class="nv-empty-desc">当前目录下没有可展示的程序集。</div>
+                </div>
+            }
+            else
+            {
             <div class="nv-table-wrap">
                 <table class="nv-table">
                     <thead>
@@ -448,6 +466,7 @@
                     </tbody>
                 </table>
             </div>
+            }
         </div>
     </section>
 </div>
