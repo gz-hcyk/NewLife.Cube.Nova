@@ -1,18 +1,27 @@
-@* 通用页脚（部分框架视图按名引用 "_Footer"，保留以维持皮肤目录自洽） *@
+@* 通用页脚（部分框架视图按名引用 "_Footer"，保留以维持皮肤目录自洽）。
+   CubeHome/Index 为 Layout=null 的完整文档，宿主在 </body> 之后 Partial 本视图。
+   皮肤不改 Cube 核心：启动页（控制器 CubeHome，或请求路径 /）不输出 nv-footer，避免页脚落在 body 外。 *@
 @using NewLife;
 @{
+    var controller = ViewContext?.RouteData?.Values["controller"]?.ToString();
+    var isCubeHome = !controller.IsNullOrEmpty() && controller.Equals("CubeHome", StringComparison.OrdinalIgnoreCase);
+    var path = Context?.Request?.Path.Value ?? "";
+    var isSplash = isCubeHome || path.Length == 0 || path == "/";
+}
+@if (!isSplash)
+{
     var set = NewLife.Cube.CubeSetting.Current;
     var copyright = set.GetCopyright();
+    <footer class="nv-footer">
+        <div class="nv-container nv-footer-inner">
+            @if (!copyright.IsNullOrEmpty())
+            {
+                <span>@Html.Raw(copyright)</span>
+            }
+            @if (!set.Registration.IsNullOrEmpty())
+            {
+                <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener">@set.Registration</a>
+            }
+        </div>
+    </footer>
 }
-<footer class="nv-footer">
-    <div class="nv-container nv-footer-inner">
-        @if (!copyright.IsNullOrEmpty())
-        {
-            <span>@Html.Raw(copyright)</span>
-        }
-        @if (!set.Registration.IsNullOrEmpty())
-        {
-            <a href="https://beian.miit.gov.cn" target="_blank" rel="noopener">@set.Registration</a>
-        }
-    </div>
-</footer>

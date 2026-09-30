@@ -2,7 +2,40 @@
 @using NewLife.Cube.Charts
 @using NewLife.Common
 @using Microsoft.AspNetCore.Mvc.ViewEngines
+@using System.Collections
 @using System.Collections.Generic
+@using System.Reflection
+@functions {
+    // KPI 部件返回 { Value, Trend, Url }。魔方内置实现是匿名类型（internal），
+    // 皮肤程序集用 dynamic 访问会抛 RuntimeBinderException。公开 KpiModel 与字典同样走这里。
+    String KpiProp(Object data, String name)
+    {
+        if (data == null || String.IsNullOrEmpty(name)) return null;
+        try
+        {
+            if (data is IDictionary dict)
+            {
+                foreach (DictionaryEntry kv in dict)
+                {
+                    if (kv.Key != null && String.Equals(kv.Key.ToString(), name, StringComparison.OrdinalIgnoreCase))
+                        return kv.Value?.ToString();
+                }
+            }
+
+            var prop = data.GetType().GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+            if (prop != null) return prop.GetValue(data)?.ToString();
+
+            if (String.Equals(name, "Value", StringComparison.OrdinalIgnoreCase)
+                && (data is String || data is Decimal || data.GetType().IsPrimitive))
+                return data.ToString();
+        }
+        catch
+        {
+            return null;
+        }
+        return null;
+    }
+}
 @{
     ViewBag.Title = "工作台";
 
@@ -100,8 +133,11 @@
 
             if (info.WidgetType == WidgetTypes.Kpi)
             {
-                // KPI 小卡
-                dynamic d = item.Data;
+                // KPI 小卡。按 { Value, Trend, Url } 反射取值，缺字段或匿名类型都不抛。
+                var kpiValue = KpiProp(item.Data, "Value");
+                var kpiTrend = KpiProp(item.Data, "Trend");
+                var kpiUrl = KpiProp(item.Data, "Url");
+                if (String.IsNullOrEmpty(kpiValue)) kpiValue = "—";
                 <div class="widget-col widget-col-kpi" style="width:@width;" data-name="@info.Name">
                     <div class="widget-kpi">
                         <span class="widget-menu-wrap widget-menu-kpi">
@@ -113,13 +149,13 @@
                         <span class="widget-drag" title="拖拽排序"><i class="fa fa-arrows"></i></span>
                         <div class="widget-kpi-icon k-@(info.Color ?? "primary")"><i class="fa @info.Icon"></i></div>
                         <div class="widget-kpi-info">
-                            <div class="widget-kpi-value">@d.Value</div>
+                            <div class="widget-kpi-value">@kpiValue</div>
                             <div class="widget-kpi-label">@info.Title</div>
-                            @if (d.Trend != null) { <div class="widget-kpi-trend">@Html.Raw(d.Trend.ToString())</div> }
+                            @if (!String.IsNullOrEmpty(kpiTrend)) { <div class="widget-kpi-trend">@Html.Raw(kpiTrend)</div> }
                         </div>
-                        @if (d.Url != null && !String.IsNullOrEmpty(d.Url.ToString()))
+                        @if (!String.IsNullOrEmpty(kpiUrl))
                         {
-                            <a class="widget-kpi-link" href="@d.Url" title="@info.Title"></a>
+                            <a class="widget-kpi-link" href="@kpiUrl" title="@info.Title"></a>
                         }
                     </div>
                 </div>

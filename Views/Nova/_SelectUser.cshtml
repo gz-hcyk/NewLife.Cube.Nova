@@ -10,7 +10,7 @@
 
     if (id.IsNullOrEmpty()) { id = "userId"; }
     var userId = Model.UserId;
-    // page ???????? dynamic string????? .ToInt()
+    // page 取值可能是 dynamic string，避免直接 .ToInt()
     if (userId <= 0 && page != null)
         Int32.TryParse(Convert.ToString(page[id]), out userId);
     var showValue = XCode.Membership.User.FindByID(userId)?.ToString();
@@ -20,13 +20,13 @@
     if (String.IsNullOrEmpty(res)) res = "/Content";
     res = res.TrimEnd('/');
 }
-@* ???????? bootstrap-suggest?jQuery ???????????? .nv-field / .nv-input?????????? *@
+@* 用户选择器：仍走 bootstrap-suggest（jQuery 插件），只把外层骨架迁到 .nv-field / .nv-input，插件逻辑一字不改。 *@
 <div class="nv-field">
-    <label class="nv-field-label" for="@(id)_select">????</label>
+    <label class="nv-field-label" for="@(id)_select">选择用户</label>
     <div class="nv-field-ctl">
         <i class="nv-ico nv-ico-sm nv-input-affix" data-nv-ico="users"></i>
         <input type="hidden" name="@id" id="@id" value="@userId" />
-        <input type="text" class="nv-input" id="@(id)_select" placeholder="????" value="@showValue" autocomplete="off" />
+        <input type="text" class="nv-input" id="@(id)_select" placeholder="搜索用户" value="@showValue" autocomplete="off" />
     </div>
 </div>
 <script src="@res/bootstrap-suggest.js"></script>
@@ -35,7 +35,7 @@
         $("#@(id)_select").bsSuggest({
             url: "/cube/UserSearch?roleid=@Model.RoleId&department=@Model.DepartmentId&key=",
             getDataMethod:"url",
-            effectiveFieldsAlias: { id:"??",code:"??",name: "??",displayName:'??',departmentName:'??'},
+            effectiveFieldsAlias: { id:"编号",code:"代码",name: "名称",displayName:'昵称',departmentName:'部门'},
             ignorecase: true,
             showHeader: true,
             delayUntilKeyup: true,
@@ -44,10 +44,10 @@
             showBtn: false,
             keyField: "name",
             clearable: true,
-            searchingTip: '???...',
+            searchingTip: '搜索中...',
             allowNoKeyword: true,
             delay: 500,
-            emptyTip: '???',
+            emptyTip: '无数据',
             containerValueId: '@id',
             fnProcessData: function (result) {
                 dt = {};

@@ -2630,3 +2630,83 @@ body.nv .form-actions .btn-danger:hover, body.nv .form-actions .btn-danger:focus
 }
 .cube-workbench .profile-name { font-weight: var(--nv-fw-semi); }
 .cube-workbench .profile-role { font-size: var(--nv-fs-12); color: var(--nv-text-3); margin-top: 2px; }
+
+/* ============================================================
+   DEF-002 列表列宽
+   width:100% 加单元格默认可折行时，短中文列会被长列压到约一字宽并竖排。
+   短列 nowrap，长文本 .nv-td-clip 截断，放不下由 .nv-table-wrap 横滚。
+   ============================================================ */
+.nv-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.nv-table {
+  width: max-content;
+  min-width: 100%;
+}
+.nv-table th,
+.nv-table td {
+  white-space: nowrap;
+}
+.nv-table thead th {
+  min-width: 4.5em;
+}
+.nv-table thead th.nv-td-sticky,
+.nv-table td.nv-td-sticky,
+.nv-table td.nv-td-actions {
+  min-width: 0;
+}
+.nv-table td.nv-td-clip {
+  max-width: 24rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.nv-table tbody tr.nv-empty-row > td {
+  white-space: normal;
+  max-width: none;
+  min-width: 0;
+}
+
+/* DEF-009 中文文件选择（隐藏原生英文 file 控件） */
+.nv-file {
+  display: flex;
+  align-items: center;
+  gap: var(--nv-sp-2);
+  min-height: var(--nv-ctrl-h);
+}
+.nv-file-name {
+  min-width: 0;
+  font-size: var(--nv-fs-13);
+  color: var(--nv-text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+label.nv-btn { cursor: pointer; }
+
+/* DEF-004 窄屏确认框：居中且高于右下角 AI 悬浮钮，确定/取消都可点 */
+#nvConfirmMask.is-on { z-index: 10040; }
+#nvConfirm.is-on { z-index: 10050; }
+body:has(#nvConfirm.is-on) .ai-fab,
+body:has(#nvConfirm.is-on) #aiAssistantFab {
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+@media (max-width: 768px) {
+  #nvConfirm.nv-modal {
+    top: 50%;
+    bottom: auto;
+    left: 50%;
+    right: auto;
+    width: min(528px, calc(100vw - 32px));
+    max-width: none;
+    border-radius: var(--nv-r-lg);
+    transform: translate(-50%, calc(-50% - 12px));
+  }
+  #nvConfirm.nv-modal.is-on {
+    transform: translate(-50%, -50%);
+  }
+  #nvConfirm .nv-modal-foot {
+    padding-bottom: max(var(--nv-sp-3), env(safe-area-inset-bottom));
+  }
+}

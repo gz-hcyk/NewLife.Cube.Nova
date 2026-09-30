@@ -217,19 +217,23 @@ else
                 }
                 else if (item.IsBigText())
                 {
-                    // 防止内容过长
+                    // 长文本截断，避免撑开后把短标签列压成竖排
                     if (!tdClass.IsNullOrEmpty())
                     {
-                        <td style="@tdClass" title="@value">@value</td>
+                        <td class="nv-td-clip" style="@tdClass" title="@value">@value</td>
                     }
                     else
                     {
-                        <td style="max-width:600px;overflow:hidden;white-space: nowrap;text-overflow: ellipsis;" title="@value">@value</td>
+                        <td class="nv-td-clip" title="@value">@value</td>
                     }
                 }
                 else
                 {
-                    <td class="@tdClass" title="@title">@value</td>
+                    var shown = value + "";
+                    var cellClass = tdClass;
+                    if (shown.Length > 48)
+                        cellClass = ((cellClass ?? "") + " nv-td-clip").Trim();
+                    <td class="@cellClass" title="@(title.IsNullOrEmpty() ? shown : title)">@value</td>
                 }
             }
             break;
