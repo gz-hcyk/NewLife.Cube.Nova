@@ -5,14 +5,16 @@
    因此这里必须保持「无导航」，否则菜单会在外层与 iframe 内各出现一次（双重菜单）。
    契约仍与 ACE 布局一致（PageSetting / ViewBag.Charts / ViewBag.HeaderContent），
    可在 CubeSetting.Theme 之间自由切换而不改任何业务代码。
-   内容区结构：.nv-body > main#nv-main.nv-container（class 仍为 nv-container，兼容宿主选择器 .nv-body > .nv-container）。
-   2026-09 生产化调整：全部内容页（列表/表单/详情/自定义）不再渲染页眉（面包屑+标题）与页脚，
-   政务客户要求界面简洁；PageSetting.EnableNavbar / EnableFooter 开关保留但 Nova 布局忽略之。 *@
+   内容区结构：.nv-body >（可选 .nv-page-head）> main#nv-main.nv-container（class 仍为 nv-container，兼容宿主选择器 .nv-body > .nv-container）。
+   页眉 / 页脚尊重 PageSetting.EnableNavbar / EnableFooter（默认均为 true）。外壳顶栏 #crumbTail 仍由 _Frame 负责，与内容区面包屑互补。 *@
 @{
     var set = CubeSetting.Current;
     var pageSetting = ViewBag.PageSetting as PageSetting ?? PageSetting.Global;
 
-    var title = ViewBag.Title + "";
+    // 页眉用原始业务名；document title 才在需要时拼上系统名
+    var pageTitle = ViewBag.Title + "";
+    var pageDesc = ViewBag.HeaderContent + "";
+    var title = pageTitle;
     if (set.TitlePrefix && title != "" && !title.Contains(" - "))
     {
         title += " - " + SysConfig.Current.DisplayName;
@@ -92,9 +94,35 @@
             <div class="nv-notice-host" data-nv-notice-when="top">@pageNotice</div>
         }
 
+        @if (pageSetting.EnableNavbar)
+        {
+            <header class="nv-page-head">
+                <div class="nv-page-head-main">
+                    <nav class="nv-crumb" aria-label="面包屑">
+                        @await Html.PartialAsync("_Layout_Nav")
+                    </nav>
+                    @* 页面标题用 ViewBag.Title 原始业务名，避免拼上「 - 系统名」的 document title。
+                       若与表单内 .nv-form-title 重叠，由各页 PageSetting.EnableNavbar=false 关闭页眉。 *@
+                    @if (!String.IsNullOrEmpty(pageTitle))
+                    {
+                        <div class="nv-page-title">@ViewBag.Title</div>
+                    }
+                    @if (!String.IsNullOrEmpty(pageDesc))
+                    {
+                        <div class="nv-page-desc">@ViewBag.HeaderContent</div>
+                    }
+                </div>
+            </header>
+        }
+
         <main id="nv-main" class="nv-container">
             @RenderBody()
         </main>
+
+        @if (pageSetting.EnableFooter)
+        {
+            @await Html.PartialAsync("_Layout_Footer")
+        }
     </div>
 
     <div class="nv-toast-host"></div>

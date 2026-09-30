@@ -373,7 +373,7 @@
         database: 'database', 'exclamation-triangle': 'alert-triangle', 'file-text': 'file-text',
         'file-text-o': 'file-text', heartbeat: 'heartbeat', history: 'history', home: 'home',
         'line-chart': 'chart-line', navicon: 'menu-2', refresh: 'refresh', server: 'server',
-        'sign-in': 'login', spinner: 'loader', stethoscope: 'stethoscope', tachometer: 'dashboard',
+        'sign-in': 'login', signal: 'signal', spinner: 'loader', stethoscope: 'stethoscope', tachometer: 'dashboard',
         'th-large': 'layout-grid', undo: 'arrow-back-up', user: 'user', 'user-circle': 'user-circle',
         'user-circle-o': 'user-circle', 'user-plus': 'user-plus', 'user-secret': 'user-circle',
         users: 'users', wrench: 'tools',
