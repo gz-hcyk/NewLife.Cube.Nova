@@ -6,8 +6,10 @@
  * 契约：--nv-* 令牌名与 docs/66 三层令牌及原型完全一致，不做改名；
  *       组件层只许引用语义令牌，不许直引色彩原语（docs/66 §1、docs/81 §3）
  * 加载顺序：本文件必须在 nova-ui.css / nova-biz.css 之前加载 ——
- *   皮肤侧：Views/Nova/_Layout.cshtml、Views/Nova/_Frame.cshtml、Areas/Admin/Views/User_Nova/Login.cshtml
- *   业务侧：Web 各 *_Nova 视图（nova-biz.css 之前）
+ *   外壳：Views/Nova/_Frame.cshtml（tokens → nova-ui）
+ *   内容页：Web/Views/Nova/_Layout.cshtml 覆盖皮肤布局（tokens → nova-ui → ~/css/nova-biz.css）
+ *   登录：Areas/Admin/Views/User_Nova/Login.cshtml（独立头，仍可自挂 tokens）
+ *   业务页禁止再重复挂本文件（1C）；nova-biz 由内容布局统一注入。
  * 换品牌色/换主题：只改本文件语义令牌层一行，组件层零改动。
  *//* ============================================================ 1 色彩原语
    主色锚定 #1e5cae（现网 #206bc4 加深一档，延续蓝色家族认知）；中性灰改为冷调蓝灰，营造科技气质 */:root {
