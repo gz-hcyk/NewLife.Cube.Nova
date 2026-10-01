@@ -4,6 +4,7 @@
 @using XCode;
 @using XCode.Configuration;
 @using System.Collections;
+@using System.Globalization;
 @{
     var name = Model.Name;
     var value = Model.Value;
@@ -19,7 +20,47 @@
 
     var optionLabel = Model.OptionLabel;
 
-    var selectedValue = Model.SelectedValues;
+    var selectedRaw = Model.SelectedValues;
+    var selectedIsEnum = selectedRaw is Enum;
+    Object selectedValue = selectedRaw;
+    // 同类加固：枚举选中值改成与字典 Key 同型的数值（或数值字符串）。字符串 Key（Theme/Skin）不进这条。
+    if (selectedIsEnum && value is IDictionary keyDict)
+    {
+        var num = Convert.ToInt64(selectedRaw);
+        var numStr = num.ToString(CultureInfo.InvariantCulture);
+        Type keyType = null;
+        if (keyDict.GetType().IsGenericType)
+        {
+            var args = keyDict.GetType().GetGenericArguments();
+            if (args.Length > 0) keyType = args[0];
+        }
+        if (keyType == null)
+        {
+            foreach (DictionaryEntry entry in keyDict)
+            {
+                if (entry.Key != null) { keyType = entry.Key.GetType(); break; }
+            }
+        }
+        if (keyType == typeof(String))
+        {
+            if (keyDict.Contains(numStr)) selectedValue = numStr;
+            else if (keyDict.Contains(selectedRaw.ToString())) selectedValue = selectedRaw.ToString();
+            else selectedValue = numStr;
+        }
+        else if (keyType != null && keyType.IsEnum)
+        {
+            selectedValue = Enum.ToObject(keyType, num);
+        }
+        else if (keyType == typeof(Int64) || keyType == typeof(Int32) || keyType == typeof(Int16) || keyType == typeof(Byte)
+            || keyType == typeof(UInt64) || keyType == typeof(UInt32) || keyType == typeof(UInt16))
+        {
+            selectedValue = Convert.ChangeType(num, keyType);
+        }
+        else
+        {
+            selectedValue = num;
+        }
+    }
 
     IEntityTree treeSample = null;
     if (value is IEnumerable probe)
@@ -56,7 +97,18 @@ else if (value is IEnumerable data && type.GetElementTypeEx().As(typeof(IEntity)
 }
 else if (value is IDictionary dic)
 {
+    Object oldSelected = null;
+    if (selectedIsEnum)
+    {
+        oldSelected = Html.ViewData[name];
+        Html.ViewData[name] = selectedValue;
+    }
     @Html.DropDownList(name, new SelectList(dic, "Key", "Value", selectedValue), optionLabel,  atts)
+    if (selectedIsEnum)
+    {
+        if (oldSelected != null) Html.ViewData[name] = oldSelected;
+        else Html.ViewData.Remove(name);
+    }
 }
 else if (value is IEnumerable items)
 {

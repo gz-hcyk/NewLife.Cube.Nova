@@ -2,6 +2,7 @@
 @using NewLife;
 @using NewLife.Cube
 @using System.ComponentModel
+@using System.Globalization
 @using System.Reflection
 @using XCode;
 @using XCode.Configuration;
@@ -12,13 +13,13 @@
 }
 @if (type.IsEnum && type.GetCustomAttribute<FlagsAttribute>() == null)
 {
-    var dic = new Dictionary<Object, String>();
+    // option value 只用枚举底层数值。Migration.Full 的 ToString 是 "Full"，TryParse 失败会落成 0（Off）。
+    var dic = new Dictionary<String, String>();
     foreach (var item in type.GetFields(BindingFlags.Public | BindingFlags.Static))
     {
         if (!item.IsStatic) continue;
 
-        // 与框架 Shared/_Form_Int 一致：枚举用数值，不用名称。SexKinds.男 的 ToString 是「男」，TryParse 会失败并落到 0（未知）。
-        var v = Utility.ToLong(item.GetValue(null), 0L);
+        var key = Convert.ToInt64(item.GetValue(null)).ToString(CultureInfo.InvariantCulture);
 
         var des = item.Name;
 
@@ -29,19 +30,17 @@
         if (att != null && !String.IsNullOrEmpty(att.Description)) des = att.Description;
 
         // 有些枚举可能不同名称有相同的值
-        dic[v] = des;
+        dic[key] = des;
     }
-    // 由于 Html.DropDownList 获取默认值，会从 ViewData，ViewData.Model，中获取name的值
-    // 如果获取到了，则不会再看传入的selectlist的默认值，由于此处是枚举，所以通过 Html.ViewData.Eval(name) 会得到字符串值，所以导致绑定默认值失败
-    // 通过 Html.ViewData[name]=(Int32)value，可以让  Html.DropDownList 优先拿到手动设置的值，就不会再从 ViewData.Model 里面找
-    // 当然这里会有一个问题，如果外部同样设置ViewData[name]，则就会出现潜在的bug,所以把之前值保存到oldvalue
+    // Html.DropDownList 会从 ViewData / Model 取同名字段。模型上是枚举时 Eval 得到名称，
+    // 对不上数值 option。先写入数值字符串，渲完再还原。
     var oldvalue = Html.ViewData[name];
-    // DEF-020：当前值同样走 ToLong。枚举写入 ViewData 后，DropDownList 不再用模型上的枚举名去对 option。
-    var selectedLong = Utility.ToLong(value, 0L);
-    Html.ViewData[name] = selectedLong;
+    var selectedLong = value is Enum ? Convert.ToInt64(value) : Utility.ToLong(value, 0L);
+    var selectedKey = selectedLong.ToString(CultureInfo.InvariantCulture);
+    Html.ViewData[name] = selectedKey;
 
     {
-        var data = new SelectList(dic, "Key", "Value", selectedLong);
+        var data = new SelectList(dic, "Key", "Value", selectedKey);
         @Html.DropDownList(name, data, null, new { @class = "nv-select" })
     }
 
