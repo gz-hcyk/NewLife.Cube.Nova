@@ -24,7 +24,7 @@
         @await Html.PartialAsync(set.NavView)
     </div>
 }
-@* 卡片由 _Form_Body 渲染（单分组一张卡，多分组纵向分组卡片），错误提示独立成卡，此处不再包外层卡片 *@
+@* 卡片由 _Form_Body 渲染（单分组一张卡、无页签；多分组同一张卡内 BS5 选项卡）。错误提示独立成卡，在页签外。 *@
 @using (Html.BeginForm("Edit", null, rv, FormMethod.Post, null, htmlAttributes))
 {
     @await Html.PartialAsync("_Form_Header", entity)

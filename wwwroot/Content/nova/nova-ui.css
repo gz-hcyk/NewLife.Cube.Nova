@@ -2192,14 +2192,20 @@ button.nv-objnav-item:hover {
  font-weight: var(--nv-fw-semi);
  background: var(--nv-primary-wash);
 }
-/* L1. 卡内分段选项卡 */body.nv .nv-tabs-host {
- padding:var(--nv-sp-4) var(--nv-sp-4) 0; }
+/* L1. 卡内分段选项卡。窄屏不改成手风琴：宿主横向滚动，页签不换行。 */body.nv .nv-tabs-host {
+ padding:var(--nv-sp-4) var(--nv-sp-4) 0;
+ overflow-x:auto;
+ -webkit-overflow-scrolling:touch;
+}
 body.nv .nv-tabs-host .nav-tabs {
- display:inline-flex; flex-wrap:wrap; gap:2px; padding:3px; margin:0;
+ display:inline-flex; flex-wrap:nowrap; white-space:nowrap; width:max-content; gap:2px; padding:3px; margin:0;
  background:var(--nv-surface-2); border:1px solid var(--nv-border); border-radius:var(--nv-r-md);
 }
 body.nv .nv-tabs-host .nav-tabs .nav-item {
  margin:0; }
+body.nv .nv-tabs-host .nav-tabs .nav-item,
+body.nv .nv-tabs-host .nav-tabs .nav-link {
+ flex-shrink:0; }
 body.nv .nv-tabs-host .nav-tabs .nav-link {
  display:inline-flex; align-items:center; gap:6px; margin:0; padding:7px 18px;
  border:0; border-radius:var(--nv-r-sm); background:transparent;
