@@ -17,7 +17,8 @@ public static class NovaService
     /// <returns></returns>
     public static IApplicationBuilder UseNova(this IApplicationBuilder app, IWebHostEnvironment env)
     {
-        // 令牌分享：登录态一次性跳转。挂在 UseCube 路由之后，未匹配的 Open 路径由这里接管。
+        // 令牌分享：登录态一次性跳转。UseNova 可能早于 UseAuthentication，
+        // 处理函数自行用魔方令牌 Cookie 识别登录，而不是看此时尚未填充的 ctx.User。
         app.Use(async (ctx, next) =>
         {
             if (!NovaUserToken.IsOpenRequest(ctx.Request))

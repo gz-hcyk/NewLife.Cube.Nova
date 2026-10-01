@@ -1,4 +1,6 @@
+using NewLife.Cube;
 using NewLife.Cube.Entity;
+using NewLife.Model;
 using XCode.Membership;
 using NewLife;
 
@@ -42,7 +44,10 @@ public static class NovaUserToken
     public static Task HandleOpenAsync(HttpContext ctx)
     {
         var request = ctx.Request;
-        if (ctx.User?.Identity?.IsAuthenticated != true)
+        // UseNova 常排在 UseAuthentication 之前，此时 ctx.User 仍是匿名，但登录 Cookie 已经在请求上。
+        // 若按 User 为空就 302 到 Login，登录页又能认出同一会话并跳回 Open，会无限循环。
+        var user = ResolveLoginUser(ctx);
+        if (user == null)
         {
             var back = (request.PathBase + request.Path + request.QueryString).ToString();
             ctx.Response.Redirect("/Admin/User/Login?ReturnUrl=" + Uri.EscapeDataString(back));
@@ -54,13 +59,6 @@ public static class NovaUserToken
         if (id <= 0 || fmt.IsNullOrEmpty() || !_formats.Contains(fmt))
         {
             ctx.Response.StatusCode = StatusCodes.Status404NotFound;
-            return Task.CompletedTask;
-        }
-
-        var user = ManageProvider.Provider?.Current;
-        if (user == null)
-        {
-            ctx.Response.StatusCode = StatusCodes.Status403Forbidden;
             return Task.CompletedTask;
         }
 
@@ -88,6 +86,17 @@ public static class NovaUserToken
         ctx.Response.Headers["Referrer-Policy"] = "no-referrer";
         ctx.Response.Redirect(target);
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// 与登录页相同：用 ManageProvider.TryLogin 从 Header / Query / Cookie 读取魔方令牌。
+    /// 不把「当前管道阶段 User 尚未写入」当成未登录。
+    /// </summary>
+    static IManageUser ResolveLoginUser(HttpContext ctx)
+    {
+        var provider = ManageProvider.Provider;
+        if (provider == null || ctx == null) return null;
+        return provider.TryLogin(ctx);
     }
 
     /// <summary>
