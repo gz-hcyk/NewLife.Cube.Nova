@@ -14,8 +14,7 @@
     var des = pi.Description;
     var dataSource = pi.DataSource;
 
-    var err = 0;
-    if (ViewData.ModelState.TryGetValue(name, out var st) && st != null) { err = st.Errors.Count; }
+    var err = NovaForm.RealErrorCount(ViewData.ModelState, name);
 }
 <div class="nv-field @(err > 0 ? "has-error" : "")">
     <label class="nv-field-label" for="@name" title="@dis">@dis</label>

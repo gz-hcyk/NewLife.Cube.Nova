@@ -12,15 +12,41 @@
         if (html.Contains("<a")) return html.Replace("<a ", $"<a class=\"{cls}\" ");
         return $"<span class=\"{cls} is-disabled\">{html}</span>";
     }
+
+    // 日志等列表常关闭总数（EnableTotalCount=false，TotalCount 保持 0）。
+    // 有总数走完整分页；没有总数时，本页已满或控制器给了 HasNext，仍给出下一页和 PageSize。
+    var knownTotal = pager != null && pager.TotalCount > 0;
+    Object modelObj = Model;
+    var rowCount = 0;
+    if (modelObj is System.Collections.ICollection col) rowCount = col.Count;
+    else if (modelObj is System.Collections.IEnumerable seq)
+    {
+        foreach (var ignored in seq) rowCount++;
+    }
+    Object hasNextObj = ViewBag.HasNext;
+    var hasNext = hasNextObj is Boolean flag && flag;
+    var pageFull = pager != null && pager.PageSize > 0 && rowCount >= pager.PageSize;
+    var probeNext = pager != null && !knownTotal && (hasNext || pageFull);
+    var showPager = pager != null && (knownTotal || probeNext || pager.PageIndex > 1);
+    // 总数未知时 GetPage("下一页") 会因 PageCount==0 变成禁用文字，改走 GetPageUrl
+    var nextHtml = pager == null ? "" : (knownTotal ? pager.GetPage("下一页") : (probeNext ? pager.GetPageUrl("下一页", pager.PageIndex + 1) : "下一页"));
+    var lastHtml = pager == null ? "" : (knownTotal ? pager.GetPage("尾页") : "尾页");
 }
-@if (pager != null && pager.TotalCount > 0)
+@if (showPager)
 {
     @* 整条分页包在同一 form 内：PageSize 下拉必须属于该 form。
        旧实现把 select 放在 form 外，change 时 cloneNode 会丢选中态，始终提交第一项 5。 *@
     <form action="@act?@pager.GetBaseUrl(true, true, false)" method="post" role="form" class="nv-pager">
         <div class="nv-pager-meta">
-            <span>共 <b>@pager.TotalCount.ToString("n0")</b> 条</span>
-            <span>当前第 <b>@pager.PageIndex.ToString("n0")</b>/@pager.PageCount.ToString("n0") 页</span>
+            @if (knownTotal)
+            {
+                <span>共 <b>@pager.TotalCount.ToString("n0")</b> 条</span>
+                <span>当前第 <b>@pager.PageIndex.ToString("n0")</b>/@pager.PageCount.ToString("n0") 页</span>
+            }
+            else
+            {
+                <span>当前第 <b>@pager.PageIndex.ToString("n0")</b> 页</span>
+            }
         </div>
         <div class="nv-pager-nums nv-pager-form">
             <span class="nv-pager-size">
@@ -39,8 +65,8 @@
             <div class="nv-pages" aria-label="分页">
                 @Html.Raw(PageBtn(pager.GetPage("首页"), "nv-page-edge"))
                 @Html.Raw(PageBtn(pager.GetPage("上一页")))
-                @Html.Raw(PageBtn(pager.GetPage("下一页")))
-                @Html.Raw(PageBtn(pager.GetPage("尾页"), "nv-page-edge"))
+                @Html.Raw(PageBtn(nextHtml))
+                @Html.Raw(PageBtn(lastHtml, "nv-page-edge"))
             </div>
             <span class="nv-pager-jump">
                 跳至 <input class="nv-input" name="PageIndex" type="text" value="@pager.PageIndex" aria-label="跳转到第几页" /> 页

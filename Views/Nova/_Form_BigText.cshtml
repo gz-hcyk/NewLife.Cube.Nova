@@ -7,8 +7,7 @@
     var entity = Model.Entity;
     var field = Model.Field;
 
-    var err = 0;
-    if (ViewData.ModelState.TryGetValue(field.Name, out var st) && st != null) { err = st.Errors.Count; }
+    var err = NovaForm.RealErrorCount(ViewData.ModelState, field.Name);
 
     // 说明文字：去「显示名」前缀 + 分隔符（不用已过时的 TrimStart 重载）
     var des = field.Description;

@@ -13,6 +13,8 @@
 }
 <div class="nv-toolbar">
     <form action="@Html.Raw(page.GetFormAction(act))" method="post" role="form" class="nv-toolbar-form">
+        @* 筛选重新查询时回到第 1 页。表单值覆盖地址栏里残留的 PageIndex。 *@
+        <input type="hidden" name="@Pager._.PageIndex" value="1" />
         <div class="nv-toolbar-row">
             @if (set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert))
             {

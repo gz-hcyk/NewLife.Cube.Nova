@@ -149,6 +149,8 @@
         html.setAttribute('data-nv-density', d);
         set('nova-density', d);
         $all('[data-nv-density-val]').forEach(function (el) { el.textContent = DENSITY_LABEL[d]; });
+        /* 与 applyTheme 对齐：当前 iframe#main 立刻跟上，不必等下一次导航 */
+        broadcast('density', d);
     }
 
     /* ------------------------------------------------- 与 iframe 内容页同步
@@ -1941,15 +1943,57 @@
         });
     }
 
-    /* 字段校验：把 data-nv-invalid 接到真实控件的 aria-invalid / aria-describedby */
+    /* 空数值/日期的模型绑定失败（The value '' is invalid）不是业务校验，不打 aria-invalid */
+    function isEmptyValueBindingNoise(wrap) {
+        var field = wrap.closest ? wrap.closest('.nv-field') : null;
+        var err = field && field.querySelector('.nv-field-error');
+        if (!err) return false;
+        var text = err.textContent || '';
+        return text.indexOf("''") >= 0 || text.indexOf('""') >= 0;
+    }
+
+    function firstInvalidControl(wrap) {
+        var el = wrap.querySelector('input:not([type=hidden]):not([disabled]),select:not([disabled]),textarea:not([disabled])');
+        if (!el) return null;
+        if (el.tagName === 'SELECT') {
+            var box = el.closest ? el.closest('[data-nv-selectpop]') : null;
+            var btn = box && box.querySelector('.nv-selectpop-btn, button');
+            if (btn) return btn;
+        }
+        return el;
+    }
+
+    /* 字段校验：只把 data-nv-invalid="true"（ModelState 真正失败）接到控件，并聚焦第一个。
+       焦点推迟到本轮启动之后，这样下拉增强已经包好，滚到可见控件。 */
     function initFieldInvalid() {
-        document.querySelectorAll('[data-nv-invalid]').forEach(function (wrap) {
-            var id = wrap.getAttribute('data-nv-describedby');
+        var wraps = [];
+        document.querySelectorAll('[data-nv-invalid="true"]').forEach(function (wrap) {
+            if (isEmptyValueBindingNoise(wrap)) return;
             var el = wrap.querySelector('input:not([type=hidden]),select,textarea');
             if (!el) return;
             el.setAttribute('aria-invalid', 'true');
+            var id = wrap.getAttribute('data-nv-describedby');
             if (id) el.setAttribute('aria-describedby', id);
+            wraps.push(wrap);
         });
+        if (!wraps.length) return;
+        window.setTimeout(function () {
+            var first = null;
+            for (var i = 0; i < wraps.length; i++) {
+                var el = firstInvalidControl(wraps[i]);
+                if (!el) continue;
+                if (!el.getAttribute('aria-invalid')) el.setAttribute('aria-invalid', 'true');
+                first = el;
+                break;
+            }
+            if (!first) return;
+            var active = document.activeElement;
+            if (active && active.form && /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName)) return;
+            try { first.focus({ preventScroll: true }); }
+            catch (e) { try { first.focus(); } catch (e2) { /* 不可聚焦时忽略 */ } }
+            try { first.scrollIntoView({ block: 'center', inline: 'nearest' }); }
+            catch (e3) { /* 旧环境无 scrollIntoView 选项时忽略 */ }
+        }, 0);
     }
 
     /* ---------------------------------------------------------------- ⑤ 启动 */

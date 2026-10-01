@@ -17,6 +17,19 @@ public static class NovaService
     /// <returns></returns>
     public static IApplicationBuilder UseNova(this IApplicationBuilder app, IWebHostEnvironment env)
     {
+        // 令牌分享：登录态一次性跳转。UseNova 可能早于 UseAuthentication，
+        // 处理函数自行用魔方令牌 Cookie 识别登录，而不是看此时尚未填充的 ctx.User。
+        app.Use(async (ctx, next) =>
+        {
+            if (!NovaUserToken.IsOpenRequest(ctx.Request))
+            {
+                await next();
+                return;
+            }
+
+            await NovaUserToken.HandleOpenAsync(ctx);
+        });
+
         // 独立静态文件设置，魔方自己的静态资源内嵌在程序集里面
         var options = new StaticFileOptions();
         {
