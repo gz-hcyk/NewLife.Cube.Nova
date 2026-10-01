@@ -12,19 +12,7 @@
     var canAdd = set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert);
     var listEmpty = Model == null || Model.Count == 0;
 
-    var queryFiltered = false;
-    var query = Context.Request.Query;
-    if (query != null)
-    {
-        var pagerNames = NewLife.Web.Pager._;
-        foreach (var kv in query)
-        {
-            if (kv.Key.EqualIgnoreCase(pagerNames.PageIndex, pagerNames.PageSize, pagerNames.Sort, pagerNames.Desc)) continue;
-            if (kv.Value.ToString().IsNullOrEmpty()) continue;
-            queryFiltered = true;
-            break;
-        }
-    }
+    var queryFiltered = NovaList.IsFiltered(Context.Request, page);
 }
 <table class="nv-table">
     <thead>
@@ -87,31 +75,21 @@
         {
             @foreach (var entity in Model)
             {
-                var url = entity.Url + "";
-                var queryString = "";
-                var p = url.IndexOf('?');
-                if (p >= 0)
-                {
-                    queryString = url.Substring(p);
-                    url = url.Substring(0, p);
-                }
-                if (!queryString.IsNullOrEmpty())
-                    queryString += "&token=" + entity.Token;
-                else
-                    queryString += "?token=" + entity.Token;
+                // 分享走登录态一次性打开，href 只有主键和格式，完整 Token 不进列表 HTML
+                var openBase = NovaUserToken.OpenPath + "?id=" + entity.ID + "&fmt=";
 
                 <tr>
                     @if (set.EnableSelect)
                     {
                         <td class="nv-td-sticky nv-td-mid"><input type="checkbox" name="keys" value="@entity.ID" aria-label="选择该行" /></td>
                     }
-                    <td>@entity.Token</td>
+                    <td>@NovaUserToken.Mask(entity.Token)</td>
                     <td style="max-width:400px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;" title="@entity.Url">@entity.Url</td>
-                    <td class="nv-td-mid"><a class="nv-link" href="@(url + "/Html" + queryString)" target="_blank">页面</a></td>
-                    <td class="nv-td-mid"><a class="nv-link" href="@(url + "/Json" + queryString)" target="_blank">Json数据</a></td>
-                    <td class="nv-td-mid"><a class="nv-link" href="@(url + "/Xml" + queryString)" target="_blank">Xml数据</a></td>
-                    <td class="nv-td-mid"><a class="nv-link" href="@(url + "/Csv" + queryString)" target="_blank">Csv数据</a></td>
-                    <td class="nv-td-mid"><a class="nv-link" href="@(url + "/Excel" + queryString)" target="_blank">Excel数据</a></td>
+                    <td class="nv-td-mid"><a class="nv-link" href="@(openBase + "Html")" target="_blank" rel="noopener noreferrer">页面</a></td>
+                    <td class="nv-td-mid"><a class="nv-link" href="@(openBase + "Json")" target="_blank" rel="noopener noreferrer">Json数据</a></td>
+                    <td class="nv-td-mid"><a class="nv-link" href="@(openBase + "Xml")" target="_blank" rel="noopener noreferrer">Xml数据</a></td>
+                    <td class="nv-td-mid"><a class="nv-link" href="@(openBase + "Csv")" target="_blank" rel="noopener noreferrer">Csv数据</a></td>
+                    <td class="nv-td-mid"><a class="nv-link" href="@(openBase + "Excel")" target="_blank" rel="noopener noreferrer">Excel数据</a></td>
                     <td class="nv-td-mid">@entity.UserName</td>
                     <td class="nv-td-mid">@entity.Expire.ToFullString("")</td>
                     <td class="nv-td-mid">

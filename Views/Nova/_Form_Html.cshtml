@@ -7,8 +7,7 @@
     var entity = Model.Entity;
     var field = Model.Field;
 
-    var err = 0;
-    if (ViewData.ModelState.TryGetValue(field.Name, out var st) && st != null) { err = st.Errors.Count; }
+    var err = NovaForm.RealErrorCount(ViewData.ModelState, field.Name);
 
     var des = field.Description;
     if (!des.IsNullOrEmpty() && !field.DisplayName.IsNullOrEmpty() && des.StartsWith(field.DisplayName))

@@ -16,8 +16,7 @@
 
     var itemView = (dataField as FormField)?.ItemView;
 
-    var err = 0;
-    if (ViewData.ModelState.TryGetValue(item.Name, out var st) && st != null) { err = st.Errors.Count; }
+    var err = NovaForm.RealErrorCount(ViewData.ModelState, item.Name);
 
     // 说明文字：去掉「显示名」前缀与分隔符。
     // 注：不用 NewLife 的 TrimStart(string, params string[]) —— 该重载已过时（CS0618），

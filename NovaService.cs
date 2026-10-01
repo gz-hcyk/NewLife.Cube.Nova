@@ -17,6 +17,18 @@ public static class NovaService
     /// <returns></returns>
     public static IApplicationBuilder UseNova(this IApplicationBuilder app, IWebHostEnvironment env)
     {
+        // 令牌分享：登录态一次性跳转。挂在 UseCube 路由之后，未匹配的 Open 路径由这里接管。
+        app.Use(async (ctx, next) =>
+        {
+            if (!NovaUserToken.IsOpenRequest(ctx.Request))
+            {
+                await next();
+                return;
+            }
+
+            await NovaUserToken.HandleOpenAsync(ctx);
+        });
+
         // 独立静态文件设置，魔方自己的静态资源内嵌在程序集里面
         var options = new StaticFileOptions();
         {

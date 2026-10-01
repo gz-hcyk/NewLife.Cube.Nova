@@ -133,21 +133,9 @@
         + (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete) ? 1 : 0);
     var canAdd = set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert);
 
-    // 关键字 q，或除分页/排序以外的查询条件：空结果视为「无匹配」，否则「暂无数据」。
+    // 关键字 q（含 POST）或除分页/排序以外的筛选：空结果视为「无匹配」，否则「暂无数据」。
     // 不改动上面的 listEmpty / RetrieveTotalCount / colCount 判定。
-    var queryFiltered = false;
-    var query = Context.Request.Query;
-    if (query != null)
-    {
-        var pagerNames = NewLife.Web.Pager._;
-        foreach (var kv in query)
-        {
-            if (kv.Key.EqualIgnoreCase(pagerNames.PageIndex, pagerNames.PageSize, pagerNames.Sort, pagerNames.Desc)) continue;
-            if (kv.Value.ToString().IsNullOrEmpty()) continue;
-            queryFiltered = true;
-            break;
-        }
-    }
+    var queryFiltered = NovaList.IsFiltered(Context.Request, page);
 }
 @if (isTree)
 {

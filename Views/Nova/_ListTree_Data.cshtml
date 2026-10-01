@@ -41,19 +41,7 @@
         + (this.Has(PermissionFlags.Detail, PermissionFlags.Update, PermissionFlags.Delete) ? 1 : 0);
     var canAdd = set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert);
 
-    var queryFiltered = false;
-    var query = Context.Request.Query;
-    if (query != null)
-    {
-        var pagerNames = NewLife.Web.Pager._;
-        foreach (var kv in query)
-        {
-            if (kv.Key.EqualIgnoreCase(pagerNames.PageIndex, pagerNames.PageSize, pagerNames.Sort, pagerNames.Desc)) continue;
-            if (kv.Value.ToString().IsNullOrEmpty()) continue;
-            queryFiltered = true;
-            break;
-        }
-    }
+    var queryFiltered = NovaList.IsFiltered(Context.Request, page);
 }
 <div class="nv-tree-tools">
     <button type="button" class="nv-btn nv-btn-sm" data-nv-tree-expand="all">全部展开</button>

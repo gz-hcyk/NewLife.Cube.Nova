@@ -13,19 +13,7 @@
     var canAdd = set.EnableAdd && !set.IsReadOnly && this.Has(PermissionFlags.Insert);
     var listEmpty = Model == null || Model.Count == 0;
 
-    var queryFiltered = false;
-    var query = Context.Request.Query;
-    if (query != null)
-    {
-        var pagerNames = NewLife.Web.Pager._;
-        foreach (var kv in query)
-        {
-            if (kv.Key.EqualIgnoreCase(pagerNames.PageIndex, pagerNames.PageSize, pagerNames.Sort, pagerNames.Desc)) continue;
-            if (kv.Value.ToString().IsNullOrEmpty()) continue;
-            queryFiltered = true;
-            break;
-        }
-    }
+    var queryFiltered = NovaList.IsFiltered(Context.Request, page);
 }
 <table class="nv-table">
     <thead>
