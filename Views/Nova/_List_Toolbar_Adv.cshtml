@@ -10,7 +10,7 @@
         高级
         <i class="nv-ico nv-ico-sm" data-nv-ico="chevron_down"></i>
     </button>
-    <div class="dropdown-menu dropdown-menu-end nv-usermenu">
+    <div class="dropdown-menu dropdown-menu-end nv-advmenu">
         <div class="dropdown-header">导出</div>
         <a class="dropdown-item" href="@Url.Action("ExportExcel", new { _query = queryData })" title="导出Csv格式，中文表头，含扩展属性，用于Excel查看数据"><i class="nv-ico nv-ico-sm" data-nv-ico="download"></i>导出Excel</a>
         <a class="dropdown-item" href="@Url.Action("ExportCsv", new { _query = queryData })" title="导出Csv格式，英文表头，不含扩展属性，快速导出，用于数据传输"><i class="nv-ico nv-ico-sm" data-nv-ico="download"></i>导出Csv</a>
