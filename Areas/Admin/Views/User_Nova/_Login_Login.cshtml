@@ -1,6 +1,7 @@
 @model LoginViewModel
 @using NewLife
 @using NewLife.Common
+@using NewLife.Cube
 @using NewLife.Cube.Areas.Admin.Models
 @{
     // 登录表单（Nova 观感）。PC（Login.cshtml）与移动端（MLogin.cshtml）共用本局部视图，改一处两端生效。
@@ -15,6 +16,9 @@
     // 明文/密文切换只改 #password 的 type，不改变提交内容，因此不影响 RSA 加密链路。
 
     var set = Model;
+    // DEF-019：Model.Logo 仅 SSO App 会赋值。空则用魔方设置 LoginLogo；仍空则 mark，不请求 /logo.png。
+    var logo = set?.Logo;
+    if (logo.IsNullOrEmpty()) logo = CubeSetting.Current.LoginLogo;
 
     var pDic = ViewData["pKey"] == null ? new KeyValuePair<string, string>() : (KeyValuePair<String, String>)ViewData["pKey"];
     var key = pDic.Key;
@@ -27,9 +31,9 @@
 <div class="tab-pane fade in @(loginOwnsNotice ? "active" : "")" id="Login" role="tabpanel">
     <div class="nv-login">
         <div class="nv-login-brand">
-            @if (!set.Logo.IsNullOrEmpty())
+            @if (!logo.IsNullOrEmpty())
             {
-                <img src="@set.Logo" alt="@set.DisplayName" />
+                <img src="@logo" alt="@set.DisplayName" />
             }
             else
             {

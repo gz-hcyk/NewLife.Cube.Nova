@@ -1,0 +1,22 @@
+@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@{
+    // URL 文本框随 ObjectForm 保存。文件不进本次提交：ObjectController.Update 不处理 _attachment。
+    // 选择文件后由 nova-ui.js 调用实体 UploadFile（id 可空/0），把返回的 filePath 写入文本框。
+    var name = Model.Name;
+    var value = Model.Value + "";
+    var uploadUrl = Url.Action("UploadFile", "User", new { area = "Admin", id = 0 });
+    if (uploadUrl.IsNullOrEmpty()) uploadUrl = "/Admin/User/UploadFile/0";
+}
+<div class="nv-image-field" data-nv-image-field>
+    @Html.TextBox(name, value, new { @class = "nv-input", autocomplete = "off" })
+    <input type="file" class="nv-input" accept="image/*" data-nv-image-upload data-nv-upload-url="@uploadUrl" />
+    <p class="nv-image-status" data-nv-image-status hidden></p>
+    @if (!value.IsNullOrEmpty())
+    {
+        <a class="nv-thumb-link" href="@value" target="_blank" rel="noopener" title="查看原图">
+            <img class="nv-thumb" src="@value" alt="" />
+        </a>
+    }
+</div>

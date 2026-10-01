@@ -49,6 +49,8 @@
     --nv-bg:#f6f8fb; --nv-bg-frame:#ffffff;
     /* 深蓝侧边栏（gov-blue 高保真原型基准）：底政务藏青、文字白/淡、悬停白 10%、激活=主色实心块 */
     --nv-sidebar-bg:#1a3564; --nv-sidebar-text:rgba(255,255,255,.88); --nv-sidebar-text-dim:rgba(255,255,255,.55);
+    /* 登录 aside 有背景图时的遮罩。亮色 = sidebar-bg #1a3564 @ 72%。登录页只引用本令牌，不写裸色。 */
+    --nv-login-aside-scrim:rgba(26, 53, 100, 0.72);
     --nv-sidebar-hover:rgba(255,255,255,.10); --nv-sidebar-active:#2f6fd0; --nv-sidebar-border:rgba(255,255,255,.10);
     --nv-surface:#ffffff; --nv-surface-2:#f8fafd; --nv-surface-3:#f1f4f9;
     --nv-surface-hover:var(--nv-primary-wash);
@@ -211,6 +213,8 @@
     --nv-st-disabled-weak:rgba(154,163,178,.14);
 
     --nv-overlay:rgba(0,0,0,.62); --nv-tooltip-bg:#2a313c; --nv-tooltip-text:#e6e9ef;
+    /* 暗色登录 aside 遮罩：贴页底 #0e1217，略抬不透明度以保证亮图上的标题可读。 */
+    --nv-login-aside-scrim:rgba(14, 18, 23, 0.78);
     --nv-sh-1:0 1px 2px rgba(0,0,0,.5);
     --nv-sh-2:0 6px 16px -4px rgba(0,0,0,.55);
     --nv-sh-3:0 20px 46px -14px rgba(0,0,0,.7);

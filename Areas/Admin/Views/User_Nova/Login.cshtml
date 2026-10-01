@@ -19,6 +19,17 @@
     var res = Model.ResourceUrl;
     var brand = Model.DisplayName;
     var year = DateTime.Now.Year;
+
+    // 背景只落左侧 aside。空 / 纯空白用框架 IsNullOrEmpty，不输出 url、不请求默认图。
+    var bg = NewLife.Cube.CubeSetting.Current.LoginBackground;
+    // SSO 才写 Model.Logo。魔方设置的 LoginLogo 在这里补上；两者都空则字标，不请求 /logo.png。
+    var logo = Model?.Logo;
+    if (logo.IsNullOrEmpty()) logo = NewLife.Cube.CubeSetting.Current.LoginLogo;
+    if (!bg.IsNullOrEmpty()) bg = bg.Trim();
+    var hasBg = !bg.IsNullOrEmpty();
+    var bgCss = hasBg
+        ? bg.Replace("\\", "/").Replace("\"", "%22").Replace("'", "%27").Replace("(", "%28").Replace(")", "%29").Replace(" ", "%20").Replace("\r", "").Replace("\n", "")
+        : "";
 }
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -61,13 +72,15 @@
         }
 
         /* ===== 分栏外壳 ===== */
+        /* 整页不铺业务背景图。有 LoginBackground 时仅 aside 铺图。 */
         .nv-login-page {
             min-height: 100vh;
             display: flex;
             align-items: stretch;
+            background: var(--nv-bg);
         }
 
-        /* 左：品牌展示区（桌面端显示，移动端隐藏）。纯色侧栏底，无渐变、无网点/斜光。 */
+        /* 左：品牌展示区（桌面端显示，窄屏隐藏）。空值纯色侧栏；有图时加 --has-bg。 */
         .nv-login-aside {
             position: relative;
             flex: 0 0 44%;
@@ -75,6 +88,21 @@
             overflow: hidden;
             color: var(--nv-text-inverse);
             background: var(--nv-sidebar-bg);
+        }
+        /* 图层：aside 图 → ::before scrim → .nv-aside-inner。遮罩色只引用令牌。 */
+        .nv-login-aside--has-bg {
+            background-color: var(--nv-sidebar-bg);
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+        }
+        .nv-login-aside--has-bg::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background: var(--nv-login-aside-scrim);
         }
         .nv-aside-inner {
             position: relative;
@@ -153,15 +181,15 @@
 </head>
 <body class="nv">
     <div class="nv-login-page">
-        <aside class="nv-login-aside">
+        <aside class="nv-login-aside@(hasBg ? " nv-login-aside--has-bg" : "")" style="@(hasBg ? $"background-image:url('{bgCss}')" : null)">
             <div class="nv-aside-inner">
                 <div class="nv-aside-brand">
                     @if (!brand.IsNullOrEmpty())
                     {
                         <span class="nv-aside-logo">
-                            @if (!Model.Logo.IsNullOrEmpty())
+                            @if (!logo.IsNullOrEmpty())
                             {
-                                <img src="@Model.Logo" alt="@brand" />
+                                <img src="@logo" alt="@brand" />
                             }
                             else
                             {

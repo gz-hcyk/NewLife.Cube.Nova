@@ -2031,6 +2031,85 @@
         }, 0);
     }
 
+    /* ObjectForm 图片字段：ObjectController.Update 不收附件。
+       选文件后 POST 实体 UploadFile（字段名 file，带登录 cookie 与防伪令牌），
+       把 JSON data.filePath 写回 URL 文本框。保存时表单只提交字符串。 */
+    function initObjectImageUpload() {
+        function status(box, text, isError) {
+            var el = box.querySelector('[data-nv-image-status]');
+            if (!el) return;
+            el.textContent = text || '';
+            el.hidden = !text;
+            el.classList.toggle('is-error', !!isError);
+        }
+        function thumb(box, url) {
+            var link = box.querySelector('.nv-thumb-link');
+            if (!url) {
+                if (link && link.parentNode) link.parentNode.removeChild(link);
+                return;
+            }
+            if (!link) {
+                link = document.createElement('a');
+                link.className = 'nv-thumb-link';
+                link.target = '_blank';
+                link.rel = 'noopener';
+                link.title = '查看原图';
+                var img = document.createElement('img');
+                img.className = 'nv-thumb';
+                img.alt = '';
+                link.appendChild(img);
+                box.appendChild(link);
+            }
+            link.href = url;
+            var pic = link.querySelector('img');
+            if (pic) pic.src = url;
+        }
+        $all('[data-nv-image-upload]').forEach(function (input) {
+            if (input.getAttribute('data-nv-image-bound') === '1') return;
+            input.setAttribute('data-nv-image-bound', '1');
+            input.addEventListener('change', function () {
+                var file = input.files && input.files[0];
+                var box = input.closest('[data-nv-image-field]') || input.parentNode;
+                if (!file) return;
+                var text = box.querySelector('input[type="text"]');
+                var uploadUrl = input.getAttribute('data-nv-upload-url');
+                if (!text || !uploadUrl) return;
+                var form = input.closest('form');
+                var tokenEl = form && form.querySelector('input[name="__RequestVerificationToken"]');
+                var token = tokenEl ? tokenEl.value : '';
+                var fd = new FormData();
+                fd.append('file', file);
+                if (token) fd.append('__RequestVerificationToken', token);
+                input.disabled = true;
+                status(box, '正在上传…', false);
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', uploadUrl);
+                xhr.withCredentials = true;
+                if (token) xhr.setRequestHeader('RequestVerificationToken', token);
+                xhr.onload = function () {
+                    input.disabled = false;
+                    input.value = '';
+                    var resp = null;
+                    try { resp = JSON.parse(xhr.responseText); } catch (e) { resp = null; }
+                    var path = resp && resp.data && resp.data.filePath;
+                    if (xhr.status >= 200 && xhr.status < 300 && path) {
+                        text.value = path;
+                        thumb(box, path);
+                        status(box, '', false);
+                    } else {
+                        var msg = (resp && (resp.message || resp.error)) || ('上传失败（' + xhr.status + '）');
+                        status(box, msg, true);
+                    }
+                };
+                xhr.onerror = function () {
+                    input.disabled = false;
+                    status(box, '网络错误，未写入 URL', true);
+                };
+                xhr.send(fd);
+            });
+        });
+    }
+
     /* ---------------------------------------------------------------- ⑤ 启动 */
     function boot() {
         initFieldInvalid();
@@ -2047,6 +2126,7 @@
         initTreeSelect();
         initSelectPop();
         initMultiPop();
+        initObjectImageUpload();
     }
 
     migratePrefs();

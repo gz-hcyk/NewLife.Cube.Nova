@@ -25,7 +25,7 @@
     </div>
 }
 <div class="nv-card">
-    @using (Html.BeginForm("Update", null))
+    @using (Html.BeginForm("Update", null, FormMethod.Post, new { enctype = "multipart/form-data" }))
     {
         @Html.AntiForgeryToken()
         @* 模型级错误（原 ValidationSummary(true)）：字段错误仍在各 _ObjectForm_Field 就地显示。Bootstrap tabs 保持不变。 *@

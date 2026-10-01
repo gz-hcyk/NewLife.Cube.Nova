@@ -393,6 +393,21 @@ body.nv a.nv-btn-ghost.nv-btn-danger:hover:not(:disabled) {
  flex:1 1 auto; }
 .nv-field-ctl > .nv-check, .nv-field-ctl > .nv-switch {
  flex:0 0 auto; }
+/* ObjectForm 图片字段（_ObjectForm_Image）：URL、文件、缩略图纵向排列，避免被字段行 flex 挤扁 */
+.nv-image-field {
+ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; align-items:flex-start; gap:var(--nv-sp-2); }
+.nv-image-field > .nv-input {
+ width:100%; }
+.nv-image-field > input[type="file"].nv-input {
+ height:auto; padding:var(--nv-sp-2) var(--nv-sp-3); }
+.nv-image-field .nv-thumb-link {
+ display:inline-flex; line-height:0; }
+.nv-image-field .nv-thumb {
+ display:block; max-width:160px; max-height:72px; width:auto; height:auto; object-fit:contain;
+ border:1px solid var(--nv-border); border-radius:var(--nv-r-sm); background:var(--nv-surface-2); }
+.nv-image-status {
+ margin:0; font-size:var(--nv-fs-12); color:var(--nv-text-3); line-height:var(--nv-lh-snug); }
+.nv-image-status.is-error { color:var(--nv-danger-text); }
 .nv-input, .nv-select, .nv-textarea {
 
     width:100%; height:var(--nv-ctrl-h); padding:0 11px;
