@@ -893,7 +893,8 @@
      *   data-fields="keys"  → 序列化同名控件（勾选集合），keys 并入跨页记忆
      *   data-confirm        → nv.confirm 后执行（DOM/异常回退 window.confirm）
      *   data-method         → GET/POST（默认 GET）
-     *   响应 { message|data, url, time } → toast 提示；url=[refresh] 刷新，否则跳转
+     *   响应 { message|data, url, time } → toast 提示；url=[refresh]/缺省成功 → 刷新，否则跳转
+     *   请求必须带 X-Requested-With（Cube AJAX 契约），否则删除等动作回 HTML，列表不刷新
      * 覆盖：批量操作条按钮、行内 删除/恢复、高级菜单（删除选中/同步/备份…）、
      *       data-action="upload" 文件导入。
      * ---------------------------------------------------------------- */
@@ -926,9 +927,39 @@
         }
         /* 批量操作成功后清空记忆，避免刷新后回填已处理行 */
         if (usedKeys) bulkClear();
-        var u = rs && rs.url, t = rs && +rs.time > 0 ? Math.min(+rs.time, 10) * 1000 : 0;
-        if (u === '[refresh]') setTimeout(function () { location.reload(); }, t);
-        else if (u) setTimeout(function () { location.href = u; }, t);
+        if (!rs) return;
+        var failed = rs.result === false || (typeof rs.code === 'number' && rs.code > 0);
+        if (failed) return;
+        var u = rs.url;
+        var t = +rs.time > 0 ? Math.min(+rs.time, 10) * 1000 : 0;
+        /* 无 url 时默认刷新：行内删除等操作依赖列表更新；显式 url 仍优先跳转 */
+        if (!u || u === '[refresh]' || u === 'refresh') setTimeout(function () { location.reload(); }, t);
+        else setTimeout(function () { location.href = u; }, t);
+    }
+
+    function actionHeaders(extra) {
+        /* Cube EntityController 靠 X-Requested-With 识别 AJAX，才返回 {url:'[refresh]'} JSON；
+           缺省头时会回 HTML/整页，r.json() 失败 → 确认删除后列表不刷新。 */
+        var h = {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json, text/javascript, */*; q=0.01'
+        };
+        if (extra) {
+            for (var k in extra) {
+                if (Object.prototype.hasOwnProperty.call(extra, k)) h[k] = extra[k];
+            }
+        }
+        return h;
+    }
+
+    function parseActionResponse(r) {
+        var ct = (r.headers.get('content-type') || '').toLowerCase();
+        if (ct.indexOf('json') >= 0) {
+            return r.json().catch(function () { return r.ok ? { url: '[refresh]' } : null; });
+        }
+        /* 非 JSON：按成功刷新兜底，避免删除已生效但列表仍显示旧行 */
+        if (r.ok) return Promise.resolve({ url: '[refresh]' });
+        return Promise.resolve(null);
     }
 
     function doClickAction(el) {
@@ -938,12 +969,15 @@
         var url = el.getAttribute('data-url') || el.getAttribute('href') || '';
         if (!url) return;
         if (method === 'GET' && body) url += (url.indexOf('?') >= 0 ? '&' : '?') + body;
+        var headers = method === 'GET'
+            ? actionHeaders()
+            : actionHeaders({ 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' });
         fetch(url, {
             method: method,
             credentials: 'same-origin',
-            headers: method === 'GET' ? {} : { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+            headers: headers,
             body: method === 'GET' ? null : body
-        }).then(function (r) { return r.json().catch(function () { return null; }); })
+        }).then(parseActionResponse)
             .then(function (rs) { finishAction(rs, fields.indexOf('keys') >= 0); })
             .catch(function () {
                 if (window.nv && window.nv.toast) window.nv.toast('请求异常，请稍后重试', 'danger');
@@ -962,8 +996,9 @@
         fetch(url, {
             method: (el.getAttribute('data-method') || 'POST').toUpperCase(),
             credentials: 'same-origin',
+            headers: actionHeaders(),
             body: fd
-        }).then(function (r) { return r.json().catch(function () { return null; }); })
+        }).then(parseActionResponse)
             .then(function (rs) { finishAction(rs, false); })
             .catch(function () {
                 if (window.nv && window.nv.toast) window.nv.toast('上传失败，请稍后重试', 'danger');
