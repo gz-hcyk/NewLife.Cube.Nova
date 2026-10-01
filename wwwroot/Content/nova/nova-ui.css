@@ -1782,9 +1782,20 @@ body.nv .hidden-xs {
  color: inherit; text-decoration: none; }
 .nv-crumb-item a:hover {
  color: var(--nv-primary); }
-/* 顶栏用户菜单（挂在 Tabler 的 .dropdown-menu 上，仅补 Nova 视觉） */.nv-usermenu {
- min-width: 200px; padding: var(--nv-sp-2); }
-.nv-usermenu .dropdown-item {
+/* 下拉面板公共视觉（阴影 / 圆角 / 表面色）。顶栏 .nv-usermenu 与列表高级 .nv-advmenu 共同引用，类名不再耦合。
+   不改 position / display，定位仍交给 Tabler 的 .dropdown-menu。 */
+.nv-usermenu,
+.nv-advmenu {
+    min-width: 200px;
+    padding: var(--nv-sp-2);
+    /* 表面色与 Tabler 下拉同源；缺 Tabler 时退回 Nova 表面，避免两套菜单各写一份。 */
+    background: var(--tblr-bg-surface, var(--nv-surface));
+    border: 1px solid var(--nv-border);
+    border-radius: var(--nv-r-md);
+    box-shadow: var(--nv-sh-2);
+}
+.nv-usermenu .dropdown-item,
+.nv-advmenu .dropdown-item {
 
     display: flex;
     align-items: center;
@@ -1792,6 +1803,13 @@ body.nv .hidden-xs {
     border-radius: var(--nv-r-sm);
     font-size: var(--nv-fs-13);
     padding: var(--nv-sp-2) var(--nv-sp-3);
+}
+/* 窄屏：高级菜单不超出视口。字号仍走 --nv-fs-13，不靠缩小字号躲溢出。 */
+.nv-advmenu {
+    max-width: calc(100vw - 2 * var(--nv-sp-4));
+}
+.nv-advmenu .dropdown-item {
+    white-space: normal;
 }
 .nv-usermenu-head {
 
@@ -2715,4 +2733,13 @@ body:has(#nvConfirm.is-on) #aiAssistantFab {
   #nvConfirm .nv-modal-foot {
     padding-bottom: max(var(--nv-sp-3), env(safe-area-inset-bottom));
   }
+}
+
+/* DEF-016 吸底操作栏不裁切末字段说明。
+   栏高 = 上下 --nv-sp-3 + 按钮 --nv-ctrl-h（密度档会改控件高）+ 边框。
+   内容区 padding-bottom 再加一档 --nv-sp-3 安全间距，且不小于栏高。
+   只作用于操作栏在卡片之外的表单（Add/Edit 的 Role、User 等）；不改字号。 */
+form:has(> .nv-form-actions) > .nv-card:has(> .nv-card-body > .nv-form-grid) > .nv-card-body,
+form:has(> .nv-form-actions) .tab-pane > .nv-card-body:has(> .nv-form-grid) {
+    padding-bottom: calc(var(--nv-sp-3) * 2 + var(--nv-ctrl-h) + 2px + var(--nv-sp-3));
 }

@@ -19,8 +19,12 @@
     var pDic = ViewData["pKey"] == null ? new KeyValuePair<string, string>() : (KeyValuePair<String, String>)ViewData["pKey"];
     var key = pDic.Key;
     var value = pDic.Value;
+
+    // DEF-015：错密等服务端错误只进当前提交所在 pane。Register 动作的 ModelState 留给注册槽，避免两条相同 danger。
+    var loginAct = ViewContext.RouteData.Values["action"] as String ?? "";
+    var loginOwnsNotice = !loginAct.EqualIgnoreCase("Register");
 }
-<div class="tab-pane fade in active" id="Login" role="tabpanel">
+<div class="tab-pane fade in @(loginOwnsNotice ? "active" : "")" id="Login" role="tabpanel">
     <div class="nv-login">
         <div class="nv-login-brand">
             @if (!set.Logo.IsNullOrEmpty())
@@ -42,7 +46,7 @@
 
         <form action="@Url.Action("Login", "User", new { r = set.ReturnUrl })" class="cube-login nv-login-form" method="post" id="cube-login">
             <input type="hidden" id="pkey_container" value="@value" />
-            @if (ViewData.ModelState.Values.Any(st => st.Errors.Count > 0))
+            @if (loginOwnsNotice && ViewData.ModelState.Values.Any(st => st.Errors.Count > 0))
             {
                 <div class="nv-notice nv-notice-danger" role="alert">
                     <div class="nv-notice-body">

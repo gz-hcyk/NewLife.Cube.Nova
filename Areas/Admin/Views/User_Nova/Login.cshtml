@@ -139,6 +139,10 @@
         /* 未引入 bootstrap.min.css / bootstrap.min.js。tab 显隐只靠 .active，由本页原生脚本切换。 */
         .tab-content > .tab-pane { display: none; }
         .tab-content > .tab-pane.active { display: block; }
+        /* DEF-015：.nv-notice 是 display:flex，会盖过浏览器 [hidden]。非当前 pane 的服务端错误条必须自身 display:none，切到注册后登录错误不再可见。 */
+        .nv-login-wrap .tab-content > .tab-pane:not(.active) .nv-notice-danger {
+            display: none !important;
+        }
 
         /* ===== 移动端折叠为单栏 ===== */
         @@media (max-width: 860px) {
@@ -254,7 +258,13 @@
                 e.preventDefault();
                 activateTab(hash);
             });
-            activateTab(location.hash || '#Login');
+            // 无 hash 时尊重服务端标出的当前 pane（注册失败应停在 #Register，而不是被脚本拉回登录）。
+            var bootHash = location.hash;
+            if (!bootHash) {
+                var bootPane = document.querySelector('.tab-content > .tab-pane.active');
+                bootHash = bootPane && bootPane.id ? ('#' + bootPane.id) : '#Login';
+            }
+            activateTab(bootHash);
 
             var pwd = document.getElementById('password');
             var eye = document.getElementById('pwd-eye');

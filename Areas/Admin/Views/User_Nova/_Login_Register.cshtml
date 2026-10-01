@@ -12,13 +12,17 @@
     // 与框架版一致，注册不启用 RSA 加密（仅登录走 RSA），故密码为明文提交。
 
     var set = Model;
+
+    // DEF-015：与登录槽互斥。只有注册提交失败才在本 pane 渲染同一份 ModelState / 状态文案。
+    var registerAct = ViewContext.RouteData.Values["action"] as String ?? "";
+    var registerOwnsNotice = registerAct.EqualIgnoreCase("Register");
 }
-<div class="tab-pane fade" id="Register" role="tabpanel">
+<div class="tab-pane fade @(registerOwnsNotice ? "in active" : "")" id="Register" role="tabpanel">
     <div class="nv-login">
         <div class="nv-login-title">@set.DisplayName 注册</div>
 
         <form action="@Url.Action("Register", "User", new { r = set.ReturnUrl })" class="nv-login-form" method="post" id="cube-register">
-            @if (ViewData.ModelState.Values.Any(st => st.Errors.Count > 0))
+            @if (registerOwnsNotice && ViewData.ModelState.Values.Any(st => st.Errors.Count > 0))
             {
                 <div class="nv-notice nv-notice-danger" role="alert">
                     <div class="nv-notice-body">
