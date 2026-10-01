@@ -180,7 +180,9 @@
     --nv-ctrl-h:38px; --nv-ctrl-h-lg:42px;
 }
 /* ============================================================ 12 暗色主题
-   深空蓝灰：更深的背景 + 略带蓝相的表面，比纯黑更"科技" */body.nv [data-bs-theme="dark"] {
+   深空蓝灰：更深的背景 + 略带蓝相的表面，比纯黑更"科技"。
+   主题写在 html[data-bs-theme]（Login / Frame 同一写入点）；
+   不能用 body.nv 的后代选择器，否则暗色语义令牌不生效。 */html[data-bs-theme="dark"] {
 
     --nv-blue-50:#0f1c2b; --nv-blue-100:#13283d; --nv-blue-200:#1b3b59;
     --nv-bg:#0e1217; --nv-bg-frame:#12171d;

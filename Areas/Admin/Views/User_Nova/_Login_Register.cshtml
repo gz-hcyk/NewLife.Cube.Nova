@@ -71,10 +71,10 @@
 </div>
 
 <style>
-    /* 返回登录链接：与登录卡片共用令牌，fallback 保证外壳未加载 nova-ui.css 时不塌 */
+    /* 返回登录：与登录卡片同一套字号令牌，不另写色值 */
     .nv-login .nv-login-back {
-        margin-top: 14px;
+        margin-top: var(--nv-sp-4);
         text-align: center;
-        font-size: var(--nv-fs-13, 13px);
+        font-size: var(--nv-fs-13);
     }
 </style>
