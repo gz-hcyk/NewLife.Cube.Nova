@@ -16,7 +16,7 @@
 
     var err = NovaForm.RealErrorCount(ViewData.ModelState, name);
     // LoginLogo / LoginBackground 在框架里仍是 String URL；或 ItemType 为 image / image-*。
-    // 走上传控件，保存仍由 ObjectController.Update + ObjectAttachmentStorage（name_attachment）处理。
+    // ObjectController.Update 不处理附件。文件由脚本先传到实体 UploadFile，再把 filePath 写回文本框。
     var itemType = pi.ItemType + "";
     var isImage = name.EqualIgnoreCase("LoginLogo", "LoginBackground")
         || itemType.EqualIgnoreCase("image")
@@ -53,7 +53,7 @@
         }
         if (isImage)
         {
-            <div class="nv-field-hint">可上传或填写 URL</div>
+            <div class="nv-field-hint">选择文件将自动上传并填入 URL</div>
         }
     }
 </div>

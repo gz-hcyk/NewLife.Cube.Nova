@@ -17,7 +17,8 @@
     {
         if (!item.IsStatic) continue;
 
-        var v = Convert.ToInt64(item.GetValue(null));
+        // 与框架 Shared/_Form_Int 一致：枚举用数值，不用名称。SexKinds.男 的 ToString 是「男」，TryParse 会失败并落到 0（未知）。
+        var v = Utility.ToLong(item.GetValue(null), 0L);
 
         var des = item.Name;
 
@@ -35,8 +36,8 @@
     // 通过 Html.ViewData[name]=(Int32)value，可以让  Html.DropDownList 优先拿到手动设置的值，就不会再从 ViewData.Model 里面找
     // 当然这里会有一个问题，如果外部同样设置ViewData[name]，则就会出现潜在的bug,所以把之前值保存到oldvalue
     var oldvalue = Html.ViewData[name];
-    var selectedLong = 0L;
-    if (value != null) Int64.TryParse(Convert.ToString(value), out selectedLong);
+    // DEF-020：当前值同样走 ToLong。枚举写入 ViewData 后，DropDownList 不再用模型上的枚举名去对 option。
+    var selectedLong = Utility.ToLong(value, 0L);
     Html.ViewData[name] = selectedLong;
 
     {

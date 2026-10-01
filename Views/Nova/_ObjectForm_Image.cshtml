@@ -2,14 +2,17 @@
 @using NewLife;
 @using NewLife.Cube
 @{
-    // 与实体表单 _Form_Image 同构：可编辑 URL 文本框 + {Name}_attachment 文件 + 有值缩略预览。
-    // 不自写上传接口；multipart 表单由 ObjectForm 提供，框架按 _attachment 约定落盘并回写 URL。
+    // URL 文本框随 ObjectForm 保存。文件不进本次提交：ObjectController.Update 不处理 _attachment。
+    // 选择文件后由 nova-ui.js 调用实体 UploadFile（id 可空/0），把返回的 filePath 写入文本框。
     var name = Model.Name;
     var value = Model.Value + "";
+    var uploadUrl = Url.Action("UploadFile", "User", new { area = "Admin", id = 0 });
+    if (uploadUrl.IsNullOrEmpty()) uploadUrl = "/Admin/User/UploadFile/0";
 }
-<div class="nv-image-field">
+<div class="nv-image-field" data-nv-image-field>
     @Html.TextBox(name, value, new { @class = "nv-input", autocomplete = "off" })
-    <input type="file" class="nv-input" name="@(name)_attachment" accept="image/*" />
+    <input type="file" class="nv-input" accept="image/*" data-nv-image-upload data-nv-upload-url="@uploadUrl" />
+    <p class="nv-image-status" data-nv-image-status hidden></p>
     @if (!value.IsNullOrEmpty())
     {
         <a class="nv-thumb-link" href="@value" target="_blank" rel="noopener" title="查看原图">

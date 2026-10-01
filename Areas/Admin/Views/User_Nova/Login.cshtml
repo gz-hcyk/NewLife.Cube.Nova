@@ -22,6 +22,9 @@
 
     // 背景只落左侧 aside。空 / 纯空白用框架 IsNullOrEmpty，不输出 url、不请求默认图。
     var bg = NewLife.Cube.CubeSetting.Current.LoginBackground;
+    // SSO 才写 Model.Logo。魔方设置的 LoginLogo 在这里补上；两者都空则字标，不请求 /logo.png。
+    var logo = Model?.Logo;
+    if (logo.IsNullOrEmpty()) logo = NewLife.Cube.CubeSetting.Current.LoginLogo;
     if (!bg.IsNullOrEmpty()) bg = bg.Trim();
     var hasBg = !bg.IsNullOrEmpty();
     var bgCss = hasBg
@@ -184,9 +187,9 @@
                     @if (!brand.IsNullOrEmpty())
                     {
                         <span class="nv-aside-logo">
-                            @if (!Model.Logo.IsNullOrEmpty())
+                            @if (!logo.IsNullOrEmpty())
                             {
-                                <img src="@Model.Logo" alt="@brand" />
+                                <img src="@logo" alt="@brand" />
                             }
                             else
                             {
