@@ -103,7 +103,7 @@
 | `--nv-overlay` | `rgba(16,24,40,.42)` | 弹层遮罩 |
 | `--nv-tooltip-bg / -text` | `#262d38` / `#eef2f7` | 气泡提示 |
 
-### 2.6 暗色主题（`body.nv [data-bs-theme="dark"]`）
+### 2.6 暗色主题（`html[data-bs-theme="dark"]`）
 
 深空蓝灰：更深的背景 + 略带蓝相的表面，比纯黑更「科技」。关键覆盖值：
 
@@ -118,7 +118,7 @@
 | `--nv-blue-50 / 100 / 200` | `#0f1c2b` / `#13283d` / `#1b3b59` |
 | 语义 / 状态 weak | 同一色相 14%–16% 透明 tint，文字色同步提亮（如 `--nv-success-text: #6ed07f`） |
 
-主题切换由 `data-bs-theme` 驱动；未设置偏好时跟随系统（`prefers-color-scheme`），登录页与站内共用 `localStorage` 键 `nova-theme`。
+主题切换由 `html[data-bs-theme]` 驱动（Login 与 Frame 都写在 `documentElement`）；未设置偏好时跟随系统（`prefers-color-scheme`），登录页与站内共用 `localStorage` 键 `nova-theme`。
 
 ---
 

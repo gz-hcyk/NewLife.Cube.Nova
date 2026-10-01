@@ -49,22 +49,22 @@
         box-sizing: border-box;
         width: 100%;
         max-width: 400px;
-        margin: 16px auto 0;
-        padding: 18px 28px 20px;
-        background: var(--nv-surface, #fff);
-        border: 1px solid var(--nv-border, #e6e8eb);
-        border-radius: var(--nv-r-lg, 14px);
-        box-shadow: var(--nv-shadow-card, 0 1px 3px rgba(16,24,40,.08));
-        font-family: var(--nv-font, system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif);
-        color: var(--nv-text, #1f2937);
+        margin: var(--nv-sp-4) auto 0;
+        padding: var(--nv-sp-5) var(--nv-sp-6) var(--nv-sp-5);
+        background: var(--nv-surface);
+        border: 1px solid var(--nv-border);
+        border-radius: var(--nv-r-lg);
+        box-shadow: var(--nv-sh-2);
+        font-family: var(--nv-font);
+        color: var(--nv-text);
     }
 
     .nv-oauth-sep {
         position: relative;
         text-align: center;
-        font-size: var(--nv-fs-13, 13px);
-        color: var(--nv-text-3, #6b7280);
-        margin-bottom: 14px;
+        font-size: var(--nv-fs-13);
+        color: var(--nv-text-3);
+        margin-bottom: var(--nv-sp-3);
     }
     .nv-oauth-sep::before,
     .nv-oauth-sep::after {
@@ -73,12 +73,12 @@
         top: 50%;
         width: 28%;
         height: 1px;
-        background: var(--nv-border, #e6e8eb);
+        background: var(--nv-border);
     }
     .nv-oauth-sep::before { left: 0; }
     .nv-oauth-sep::after { right: 0; }
 
-    .nv-oauth-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+    .nv-oauth-list { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--nv-sp-3); }
 
     .nv-oauth-item {
         display: inline-flex;
@@ -86,20 +86,20 @@
         justify-content: center;
         width: 56px;
         height: 56px;
-        border: 1px solid var(--nv-border, #e6e8eb);
-        border-radius: var(--nv-r-md, 10px);
-        background: var(--nv-surface, #fff);
+        border: 1px solid var(--nv-border);
+        border-radius: var(--nv-r-md);
+        background: var(--nv-surface);
         text-decoration: none;
-        transition: border-color .15s, box-shadow .15s;
+        transition: border-color var(--nv-dur-fast), box-shadow var(--nv-dur-fast);
     }
     .nv-oauth-item:hover {
-        border-color: var(--nv-primary, #1e5cae);
-        box-shadow: 0 0 0 3px var(--nv-primary-wash, rgba(30,92,174,.15));
+        border-color: var(--nv-primary);
+        box-shadow: var(--nv-sh-focus);
     }
     .nv-oauth-item img { width: 32px; height: 32px; object-fit: contain; }
     .nv-oauth-name {
-        font-size: var(--nv-fs-13, 13px);
-        color: var(--nv-text-2, #4b5563);
+        font-size: var(--nv-fs-13);
+        color: var(--nv-text-2);
         max-width: 52px;
         overflow: hidden;
         text-overflow: ellipsis;

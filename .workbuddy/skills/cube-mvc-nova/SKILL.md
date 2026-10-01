@@ -42,7 +42,7 @@ cd G:/009repos/002MingJia/NewLife.Cube.Nova && dotnet build -v q
 
 - 三层架构（docs/66 §1）：色彩原语（`--nv-blue-600` 等）→ 语义令牌（`--nv-primary` 等，**组件唯一可引用层**）→ 组件类。禁止组件层直引原语。
 - 命名契约：`--nv-*` 令牌名与 docs/66 原型完全一致，**不改名**；改品牌色/主题只改语义层一行，组件层零改动（docs/81 §3）。
-- nova-tokens.css 分段：§1–10 皮肤基座（原语/语义/状态/电量/字体/间距/圆角/阴影/结构/动效/密度）→ §11 业务域令牌（`--nv-lv-*/--nv-biz-*/--nv-ka-*/--nv-lkm-*/--nv-inbox-*`，共 47 个，自 nova-biz.css 归集）→ §11a 密度档 → §12 暗色主题（`body.nv [data-bs-theme="dark"]`，含业务令牌暗色补齐）→ §13 环境覆盖（响应式/高对比 `:root`）。
+- nova-tokens.css 分段：§1–10 皮肤基座（原语/语义/状态/电量/字体/间距/圆角/阴影/结构/动效/密度）→ §11 业务域令牌（`--nv-lv-*/--nv-biz-*/--nv-ka-*/--nv-lkm-*/--nv-inbox-*`，共 47 个，自 nova-biz.css 归集）→ §11a 密度档 → §12 暗色主题（`html[data-bs-theme="dark"]`，含业务令牌暗色补齐）→ §13 环境覆盖（响应式/高对比 `:root`）。
 - 明细速查见 `references/nova-token-map.md`。
 
 **加载顺序契约：`nova-tokens.css` → `nova-ui.css` → `nova-biz.css`**。接入点：

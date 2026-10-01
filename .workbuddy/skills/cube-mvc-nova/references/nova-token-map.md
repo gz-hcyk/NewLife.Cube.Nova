@@ -15,7 +15,7 @@
 | §10 | `:root` | 密度（紧凑默认）：`--nv-row-h-eff:34px`、`--nv-cell-py:6px`、`--nv-fs-table`、`--nv-sp-section` |
 | §11 | `:root` | 业务域令牌（47 个，见下表） |
 | §11a | `[data-nv-density=...]` | standard / cozy·comfortable 档覆盖 |
-| §12 | `body.nv [data-bs-theme="dark"]` | 暗色全量 + 业务域暗色补齐（`--nv-ka-ok/warn`、`--nv-lkm-ok/warn` = `#6ed07f/#f0b74a`） |
+| §12 | `html[data-bs-theme="dark"]` | 暗色全量 + 业务域暗色补齐（`--nv-ka-ok/warn`、`--nv-lkm-ok/warn` = `#6ed07f/#f0b74a`） |
 | §13 | media | `max-width:1200px`/`560px` 页距与侧栏；`prefers-contrast:more` 边框/文字加深 |
 
 ## §11 业务域令牌清单（47 个，前缀 → 归属页面）

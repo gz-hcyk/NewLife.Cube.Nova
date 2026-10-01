@@ -54,9 +54,9 @@
         html, body { height: 100%; }
         body {
             margin: 0;
-            background: var(--nv-bg, #f5f7fa);
-            font-family: var(--nv-font, system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif);
-            color: var(--nv-text, #1f2937);
+            background: var(--nv-bg);
+            font-family: var(--nv-font);
+            color: var(--nv-text);
             -webkit-font-smoothing: antialiased;
         }
 
@@ -67,38 +67,14 @@
             align-items: stretch;
         }
 
-        /* 左：品牌展示区（桌面端显示，移动端隐藏） */
+        /* 左：品牌展示区（桌面端显示，移动端隐藏）。纯色侧栏底，无渐变、无网点/斜光。 */
         .nv-login-aside {
             position: relative;
             flex: 0 0 44%;
             max-width: 520px;
             overflow: hidden;
-            color: #fff;
-            background:
-                radial-gradient(120% 80% at 12% 0%, rgba(255,255,255,.16) 0%, rgba(255,255,255,0) 55%),
-                radial-gradient(90% 70% at 100% 100%, rgba(0,0,0,.18) 0%, rgba(0,0,0,0) 60%),
-                linear-gradient(150deg, var(--nv-primary, #1e5cae) 0%, #143c6e 100%);
-        }
-        /* 纹理点缀：细网点 + 一道斜向高光，提升质感而不喧宾夺主 */
-        .nv-login-aside::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image: radial-gradient(rgba(255,255,255,.10) 1px, transparent 1.4px);
-            background-size: 22px 22px;
-            opacity: .55;
-            pointer-events: none;
-        }
-        .nv-login-aside::after {
-            content: "";
-            position: absolute;
-            top: -30%;
-            right: -20%;
-            width: 70%;
-            height: 140%;
-            background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,0));
-            transform: rotate(18deg);
-            pointer-events: none;
+            color: var(--nv-text-inverse);
+            background: var(--nv-sidebar-bg);
         }
         .nv-aside-inner {
             position: relative;
@@ -106,43 +82,48 @@
             display: flex;
             flex-direction: column;
             height: 100%;
-            padding: 48px 44px;
+            padding: var(--nv-sp-12) 44px;
             box-sizing: border-box;
         }
-        .nv-aside-brand { display: flex; align-items: center; gap: 12px; }
+        .nv-aside-brand { display: flex; align-items: center; gap: var(--nv-sp-3); }
         .nv-aside-logo {
             width: 44px; height: 44px;
-            border-radius: 12px;
-            background: rgba(255,255,255,.16);
+            border-radius: var(--nv-r-lg);
+            background: var(--nv-sidebar-hover);
             display: inline-flex; align-items: center; justify-content: center;
             overflow: hidden;
-            backdrop-filter: blur(2px);
         }
         .nv-aside-logo img { width: 30px; height: 30px; object-fit: contain; }
         .nv-aside-logo--txt {
-            font-size: 20px; font-weight: 700; color: #fff;
+            font-size: var(--nv-fs-20); font-weight: var(--nv-fw-bold); color: var(--nv-text-inverse);
         }
-        .nv-aside-name { font-size: 19px; font-weight: 700; letter-spacing: .5px; color: #fff; }
+        .nv-aside-name { font-size: 19px; font-weight: var(--nv-fw-bold); letter-spacing: .5px; color: var(--nv-text-inverse); }
 
         .nv-aside-hero { margin-top: auto; margin-bottom: auto; }
         .nv-aside-title {
             margin: 0 0 14px;
             font-size: 30px;
             line-height: 1.35;
-            font-weight: 700;
-            color: #fff;
+            font-weight: var(--nv-fw-bold);
+            color: var(--nv-text-inverse);
         }
         .nv-aside-sub {
             margin: 0 0 28px;
             font-size: 15px;
             line-height: 1.7;
-            color: rgba(255,255,255,.82);
+            color: var(--nv-sidebar-text);
             max-width: 360px;
         }
         .nv-aside-feats { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
-        .nv-aside-feats li { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; color: rgba(255,255,255,.9); }
-        .nv-aside-feats svg { flex: none; margin-top: 1px; color: rgba(255,255,255,.95); }
-        .nv-aside-foot { font-size: 12px; color: rgba(255,255,255,.62); }
+        .nv-aside-feats li { display: flex; align-items: flex-start; gap: 10px; font-size: var(--nv-fs-14); color: var(--nv-sidebar-text); }
+        .nv-aside-feats svg { flex: none; margin-top: 1px; color: var(--nv-text-inverse); }
+        .nv-aside-foot { font-size: var(--nv-fs-12); color: var(--nv-sidebar-text-dim); }
+
+        /* 客户端校验槽：danger 令牌弱底，间距走 --nv-sp-4（元素 id 仍是 nv-login-notice） */
+        .nv-login-wrap > .nv-notice-danger {
+            background: var(--nv-danger-weak);
+            color: var(--nv-text);
+        }
 
         /* 右：登录卡片区 */
         .nv-login-main {
@@ -150,7 +131,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 32px 24px;
+            padding: var(--nv-sp-8) var(--nv-sp-6);
             box-sizing: border-box;
         }
         .nv-login-wrap { width: 100%; max-width: 400px; }
@@ -162,7 +143,7 @@
         /* ===== 移动端折叠为单栏 ===== */
         @@media (max-width: 860px) {
             .nv-login-aside { display: none; }
-            .nv-login-main { padding: 24px 16px; }
+            .nv-login-main { padding: var(--nv-sp-6) var(--nv-sp-4); }
         }
     </style>
 </head>
