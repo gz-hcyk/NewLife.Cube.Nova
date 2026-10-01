@@ -24,7 +24,7 @@
 @await Html.PartialAsync("_Form_Header", entity)
 @using (Html.BeginForm((isNew ? "Add" : "Edit"), null, isNew ? null : rv, FormMethod.Post, null, htmlAttributes))
 {
-    @* 卡片由 _Form_Body 渲染（单分组一张卡，多分组纵向分组卡片），此处不再包外层卡片 *@
+    @* 卡片由 _Form_Body 渲染（单分组一张卡、无页签；多分组同一张卡内 BS5 选项卡）。页级校验提示在卡片外，不进页签。 *@
     if (ViewData.ModelState.Values.Any(st => st.Errors.Count > 0))
     {
         <div class="nv-card nv-mb-3">

@@ -1923,6 +1923,24 @@
         });
     }
 
+    /* 卡内页签窄屏横滑：切到未完全露出的页签时，只滚 .nv-tabs-host，不带动页面。 */
+    function initTabHostScroll() {
+        document.addEventListener('shown.bs.tab', function (e) {
+            var btn = e.target;
+            if (!btn || !btn.closest || !btn.classList || !btn.classList.contains('nav-link')) return;
+            var host = btn.closest('.nv-tabs-host');
+            if (!host) return;
+            var hostRect = host.getBoundingClientRect();
+            var btnRect = btn.getBoundingClientRect();
+            var pad = 8;
+            if (btnRect.left < hostRect.left + pad) {
+                host.scrollLeft -= (hostRect.left + pad - btnRect.left);
+            } else if (btnRect.right > hostRect.right - pad) {
+                host.scrollLeft += (btnRect.right - (hostRect.right - pad));
+            }
+        });
+    }
+
     /* 字段校验：把 data-nv-invalid 接到真实控件的 aria-invalid / aria-describedby */
     function initFieldInvalid() {
         document.querySelectorAll('[data-nv-invalid]').forEach(function (wrap) {
@@ -1937,6 +1955,7 @@
     /* ---------------------------------------------------------------- ⑤ 启动 */
     function boot() {
         initFieldInvalid();
+        initTabHostScroll();
         initNotice();
         initMenuSync();
         initRowDoubleClick();
