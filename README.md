@@ -14,6 +14,22 @@
 - 📱 响应式布局，兼容移动端（含移动端登录页 MLogin）
 - 🧩 覆盖魔方常用页面：列表、表单、树形、权限设置、用户中心、数据库工具等
 
+## 界面预览
+
+登录页、工作台外壳、列表、表单、魔方设置与暗色外壳示意（CubeDemoNC + UseNova，Theme/Skin=Nova，Tabler 齐全宿主实拍）：
+
+| 登录 | 工作台 |
+| --- | --- |
+| ![登录](docs/screenshots/login.png) | ![工作台](docs/screenshots/shell-dashboard.png) |
+
+| 列表 | 表单 |
+| --- | --- |
+| ![用户列表](docs/screenshots/list-user.png) | ![编辑表单](docs/screenshots/form-edit.png) |
+
+| 魔方设置 | 暗色外壳 |
+| --- | --- |
+| ![魔方设置](docs/screenshots/object-settings.png) | ![暗色外壳](docs/screenshots/shell-dark.png) |
+
 ## 技术栈
 
 | 项目 | 说明 |
