@@ -15,11 +15,21 @@
     var dataSource = pi.DataSource;
 
     var err = NovaForm.RealErrorCount(ViewData.ModelState, name);
+    // LoginLogo / LoginBackground 在框架里仍是 String URL；或 ItemType 为 image / image-*。
+    // 走上传控件，保存仍由 ObjectController.Update + ObjectAttachmentStorage（name_attachment）处理。
+    var itemType = pi.ItemType + "";
+    var isImage = name.EqualIgnoreCase("LoginLogo", "LoginBackground")
+        || itemType.EqualIgnoreCase("image")
+        || itemType.StartsWithIgnoreCase("image-");
 }
 <div class="nv-field @(err > 0 ? "has-error" : "")">
     <label class="nv-field-label" for="@name" title="@dis">@dis</label>
     <div class="nv-field-ctl">
-        @if (dataSource != null)
+        @if (isImage)
+        {
+            @await Html.PartialAsync("_ObjectForm_Image", new ItemModel(name, val, pi.Type) { ItemType = pi.ItemType })
+        }
+        else if (dataSource != null)
         {
             @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(name, dataSource(obj), val))
         }
@@ -35,8 +45,15 @@
             <span>@Html.ValidationMessage(name)</span>
         </div>
     }
-    else if (!des.IsNullOrEmpty())
+    else
     {
-        <div class="nv-field-hint" title="@des">@des</div>
+        if (!des.IsNullOrEmpty())
+        {
+            <div class="nv-field-hint" title="@des">@des</div>
+        }
+        if (isImage)
+        {
+            <div class="nv-field-hint">可上传或填写 URL</div>
+        }
     }
 </div>

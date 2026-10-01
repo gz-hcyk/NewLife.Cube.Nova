@@ -1,0 +1,19 @@
+@model ItemModel
+@using NewLife;
+@using NewLife.Cube
+@{
+    // 与实体表单 _Form_Image 同构：可编辑 URL 文本框 + {Name}_attachment 文件 + 有值缩略预览。
+    // 不自写上传接口；multipart 表单由 ObjectForm 提供，框架按 _attachment 约定落盘并回写 URL。
+    var name = Model.Name;
+    var value = Model.Value + "";
+}
+<div class="nv-image-field">
+    @Html.TextBox(name, value, new { @class = "nv-input", autocomplete = "off" })
+    <input type="file" class="nv-input" name="@(name)_attachment" accept="image/*" />
+    @if (!value.IsNullOrEmpty())
+    {
+        <a class="nv-thumb-link" href="@value" target="_blank" rel="noopener" title="查看原图">
+            <img class="nv-thumb" src="@value" alt="" />
+        </a>
+    }
+</div>
