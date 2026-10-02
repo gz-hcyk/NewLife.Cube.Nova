@@ -143,7 +143,7 @@
 }
 <div class="nv-ops">
     <header class="nv-ops-head">
-        <div>
+        <div class="nv-ops-head-main">
             <div class="nv-ops-title">运维中心</div>
             <div class="nv-ops-sub">
                 @(cfg.DisplayName.IsNullOrEmpty() ? cfg.Name : cfg.DisplayName)
@@ -181,20 +181,20 @@
         <div class="nv-ops-actions">
             @if (canRestart)
             {
-                <a class="nv-btn nv-btn-danger nv-btn-sm" href="@Url.Action("Restart")" data-nv-restart data-confirm="仅重启本应用进程，而不是操作系统。确认重启？">
+                <a class="nv-btn nv-btn-danger" href="@Url.Action("Restart")" data-nv-restart data-confirm="仅重启本应用进程，而不是操作系统。确认重启？">
                     <i class="nv-ico nv-ico-sm" data-nv-ico="refresh"></i>重启应用
                 </a>
             }
             @if (canFree)
             {
-                <a class="nv-btn nv-btn-sm" href="@Url.Action("MemoryFree")">
+                <a class="nv-btn" href="@Url.Action("MemoryFree")">
                     <i class="nv-ico nv-ico-sm" data-nv-ico="zap"></i>释放内存
                 </a>
             }
         </div>
     </header>
 
-    <div class="nv-ops-kpis">
+    <div class="nv-ops-kpis" aria-label="指标">
         @{
             var kpis = new List<(String Label, String Value, String Sub, String Url, String Tone)>
             {
@@ -236,59 +236,111 @@
     </div>
 
     <div class="nv-ops-split">
-        <section class="nv-card">
+        <section class="nv-card" aria-label="运行状态">
             <div class="nv-card-head">
                 <div class="nv-card-title"><i class="nv-ico nv-ico-sm" data-nv-ico="cpu"></i>运行状态</div>
-                <div class="nv-card-sub">@DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss")</div>
+                <time class="nv-card-sub" datetime="@DateTimeOffset.Now.ToString("yyyy-MM-ddTHH:mm:ss")">@DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss")</time>
             </div>
             <div class="nv-card-body">
-                <div class="nv-meter-row">
-                    <div class="nv-meter-label"><span>处理器</span><b>@cpuPct.ToString("p0")</b></div>
-                    <div class="nv-meter @Tone(cpuPct)"><span style="width:@((Int32)Math.Min(100, cpuPct * 100))%"></span></div>
-                    <div class="nv-meter-sub">@mi.Processor · @Environment.ProcessorCount 核@(mi.Temperature > 0 ? $" · {mi.Temperature:0.#} ℃" : "")</div>
-                </div>
-                <div class="nv-meter-row">
-                    <div class="nv-meter-label"><span>物理内存</span><b>@memPct.ToString("p0")</b></div>
-                    <div class="nv-meter @Tone(memPct)"><span style="width:@((Int32)Math.Min(100, memPct * 100))%"></span></div>
-                    <div class="nv-meter-sub">可用 @((memAvail / 1024 / 1024).ToString("n0")) MB / 共 @((memTotal / 1024 / 1024).ToString("n0")) MB</div>
+                <div class="nv-ops-meters">
+                    <div class="nv-meter-row">
+                        <div class="nv-meter-label"><span>处理器</span><b>@cpuPct.ToString("p0")</b></div>
+                        <div class="nv-meter @Tone(cpuPct)" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@((Int32)Math.Min(100, cpuPct * 100))" aria-label="@($"处理器 {cpuPct:p0}")"><span style="width:@((Int32)Math.Min(100, cpuPct * 100))%"></span></div>
+                        <div class="nv-meter-sub">@mi.Processor · @Environment.ProcessorCount 核@(mi.Temperature > 0 ? $" · {mi.Temperature:0.#} ℃" : "")</div>
+                    </div>
+                    <div class="nv-meter-row">
+                        <div class="nv-meter-label"><span>物理内存</span><b>@memPct.ToString("p0")</b></div>
+                        <div class="nv-meter @Tone(memPct)" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="@((Int32)Math.Min(100, memPct * 100))" aria-label="@($"物理内存 {memPct:p0}")"><span style="width:@((Int32)Math.Min(100, memPct * 100))%"></span></div>
+                        <div class="nv-meter-sub">可用 @((memAvail / 1024 / 1024).ToString("n0")) MB / 共 @((memTotal / 1024 / 1024).ToString("n0")) MB</div>
+                    </div>
                 </div>
                 <dl class="nv-ops-facts">
-                    <dt>进程</dt>
-                    <dd>@process.ProcessName · PID @process.Id · 工作集 @wsMb.ToString("n0") MB · GC @gcMb.ToString("n0") MB</dd>
-                    <dt>启动</dt>
-                    <dd>进程 @process.StartTime.ToLocalTime().ToFullString() · 已运行 @SpanText(DateTime.Now - process.StartTime) · CPU @process.TotalProcessorTime.TotalSeconds.ToString("n1") 秒</dd>
-                    <dt>开机</dt>
-                    <dd>@SpanText(boot)</dd>
-                    <dt>系统</dt>
-                    <dd title="@mi.Guid">@mi.OSName @mi.OSVersion · @Environment.UserName / @Environment.MachineName@(mi.Product.IsNullOrEmpty() ? "" : " · " + mi.Product)</dd>
-                    <dt>运行时</dt>
-                    <dd>@Environment.Version · @fxName · @(GCSettings.IsServerGC ? "Server GC" : "Workstation GC") · @GCSettings.LatencyMode</dd>
-                    <dt>地址</dt>
-                    <dd>
-                        <span title="主机">@req.Headers["Host"]</span>
-                        · <span title="本地">@addrLocal:@conn.LocalPort</span>
-                        · <span title="远程">@addrRemote:@conn.RemotePort</span>
-                        @if (addrRemote + "" != userHost)
-                        {
-                            <span title="真实"> · @userHost</span>
-                        }
-                    </dd>
-                    <dt>目录</dt>
-                    <dd title="@Environment.CommandLine">@Env.ContentRootPath</dd>
-                    <dt>应用域</dt>
-                    <dd>
-                        @AppDomain.CurrentDomain.FriendlyName
-                        <a class="nv-link" href="@Url.Action("Main", new { id = "Assembly" })">程序集</a>
-                        <a class="nv-link" href="@Url.Action("Main", new { id = "ProcessModules" })">模块</a>
-                        <a class="nv-link" href="@Url.Action("Main", new { id = "ServerVar" })">服务器变量</a>
-                        <a class="nv-link" href="@Url.Action("Main", new { id = "Session" })">Session</a>
-                        <a class="nv-link" href="@Url.Action("Main", new { id = "Cache" })">缓存</a>
-                    </dd>
+                    <div>
+                        <dt>进程</dt>
+                        <dd>@process.ProcessName · PID @process.Id</dd>
+                    </div>
+                    <div>
+                        <dt>工作集</dt>
+                        <dd>@wsMb.ToString("n0") MB</dd>
+                    </div>
+                    <div>
+                        <dt>GC</dt>
+                        <dd>@gcMb.ToString("n0") MB</dd>
+                    </div>
+                    <div>
+                        <dt>启动</dt>
+                        <dd>@process.StartTime.ToLocalTime().ToFullString()</dd>
+                    </div>
+                    <div>
+                        <dt>已运行</dt>
+                        <dd>@SpanText(DateTime.Now - process.StartTime)</dd>
+                    </div>
+                    <div>
+                        <dt>进程 CPU</dt>
+                        <dd>@process.TotalProcessorTime.TotalSeconds.ToString("n1") 秒</dd>
+                    </div>
+                    <div>
+                        <dt>开机</dt>
+                        <dd>@SpanText(boot)</dd>
+                    </div>
+                    <div>
+                        <dt>系统</dt>
+                        <dd title="@mi.Guid">@mi.OSName @mi.OSVersion</dd>
+                    </div>
+                    <div>
+                        <dt>账户</dt>
+                        <dd>@Environment.UserName / @Environment.MachineName</dd>
+                    </div>
+                    @if (!mi.Product.IsNullOrEmpty())
+                    {
+                        <div>
+                            <dt>产品</dt>
+                            <dd>@mi.Product</dd>
+                        </div>
+                    }
+                    <div>
+                        <dt>运行时</dt>
+                        <dd>@Environment.Version · @fxName · @(GCSettings.IsServerGC ? "Server GC" : "Workstation GC") · @GCSettings.LatencyMode</dd>
+                    </div>
+                    <div>
+                        <dt>主机</dt>
+                        <dd>@req.Headers["Host"]</dd>
+                    </div>
+                    <div>
+                        <dt>本地</dt>
+                        <dd>@addrLocal:@conn.LocalPort</dd>
+                    </div>
+                    <div>
+                        <dt>远程</dt>
+                        <dd>@addrRemote:@conn.RemotePort</dd>
+                    </div>
+                    @if (addrRemote + "" != userHost)
+                    {
+                        <div>
+                            <dt>真实</dt>
+                            <dd>@userHost</dd>
+                        </div>
+                    }
+                    <div class="nv-ops-fact-wide">
+                        <dt>目录</dt>
+                        <dd title="@Environment.CommandLine">@Env.ContentRootPath</dd>
+                    </div>
+                    <div class="nv-ops-fact-wide">
+                        <dt>应用域</dt>
+                        <dd>@AppDomain.CurrentDomain.FriendlyName</dd>
+                    </div>
                 </dl>
+                <div class="nv-ops-entries" aria-label="运行状态入口">
+                    <a href="@Url.Action("Main", new { id = "Assembly" })">程序集</a>
+                    <a href="@Url.Action("Main", new { id = "ProcessModules" })">模块</a>
+                    <a href="@Url.Action("Main", new { id = "ServerVar" })">服务器变量</a>
+                    <a href="@Url.Action("Main", new { id = "Session" })">Session</a>
+                    <a href="@Url.Action("Main", new { id = "Cache" })">缓存</a>
+                </div>
             </div>
         </section>
 
-        <section class="nv-card">
+        <section class="nv-card" aria-label="基础数据">
             <div class="nv-card-head">
                 <div class="nv-card-title"><i class="nv-ico nv-ico-sm" data-nv-ico="grid"></i>基础数据</div>
                 <div class="nv-card-sub">来自魔方菜单</div>
@@ -314,14 +366,22 @@
                     </div>
                 }
                 <dl class="nv-ops-facts nv-ops-facts-tight">
-                    <dt>登录</dt>
-                    <dd>@(set.AllowRegister ? "允许注册" : "关闭注册") · 连续失败 @set.MaxLoginError 次锁定</dd>
-                    <dt>安全</dt>
-                    <dd>@(set.EnablePasswordComplexity ? "密码复杂度已开启" : "未强制密码复杂度") · @(set.EnableMfa ? "已开 MFA" : "未开 MFA")</dd>
-                    <dt>接入</dt>
-                    <dd>启用的 OAuth @Num(oauthTotal) · 参数 @Num(paramTotal)</dd>
-                    <dt>安装</dt>
-                    <dd>@(cfg.InstallTime.Year > 2000 ? cfg.InstallTime.ToFullString() : "—") · 实例 @cfg.Instance</dd>
+                    <div>
+                        <dt>登录</dt>
+                        <dd>@(set.AllowRegister ? "允许注册" : "关闭注册") · 连续失败 @set.MaxLoginError 次锁定</dd>
+                    </div>
+                    <div>
+                        <dt>安全</dt>
+                        <dd>@(set.EnablePasswordComplexity ? "密码复杂度已开启" : "未强制密码复杂度") · @(set.EnableMfa ? "已开 MFA" : "未开 MFA")</dd>
+                    </div>
+                    <div>
+                        <dt>接入</dt>
+                        <dd>启用的 OAuth @Num(oauthTotal) · 参数 @Num(paramTotal)</dd>
+                    </div>
+                    <div>
+                        <dt>安装</dt>
+                        <dd>@(cfg.InstallTime.Year > 2000 ? cfg.InstallTime.ToFullString() : "—") · 实例 @cfg.Instance</dd>
+                    </div>
                 </dl>
             </div>
         </section>

@@ -370,9 +370,9 @@ Dashboard 由魔方框架 widget 系统渲染（`widget-grid` 流式布局，列
 | 工作台 Dashboard（桌面 1700） | 6.1 | [runtime-dash-desktop](preview/runtime-dash-desktop.png) |
 | 工作台 Dashboard（平板 1100） | 6.4 | [runtime-dash-tablet](preview/runtime-dash-tablet.png) |
 | 工作台 Dashboard（手机 560） | 6.4 | [runtime-dash-mobile](preview/runtime-dash-mobile.png) |
-| 运维中心（桌面 1700，KPI 8 列 + 数据库表） | 6.1 / 6.4 | [runtime-ops-desktop](preview/runtime-ops-desktop.png) |
-| 运维中心（平板 1100，KPI 5+3 折行） | 6.4 | [runtime-ops-tablet](preview/runtime-ops-tablet.png) |
-| 运维中心（手机 560，KPI 2 列单列堆叠） | 6.4 | [runtime-ops-mobile](preview/runtime-ops-mobile.png) |
+| 运维中心（容器 ≥900px：KPI 8 列，运行状态与基础数据约 1.65fr / 0.82fr 并排） | 6.4 | [runtime-ops-desktop](preview/runtime-ops-desktop.png) |
+| 运维中心（容器 560–899px：KPI 4 列，运行状态与基础数据上下堆叠） | 6.4 | [runtime-ops-tablet](preview/runtime-ops-tablet.png) |
+| 运维中心（容器 <560px：KPI 2 列） | 6.4 | [runtime-ops-mobile](preview/runtime-ops-mobile.png) |
 | AI 助手浮窗（列表页点开面板） | 5.5 | [runtime-ai-assistant](preview/runtime-ai-assistant.png) |
 
 复摄说明：`docs/preview/verify-demo.ps1` 内嵌全部检查项并在通过时刷新对应基线截图；单独复摄某组件时参照同目录已归档的 `_*shot*.ps1` 脚本模式（起站 → 登录 → 快照 → 停站），注意脚本需以 UTF-8 带 BOM 保存。
