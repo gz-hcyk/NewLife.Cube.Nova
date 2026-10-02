@@ -1,0 +1,37 @@
+@model Tuple<IEntity, IEnumerable<DataField>>
+@using XCode
+@using XCode.Configuration
+@{
+    var entity = Model.Item1;
+    var visible = new List<DataField>();
+    foreach (var item in Model.Item2)
+    {
+        // 表单页显示非主键或非自增字段
+        if ((!item.PrimaryKey || item.Field != null && !item.Field.IsIdentity) && (item.DataVisible == null || item.DataVisible(entity)))
+            visible.Add(item);
+    }
+}
+<div class="nv-form-grid nv-form-stack">
+    @for (var i = 0; i < visible.Count;)
+    {
+        var item = visible[i];
+        var pair = i + 1 < visible.Count && !NovaForm.SpansFormRow(item) && !NovaForm.SpansFormRow(visible[i + 1]);
+        if (pair)
+        {
+            <div class="nv-form-pair">
+                @await Html.PartialAsync(GroupView(item), new EntityField(entity, item))
+                @await Html.PartialAsync(GroupView(visible[i + 1]), new EntityField(entity, visible[i + 1]))
+            </div>
+            i += 2;
+        }
+        else
+        {
+            @await Html.PartialAsync(GroupView(item), new EntityField(entity, item))
+            i++;
+        }
+    }
+</div>
+@functions {
+    string GroupView(DataField item) =>
+        item is FormField formField && !formField.GroupView.IsNullOrEmpty() ? formField.GroupView : "_Form_Group";
+}

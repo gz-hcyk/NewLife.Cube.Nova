@@ -417,7 +417,7 @@ body.nv a.nv-btn-ghost.nv-btn-danger:hover:not(:disabled) {
     transition:border-color var(--nv-dur-fast) var(--nv-ease),box-shadow var(--nv-dur-fast) var(--nv-ease);
 }
 .nv-textarea {
- height:auto; min-height:84px; padding:9px 11px; line-height:var(--nv-lh-snug); resize:vertical; }
+ height:auto; min-height:108px; padding:8px 11px; line-height:var(--nv-lh-snug); resize:vertical; }
 .nv-select {
  appearance:none; padding-right:30px;
     background-image:url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7384' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
@@ -506,6 +506,26 @@ body.nv a.nv-btn-ghost.nv-btn-danger:hover:not(:disabled) {
  display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 var(--nv-sp-6); }
 .nv-form-grid .nv-col-full {
  grid-column:1 / -1; }
+/* 实体/对象表单：默认一行一个字段，说明在控件下方。短字段用 .nv-form-pair 并排。 */
+.nv-form-grid.nv-form-stack {
+ grid-template-columns:minmax(0,1fr); gap:0; }
+.nv-form-stack > .nv-field,
+.nv-form-pair > .nv-field,
+.nv-form-stack .nv-col-full > .nv-field {
+ display:flex; flex-direction:column; align-items:stretch; min-width:0; }
+.nv-form-stack .nv-field-hint,
+.nv-form-pair .nv-field-hint {
+ display:block; width:100%; max-width:100%; clear:both; }
+.nv-form-pair {
+ display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:0 var(--nv-sp-6); min-width:0; }
+.nv-field-narrow .nv-field-ctl {
+ align-self:flex-start; width:240px; max-width:100%; }
+.nv-field-narrow .nv-field-ctl > .nv-input,
+.nv-field-ctl > .nv-input.nv-input-narrow {
+ flex:0 1 auto; width:240px; max-width:100%; }
+.nv-field-wide .nv-field-ctl > .nv-input,
+.nv-field-ctl > .nv-input.nv-input-wide {
+ flex:1 1 auto; width:100%; max-width:100%; }
 .nv-form-actions {
 
     position:sticky; bottom:0; z-index:5;
@@ -1266,6 +1286,8 @@ html[data-bs-theme="dark"] .nv-skeleton::after {
  transform:none; }
 }
 @media (max-width:560px)  {
+.nv-form-pair {
+ grid-template-columns:minmax(0,1fr); }
 .nv-dev-grid {
  grid-template-columns:minmax(0,1fr); }
 .nv-dc-kpis {

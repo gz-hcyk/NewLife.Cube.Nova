@@ -11,7 +11,8 @@
     var full = item.Name.EqualIgnoreCase("Permission")
             || item.ItemType.EqualIgnoreCase("html")
             || item.ItemType.EqualIgnoreCase("markdown")
-            || item.IsBigText();
+            || item.IsBigText()
+            || NovaForm.IsWideSingleLine(item);
 }
 @if (item.Name.EqualIgnoreCase("Permission"))
 {

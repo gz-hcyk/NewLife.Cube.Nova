@@ -7,10 +7,11 @@
     var entity = Model.Entity;
     var field = Model.Field;
 
-    // 富文本/大文本占满整行（.nv-col-full 在 .nv-form-grid 里跨列）
+    // 整行：富文本、IsBigText 多行，以及宽单行 / 长 URL（仍由 _Form_String 决定是单行还是多行）
     var full = field.ItemType.EqualIgnoreCase("html")
             || field.ItemType.EqualIgnoreCase("markdown")
-            || field.IsBigText();
+            || field.IsBigText()
+            || NovaForm.IsWideSingleLine(field);
 }
 @if (full)
 {

@@ -6,8 +6,7 @@
     var fields = ViewBag.Fields as FieldCollection;
     var groupFields = fields.GroupByCategory(entity);
 }
-@* 字段渲染条件在「分组 / 不分组」两条分支里各写一遍：
-   GroupByCategory 的返回类型随框架版本不同，与其再抽一层带模型的分部页去赌类型，不如就地复用同一段条件。 *@
+@* 字段可见性、并排与 GroupView 在 _Form_Flow。分组只决定页签。 *@
 @if (groupFields.Count > 1)
 {
     var i = 0;
@@ -31,23 +30,7 @@
             {
                 <div class="tab-pane fade @(j == 0 ? "show active" : "")" id="nvForm@(j)" role="tabpanel" aria-labelledby="nvFormTab@(j)">
                     <div class="nv-card-body">
-                        <div class="nv-form-grid">
-                            @foreach (var item in group.Value)
-                            {
-                                // 表单页显示非主键或非自增字段
-                                if ((!item.PrimaryKey || item.Field != null && !item.Field.IsIdentity) && (item.DataVisible == null || item.DataVisible(entity)))
-                                {
-                                    if (item is FormField formField && !formField.GroupView.IsNullOrEmpty())
-                                    {
-                                        @await Html.PartialAsync(formField.GroupView, new EntityField(entity, item))
-                                    }
-                                    else
-                                    {
-                                        @await Html.PartialAsync("_Form_Group", new EntityField(entity, item))
-                                    }
-                                }
-                            }
-                        </div>
+                        @await Html.PartialAsync("_Form_Flow", new Tuple<IEntity, IEnumerable<DataField>>(entity, group.Value))
                     </div>
                 </div>
                 j++;
@@ -59,23 +42,7 @@ else
 {
     <div class="nv-card nv-mb-3">
         <div class="nv-card-body">
-            <div class="nv-form-grid">
-                @foreach (var item in fields)
-                {
-                    // 表单页显示非主键或非自增字段
-                    if ((!item.PrimaryKey || item.Field != null && !item.Field.IsIdentity) && (item.DataVisible == null || item.DataVisible(entity)))
-                    {
-                        if (item is FormField formField && !formField.GroupView.IsNullOrEmpty())
-                        {
-                            @await Html.PartialAsync(formField.GroupView, new EntityField(entity, item))
-                        }
-                        else
-                        {
-                            @await Html.PartialAsync("_Form_Group", new EntityField(entity, item))
-                        }
-                    }
-                }
-            </div>
+            @await Html.PartialAsync("_Form_Flow", new Tuple<IEntity, IEnumerable<DataField>>(entity, fields))
         </div>
     </div>
 }

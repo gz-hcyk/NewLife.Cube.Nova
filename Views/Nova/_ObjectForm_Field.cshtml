@@ -22,7 +22,7 @@
         || itemType.EqualIgnoreCase("image")
         || itemType.StartsWithIgnoreCase("image-");
 }
-<div class="nv-field @(err > 0 ? "has-error" : "")">
+<div class="nv-field @(err > 0 ? "has-error" : "") @(NovaForm.IsNarrowSingleLine(pi) ? "nv-field-narrow" : "") @(NovaForm.IsWideSingleLine(pi) ? "nv-field-wide" : "")">
     <label class="nv-field-label" for="@name" title="@dis">@dis</label>
     <div class="nv-field-ctl">
         @if (isImage)
@@ -35,7 +35,7 @@
         }
         else
         {
-            @await Html.PartialAsync("_Form_Editor", new ItemModel(name, val, pi.Type) { ItemType = pi.ItemType })
+            @await Html.PartialAsync("_Form_Editor", new ItemModel(name, val, pi.Type) { ItemType = pi.ItemType, Length = pi.Length })
         }
     </div>
     @if (err > 0)

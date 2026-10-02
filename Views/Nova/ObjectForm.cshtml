@@ -66,12 +66,7 @@
                 {
                     <div class="tab-pane fade @(j == 0 ? "show active" : "")" id="nvObj@(j)" role="tabpanel" aria-labelledby="nvObjTab@(j)">
                         <div class="nv-card-body">
-                            <div class="nv-form-grid">
-                                @foreach (var pi in group.Value)
-                                {
-                                    @await Html.PartialAsync("_ObjectForm_Field", new Tuple<Object, DataField>(obj, pi))
-                                }
-                            </div>
+                            @await Html.PartialAsync("_ObjectForm_Flow", new Tuple<Object, IList<DataField>>(obj, group.Value))
                         </div>
                     </div>
                     j++;
@@ -81,15 +76,10 @@
         else
         {
             <div class="nv-card-body">
-                <div class="nv-form-grid">
-                    @foreach (var item in dic)
-                    {
-                        foreach (var pi in item.Value)
-                        {
-                            @await Html.PartialAsync("_ObjectForm_Field", new Tuple<Object, DataField>(obj, pi))
-                        }
-                    }
-                </div>
+                @foreach (var item in dic)
+                {
+                    @await Html.PartialAsync("_ObjectForm_Flow", new Tuple<Object, IList<DataField>>(obj, item.Value))
+                }
             </div>
         }
         if (this.Has(PermissionFlags.Update))

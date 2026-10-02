@@ -43,7 +43,7 @@
         }
     }
 }
-<div class="nv-field @(err > 0 ? "has-error" : "")">
+<div class="nv-field @(err > 0 ? "has-error" : "") @(NovaForm.IsNarrowSingleLine(item) ? "nv-field-narrow" : "") @(NovaForm.IsWideSingleLine(item) ? "nv-field-wide" : "")">
     <label class="nv-field-label" for="@item.Name" title="@display">@display</label>
     <div class="nv-field-ctl" data-nv-invalid="@(err > 0 ? "true" : null)" data-nv-describedby="@(err > 0 ? "nv-err-" + item.Name : null)">
         @if (dataSource != null)

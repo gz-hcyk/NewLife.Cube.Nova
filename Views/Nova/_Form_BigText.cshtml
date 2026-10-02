@@ -20,13 +20,16 @@
         des = des.TrimStart(',', '.', '，', '。', ' ', '\r', '\n');
     }
 }
-<div class="nv-field @(err > 0 ? "has-error" : "")">
+<div class="nv-field @(err > 0 ? "has-error" : "") @(NovaForm.IsWideSingleLine(field) ? "nv-field-wide" : "")">
     <label class="nv-field-label" for="@field.Name" title="@field.DisplayName">@field.DisplayName</label>
     <div class="nv-field-ctl">
-        @if (field.ReadOnly)
+        @if (field.ReadOnly && NovaForm.IsUrlField(field.Name, field.ItemType))
         {
-            var row = (Int32)Math.Round(field.Length / 100d);
-            if (row < 3) { row = 3; }
+            <input class="nv-input nv-input-wide" id="@field.Name" type="text" value="@entity[field.Name]" readonly />
+        }
+        else if (field.ReadOnly)
+        {
+            var row = NovaForm.BigTextRows(field.Length);
             <textarea class="nv-textarea" id="@field.Name" rows="@row" readonly>@entity[field.Name]</textarea>
         }
         else

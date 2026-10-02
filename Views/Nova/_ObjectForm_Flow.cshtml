@@ -1,0 +1,32 @@
+@model Tuple<Object, IList<DataField>>
+@{
+    var obj = Model.Item1;
+    var list = Model.Item2 ?? new List<DataField>();
+}
+<div class="nv-form-grid nv-form-stack">
+    @for (var i = 0; i < list.Count;)
+    {
+        var item = list[i];
+        var pair = i + 1 < list.Count && !NovaForm.SpansFormRow(item) && !NovaForm.SpansFormRow(list[i + 1]);
+        if (pair)
+        {
+            <div class="nv-form-pair">
+                @await Html.PartialAsync("_ObjectForm_Field", new Tuple<Object, DataField>(obj, item))
+                @await Html.PartialAsync("_ObjectForm_Field", new Tuple<Object, DataField>(obj, list[i + 1]))
+            </div>
+            i += 2;
+        }
+        else if (NovaForm.SpansFormRow(item))
+        {
+            <div class="nv-col-full">
+                @await Html.PartialAsync("_ObjectForm_Field", new Tuple<Object, DataField>(obj, item))
+            </div>
+            i++;
+        }
+        else
+        {
+            @await Html.PartialAsync("_ObjectForm_Field", new Tuple<Object, DataField>(obj, item))
+            i++;
+        }
+    }
+</div>
