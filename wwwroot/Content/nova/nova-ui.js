@@ -1850,6 +1850,7 @@
 
     function buildMultiPop(sel) {
         if (sel.getAttribute('data-nv-mp') === '1') return;
+        if (sel.disabled) return;
         if (!sel.multiple || sel.size > 1) return;
         if (sel.closest('[data-nv-treeselect]')) return;
         var ctl = sel.parentElement;

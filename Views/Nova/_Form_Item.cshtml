@@ -86,22 +86,18 @@
             var selectName = !item.MapField.IsNullOrEmpty() ? item.MapField : item.Name;
             var selectValue = !item.MapField.IsNullOrEmpty() ? entity[item.MapField] : itemModel.Value;
 
-            // 数据字段以s结尾，表示多选，其它单选
-            if (item.ItemType.EqualIgnoreCase("singleSelect"))
+            // singleSelect 保持单选；multipleSelect 或名称以 s 结尾为多选。与对象表单同一规则。
+            // 详情借用来的数据源标了 ReadOnly，选择控件禁用，只展示已选部门，不能改。
+            var box = new ListBoxModel(selectName, ds, selectValue);
+            if (item.ReadOnly)
+                box.HtmlAttributes = new { disabled = "disabled" };
+            if (NovaForm.IsMultipleSelect(item.Name, item.ItemType))
             {
-                @await Html.PartialAsync(itemView ?? "_Form_DropDownList", new ListBoxModel(selectName, ds, selectValue))
-            }
-            else if (item.ItemType.EqualIgnoreCase("multipleSelect"))
-            {
-                @await Html.PartialAsync(itemView ?? "_Form_ListBox", new ListBoxModel(selectName, ds, selectValue))
-            }
-            else if (item.Name.EndsWith("s"))
-            {
-                @await Html.PartialAsync(itemView ?? "_Form_ListBox", new ListBoxModel(selectName, ds, selectValue))
+                @await Html.PartialAsync(itemView ?? "_Form_ListBox", box)
             }
             else
             {
-                @await Html.PartialAsync(itemView ?? "_Form_DropDownList", new ListBoxModel(selectName, ds, selectValue))
+                @await Html.PartialAsync(itemView ?? "_Form_DropDownList", box)
             }
         }
         else

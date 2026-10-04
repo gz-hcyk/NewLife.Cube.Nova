@@ -12,6 +12,7 @@
     var atts = HtmlHelper.AnonymousObjectToHtmlAttributes(Model.HtmlAttributes);
     var id = atts.ContainsKey("id") ? atts["id"] as String : name;
     if (id.IsNullOrEmpty()) id = name;
+    var disabled = atts.ContainsKey("disabled");
 
     var selectedValues = Model.SelectedValues as String;
     var selectedList = selectedValues?.Split(",");
@@ -67,6 +68,7 @@
 else if (msl != null)
 {
     <select class="nv-select" id="@id" multiple name="@name" aria-label="多选列表"
+            disabled="@(disabled ? "disabled" : null)"
             @(Model.AutoPostback ? Html.Raw("data-autopost=\"1\"") : null)>
         @foreach (var it in msl)
         {

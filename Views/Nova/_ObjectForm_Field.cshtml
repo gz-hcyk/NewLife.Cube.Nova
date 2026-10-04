@@ -31,7 +31,9 @@
         }
         else if (dataSource != null)
         {
-            @await Html.PartialAsync("_Form_DropDownList", new ListBoxModel(name, dataSource(obj), val))
+            // 与 _Form_Item 相同：名称以 s 结尾或 multipleSelect 为多选，singleSelect 及其余为单选。
+            var selectView = NovaForm.IsMultipleSelect(name, itemType) ? "_Form_ListBox" : "_Form_DropDownList";
+            @await Html.PartialAsync(selectView, new ListBoxModel(name, dataSource(obj), val))
         }
         else
         {

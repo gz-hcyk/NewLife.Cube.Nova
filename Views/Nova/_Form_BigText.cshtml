@@ -20,6 +20,13 @@
         des = des.TrimStart(',', '.', '，', '。', ' ', '\r', '\n');
     }
 }
+@* 分组视图若仍把长列送进来，有数据源或映射的字段改走 _Form_Item，避免再输出 textarea。 *@
+@if (NovaForm.IgnoresStringLength(field))
+{
+    @await Html.PartialAsync("_Form_Item", Model)
+}
+else
+{
 <div class="nv-field @(err > 0 ? "has-error" : "") @(NovaForm.IsWideSingleLine(field) ? "nv-field-wide" : "")">
     <label class="nv-field-label" for="@field.Name" title="@field.DisplayName">@field.DisplayName</label>
     <div class="nv-field-ctl">
@@ -53,3 +60,4 @@
         <div class="nv-field-hint" title="@des">@des</div>
     }
 </div>
+}

@@ -1,6 +1,8 @@
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using NewLife;
+using NewLife.Cube;
 using NewLife.Cube.ViewModels;
 
 namespace NewLife.Cube.Nova;
@@ -228,6 +230,66 @@ public static class NovaForm
     public static Boolean IgnoresStringLength(DataField field) =>
         field != null && (field.DataSource != null || !field.MapField.IsNullOrEmpty());
 
+    /// <summary>
+    /// 是否用大文本分部视图。有数据源或外键映射时不按列长度改成多行文本，
+    /// 仍由 _Form_Item 渲染下拉、多选或映射。无数据源的备注、描述保持多行。
+    /// </summary>
+    /// <param name="field">表单字段。为空时返回 false。</param>
+    /// <returns>无数据源且无映射，并且列长度达到大文本时为 true。</returns>
+    public static Boolean RendersAsBigText(DataField field) =>
+        field != null && !IgnoresStringLength(field) && field.IsBigText();
+
+    /// <summary>
+    /// 数据源字段是否多选。ItemType 为 singleSelect 时保持单选；
+    /// multipleSelect，或名称以 s 结尾，为多选；其余为单选。
+    /// </summary>
+    /// <param name="name">字段名。</param>
+    /// <param name="itemType">元素类型，可为 null。</param>
+    /// <returns>应使用多选列表时为 true。</returns>
+    public static Boolean IsMultipleSelect(String name, String itemType)
+    {
+        if (itemType.EqualIgnoreCase("singleSelect")) return false;
+        if (itemType.EqualIgnoreCase("multipleSelect")) return true;
+        return name != null && name.EndsWith("s");
+    }
+
+    /// <summary>
+    /// 读取控制器上的静态表单字段集合（如 EditFormFields）。详情页的 DetailFields 是另一份副本，
+    /// 不会带上只写在新增/编辑集合里的 DataSource。
+    /// </summary>
+    /// <param name="controllerType">当前控制器类型。</param>
+    /// <param name="propertyName">静态属性名。</param>
+    /// <returns>字段集合；找不到时为 null。</returns>
+    public static FieldCollection ControllerFormFields(Type controllerType, String propertyName)
+    {
+        if (controllerType == null || propertyName.IsNullOrEmpty()) return null;
+        const BindingFlags flags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy;
+        var prop = controllerType.GetProperty(propertyName, flags);
+        return prop?.GetValue(null) as FieldCollection;
+    }
+
+    /// <summary>
+    /// 详情字段没有数据源、又会因列长变成大文本时，借用编辑表单（其次新增表单）上的 DataSource。
+    /// 借到后标为只读。短字段、已有数据源的字段、编辑页也没有数据源的长文本（如菜单数据部门、备注）不动。
+    /// </summary>
+    /// <param name="field">详情页上的字段副本。</param>
+    /// <param name="editFields">编辑表单字段。</param>
+    /// <param name="addFields">新增表单字段。</param>
+    /// <returns>已写上数据源时为 true。</returns>
+    public static Boolean AdoptFormDataSource(DataField field, FieldCollection editFields, FieldCollection addFields)
+    {
+        if (field == null || field.DataSource != null || !field.IsBigText()) return false;
+
+        var src = editFields?.GetField(field.Name);
+        if (src?.DataSource == null)
+            src = addFields?.GetField(field.Name);
+        if (src?.DataSource == null) return false;
+
+        field.DataSource = src.DataSource;
+        field.ReadOnly = true;
+        return true;
+    }
+
     /// <summary>1–99 窄单行。有数据源或映射的字段不套用。</summary>
     public static Boolean IsNarrowSingleLine(DataField field) =>
         field != null && !IgnoresStringLength(field) && IsNarrowSingleLine(field.Name, field.ItemType, field.Type, field.Length);
@@ -239,7 +301,10 @@ public static class NovaForm
     /// <summary>
     /// 独占表单一行。多行与 <see cref="DataField.IsBigText"/> 一致；
     /// 宽单行、列长度达到宽档的 URL 也占整列宽。自定义 GroupView 与权限矩阵不并排。
+    /// 有数据源或映射且列很长时仍独占一行，控件由 <see cref="RendersAsBigText"/> 交给下拉或多选，不改成文本框。
     /// </summary>
+    /// <param name="field">表单字段。为空时返回 false。</param>
+    /// <returns>该字段不与下一个字段并排时为 true。</returns>
     public static Boolean SpansFormRow(DataField field)
     {
         if (field == null) return false;

@@ -7,11 +7,12 @@
     var entity = Model.Entity;
     var item = Model.Field;
 
-    // 与 Views/Nova/_Form_Group.cshtml 保持同构：权限矩阵整行，其余走标准字段项
+    // 与 Views/Nova/_Form_Group.cshtml 保持同构：权限矩阵整行，其余走标准字段项。
+    // 已有 DataSource 或 MapField 的长列（数据部门）不走大文本，交给 _Form_Item 的多选。
     var full = item.Name.EqualIgnoreCase("Permission")
             || item.ItemType.EqualIgnoreCase("html")
             || item.ItemType.EqualIgnoreCase("markdown")
-            || item.IsBigText()
+            || NovaForm.RendersAsBigText(item)
             || NovaForm.IsWideSingleLine(item);
 }
 @if (item.Name.EqualIgnoreCase("Permission"))

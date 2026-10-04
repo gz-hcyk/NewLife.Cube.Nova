@@ -7,10 +7,11 @@
     var entity = Model.Entity;
     var field = Model.Field;
 
-    // 整行：富文本、IsBigText 多行，以及宽单行 / 长 URL（仍由 _Form_String 决定是单行还是多行）
+    // 整行：富文本、无数据源的大文本，以及宽单行 / 长 URL（仍由 _Form_String 决定是单行还是多行）。
+    // 已有 DataSource 或 MapField 的长列（如 DataDepartmentIds）不走大文本，交给 _Form_Item。
     var full = field.ItemType.EqualIgnoreCase("html")
             || field.ItemType.EqualIgnoreCase("markdown")
-            || field.IsBigText()
+            || NovaForm.RendersAsBigText(field)
             || NovaForm.IsWideSingleLine(field);
 }
 @if (full)
