@@ -10,6 +10,17 @@
         if ((!item.PrimaryKey || item.Field != null && !item.Field.IsIdentity) && (item.DataVisible == null || item.DataVisible(entity)))
             visible.Add(item);
     }
+
+    // 详情用 DetailFields，不带只设在 Add/Edit 上的 DataSource。长列会因此掉进大文本。
+    var action = ViewContext.RouteData.Values["action"] as String;
+    if (action.EqualIgnoreCase("Detail"))
+    {
+        var controllerType = (ViewContext.ActionDescriptor as Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor)?.ControllerTypeInfo;
+        var editFields = NovaForm.ControllerFormFields(controllerType, "EditFormFields");
+        var addFields = NovaForm.ControllerFormFields(controllerType, "AddFormFields");
+        foreach (var item in visible)
+            NovaForm.AdoptFormDataSource(item, editFields, addFields);
+    }
 }
 <div class="nv-form-grid nv-form-stack">
     @for (var i = 0; i < visible.Count;)

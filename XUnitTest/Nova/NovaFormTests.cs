@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using NewLife.Cube;
 using NewLife.Cube.Nova;
 using NewLife.Cube.ViewModels;
 using Xunit;
@@ -125,6 +126,84 @@ public class NovaFormTests
     }
 
     [Fact]
+    [DisplayName("详情长字段借用编辑页数据源并改为只读，短字段和没有数据源的长文本不动")]
+    public void DetailAdoptsEditDataSourceOnlyForBigText()
+    {
+        var edit = new FieldCollection(ViewKinds.EditForm);
+        var sourced = Text("DataDepartmentIds", 500);
+        sourced.DataSource = _ => new Dictionary<Int32, String> { [8] = "一部", [9] = "二部" };
+        edit.Add(sourced);
+        var bare = Text("Remark", 500);
+        edit.Add(bare);
+
+        var detail = Text("DataDepartmentIds", 500);
+        Assert.True(NovaForm.AdoptFormDataSource(detail, edit, null));
+        Assert.Same(sourced.DataSource, detail.DataSource);
+        Assert.True(detail.ReadOnly);
+        Assert.False(NovaForm.RendersAsBigText(detail));
+
+        var remark = Text("Remark", 500);
+        Assert.False(NovaForm.AdoptFormDataSource(remark, edit, null));
+        Assert.Null(remark.DataSource);
+        Assert.True(NovaForm.RendersAsBigText(remark));
+
+        var roleIds = Text("RoleIds", 200);
+        roleIds.DataSource = null;
+        var editShort = new FieldCollection(ViewKinds.EditForm);
+        var shortSrc = Text("RoleIds", 200);
+        shortSrc.DataSource = _ => new Dictionary<Int32, String>();
+        editShort.Add(shortSrc);
+        Assert.False(NovaForm.AdoptFormDataSource(roleIds, editShort, null));
+        Assert.Null(roleIds.DataSource);
+    }
+
+    [Fact]
+    [DisplayName("编辑页没有数据源时，详情改用新增页数据源")]
+    public void DetailFallsBackToAddFormDataSource()
+    {
+        var add = new FieldCollection(ViewKinds.AddForm);
+        var sourced = Text("DataDepartmentIds", 500);
+        sourced.DataSource = _ => new Dictionary<Int32, String>();
+        add.Add(sourced);
+
+        var detail = Text("DataDepartmentIds", 500);
+        Assert.True(NovaForm.AdoptFormDataSource(detail, new FieldCollection(ViewKinds.EditForm), add));
+        Assert.Same(sourced.DataSource, detail.DataSource);
+    }
+
+    [Fact]
+    [DisplayName("菜单同名长字段在编辑页也没有数据源时仍是大文本")]
+    public void MenuDataDepartmentWithoutSourceStaysBigText()
+    {
+        var edit = new FieldCollection(ViewKinds.EditForm);
+        edit.Add(Text("DataDepartmentIds", 500));
+        var detail = Text("DataDepartmentIds", 500);
+
+        Assert.False(NovaForm.AdoptFormDataSource(detail, edit, null));
+        Assert.True(NovaForm.RendersAsBigText(detail));
+    }
+
+    class FormFieldHost
+    {
+        protected static FieldCollection EditFormFields { get; } = new(ViewKinds.EditForm);
+    }
+
+    class FormFieldChild : FormFieldHost
+    {
+    }
+
+    [Fact]
+    [DisplayName("能读到控制器基类上的受保护静态 EditFormFields")]
+    public void ReadsProtectedStaticFormFields()
+    {
+        var fields = NovaForm.ControllerFormFields(typeof(FormFieldChild), "EditFormFields");
+        Assert.NotNull(fields);
+        Assert.Equal(ViewKinds.EditForm, fields.Kind);
+        Assert.Null(NovaForm.ControllerFormFields(null, "EditFormFields"));
+        Assert.Null(NovaForm.ControllerFormFields(typeof(FormFieldChild), "Missing"));
+    }
+
+    [Fact]
     [DisplayName("分组视图用 RendersAsBigText，不再直接按 IsBigText 输出大文本")]
     public void FormGroupsDelegateBigTextToHelper()
     {
@@ -144,6 +223,13 @@ public class NovaFormTests
         var role = File.ReadAllText(Path.Combine(root, "Areas/Admin/Views/Role_Nova/_Form_Group.cshtml"));
         Assert.Contains("SetPermission", role);
         Assert.Contains("Permission", role);
+
+        var flow = File.ReadAllText(Path.Combine(root, "Views/Nova/_Form_Flow.cshtml"));
+        Assert.Contains("NovaForm.AdoptFormDataSource(", flow);
+        Assert.Contains("EditFormFields", flow);
+
+        var listBox = File.ReadAllText(Path.Combine(root, "Views/Nova/_Form_ListBox.cshtml"));
+        Assert.Contains("disabled", listBox);
 
         var big = File.ReadAllText(Path.Combine(root, "Views/Nova/_Form_BigText.cshtml"));
         Assert.Contains("NovaForm.IgnoresStringLength(", big);

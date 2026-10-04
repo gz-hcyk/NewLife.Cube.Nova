@@ -1,6 +1,8 @@
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using NewLife;
+using NewLife.Cube;
 using NewLife.Cube.ViewModels;
 
 namespace NewLife.Cube.Nova;
@@ -249,6 +251,43 @@ public static class NovaForm
         if (itemType.EqualIgnoreCase("singleSelect")) return false;
         if (itemType.EqualIgnoreCase("multipleSelect")) return true;
         return name != null && name.EndsWith("s");
+    }
+
+    /// <summary>
+    /// 读取控制器上的静态表单字段集合（如 EditFormFields）。详情页的 DetailFields 是另一份副本，
+    /// 不会带上只写在新增/编辑集合里的 DataSource。
+    /// </summary>
+    /// <param name="controllerType">当前控制器类型。</param>
+    /// <param name="propertyName">静态属性名。</param>
+    /// <returns>字段集合；找不到时为 null。</returns>
+    public static FieldCollection ControllerFormFields(Type controllerType, String propertyName)
+    {
+        if (controllerType == null || propertyName.IsNullOrEmpty()) return null;
+        const BindingFlags flags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy;
+        var prop = controllerType.GetProperty(propertyName, flags);
+        return prop?.GetValue(null) as FieldCollection;
+    }
+
+    /// <summary>
+    /// 详情字段没有数据源、又会因列长变成大文本时，借用编辑表单（其次新增表单）上的 DataSource。
+    /// 借到后标为只读。短字段、已有数据源的字段、编辑页也没有数据源的长文本（如菜单数据部门、备注）不动。
+    /// </summary>
+    /// <param name="field">详情页上的字段副本。</param>
+    /// <param name="editFields">编辑表单字段。</param>
+    /// <param name="addFields">新增表单字段。</param>
+    /// <returns>已写上数据源时为 true。</returns>
+    public static Boolean AdoptFormDataSource(DataField field, FieldCollection editFields, FieldCollection addFields)
+    {
+        if (field == null || field.DataSource != null || !field.IsBigText()) return false;
+
+        var src = editFields?.GetField(field.Name);
+        if (src?.DataSource == null)
+            src = addFields?.GetField(field.Name);
+        if (src?.DataSource == null) return false;
+
+        field.DataSource = src.DataSource;
+        field.ReadOnly = true;
+        return true;
     }
 
     /// <summary>1–99 窄单行。有数据源或映射的字段不套用。</summary>
