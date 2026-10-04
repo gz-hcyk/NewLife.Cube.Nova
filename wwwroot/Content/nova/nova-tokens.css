@@ -101,6 +101,13 @@
     --nv-sidebar-w:248px; --nv-sidebar-w-mini:68px; --nv-header-h:58px;
     --nv-ctrl-h:34px; --nv-ctrl-h-lg:38px; --nv-row-h:40px; --nv-pad-page:24px;
     --nv-z-sidebar:1030; --nv-z-header:1020; --nv-z-drawer:1050; --nv-z-modal:1060; --nv-z-toast:1070;
+    /* DEF-022：AI 浮标固定区。边长对齐间距阶，不另写裸像素。
+       安全边距 = 贴边 + 边长 + 缝。缝取 --nv-sp-8（建议区间 sp-4～sp-8 的上沿），
+       96px 大于「边长 + sp-8」(80px)。列表页浮标只许占 inset 内侧，内容留白用 --nv-fab-safe。 */
+    --nv-fab-size:var(--nv-sp-12);
+    --nv-fab-inset:var(--nv-sp-4);
+    --nv-fab-gap:var(--nv-sp-8);
+    --nv-fab-safe:calc(var(--nv-fab-inset) + var(--nv-fab-size) + var(--nv-fab-gap));
 
     /* ============================================================ 9 动效 */
     --nv-dur-fast:130ms; --nv-dur-base:200ms; --nv-dur-slow:280ms;
