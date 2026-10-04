@@ -387,6 +387,8 @@ body.nv a.nv-btn-ghost.nv-btn-danger:hover:not(:disabled) {
  margin-top:5px; font-size:var(--nv-fs-12); color:var(--nv-text-3); line-height:var(--nv-lh-snug); }
 .nv-field-error {
  margin-top:5px; font-size:var(--nv-fs-12); color:var(--nv-danger-text); display:flex; gap:4px; align-items:flex-start; }
+.nv-field-error > span {
+ min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .nv-field-ctl {
  display:flex; align-items:center; gap:var(--nv-sp-2); min-width:0; }
 .nv-field-ctl > .nv-input, .nv-field-ctl > .nv-select, .nv-field-ctl > .nv-textarea {
@@ -1416,7 +1418,7 @@ body.nv .form-control:focus, body.nv .form-select:focus {
    覆盖 form-control/form-select，以及搜索槽 .nv-field-ctl / .nv-filters / .nv-biz-* 内漏加 class 的 select */
 body.nv select.form-control,
 body.nv select.form-select,
-body.nv .nv-field-ctl > select:not(.nv-selectpop-native),
+body.nv .nv-field-ctl > select:not(.nv-selectpop-native):not([multiple]),
 body.nv .nv-filters select:not(.nv-selectpop-native),
 body.nv .nv-biz-filters select:not(.nv-selectpop-native),
 body.nv .nv-biz-searchbar select:not(.nv-selectpop-native) {
@@ -2760,8 +2762,17 @@ body.nv .form-actions .btn-danger:hover, body.nv .form-actions .btn-danger:focus
    短列 nowrap，长文本 .nv-td-clip 截断，放不下由 .nv-table-wrap 横滚。
    ============================================================ */
 .nv-table-wrap {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+}
+.nv-card:has(> .nv-table-wrap),
+.nv-card:has(.nv-table-wrap) {
+  max-width: 100%;
+  min-width: 0;
 }
 .nv-table {
   width: max-content;
@@ -2834,11 +2845,22 @@ body:has(#nvConfirm.is-on) #aiAssistantFab {
   }
 }
 
-/* DEF-016 吸底操作栏不裁切末字段说明。
-   栏高 = 上下 --nv-sp-3 + 按钮 --nv-ctrl-h（密度档会改控件高）+ 边框。
-   内容区 padding-bottom 再加一档 --nv-sp-3 安全间距，且不小于栏高。
-   只作用于操作栏在卡片之外的表单（Add/Edit 的 Role、User 等）；不改字号。 */
+/* UX-S02 吸底栏不压住末字段（角色「数据部门」、用户添加末字段）。
+   栏仍 position:sticky、可点；不改按钮色。
+   空隙 = 控件高 + 8 档间距，大于栏身（上下 --nv-sp-3 + --nv-ctrl-h）。
+   表单卡 overflow 放开，避免多选面板被卡片裁在栏沿。 */
+form:has(> .nv-form-actions) > .nv-card:has(.nv-form-grid),
+form:has(> .nv-form-actions) > .nv-card:has(.tab-content) {
+    overflow: visible;
+}
 form:has(> .nv-form-actions) > .nv-card:has(> .nv-card-body > .nv-form-grid) > .nv-card-body,
 form:has(> .nv-form-actions) .tab-pane > .nv-card-body:has(> .nv-form-grid) {
-    padding-bottom: calc(var(--nv-sp-3) * 2 + var(--nv-ctrl-h) + 2px + var(--nv-sp-3));
+    padding-bottom: calc(var(--nv-ctrl-h) + var(--nv-sp-8));
+}
+body.nv .nv-field-ctl > select[multiple] {
+    height: auto;
+    min-height: calc(var(--nv-ctrl-h) * 2 + var(--nv-sp-3));
+    padding-top: var(--nv-sp-1);
+    padding-bottom: var(--nv-sp-1);
+    background-image: none;
 }

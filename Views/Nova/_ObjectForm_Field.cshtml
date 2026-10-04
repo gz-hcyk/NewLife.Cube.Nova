@@ -40,10 +40,14 @@
     </div>
     @if (err > 0)
     {
-        <div class="nv-field-error">
-            <i class="nv-ico nv-ico-sm" data-nv-ico="alert"></i>
-            <span>@Html.ValidationMessage(name)</span>
-        </div>
+        var fail = NovaForm.FieldFailureText(ViewData.ModelState, name, dis);
+        if (!fail.IsNullOrEmpty())
+        {
+            <div class="nv-field-error" title="@fail">
+                <i class="nv-ico nv-ico-sm" data-nv-ico="alert"></i>
+                <span>@fail</span>
+            </div>
+        }
     }
     else
     {

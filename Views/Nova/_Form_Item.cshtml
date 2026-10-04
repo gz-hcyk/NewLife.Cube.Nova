@@ -179,10 +179,14 @@
     </div>
     @if (err > 0)
     {
-        <div class="nv-field-error" id="nv-err-@item.Name" role="alert">
-            <i class="nv-ico nv-ico-sm" data-nv-ico="alert" aria-hidden="true"></i>
-            <span>@Html.ValidationMessage(item.Name)</span>
-        </div>
+        var fail = NovaForm.FieldFailureText(ViewData.ModelState, item.Name, display);
+        if (!fail.IsNullOrEmpty())
+        {
+            <div class="nv-field-error" id="nv-err-@item.Name" role="alert" title="@fail">
+                <i class="nv-ico nv-ico-sm" data-nv-ico="alert" aria-hidden="true"></i>
+                <span>@fail</span>
+            </div>
+        }
     }
     else if (!des.IsNullOrEmpty())
     {
