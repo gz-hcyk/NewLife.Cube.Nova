@@ -2842,3 +2842,30 @@ form:has(> .nv-form-actions) > .nv-card:has(> .nv-card-body > .nv-form-grid) > .
 form:has(> .nv-form-actions) .tab-pane > .nv-card-body:has(> .nv-form-grid) {
     padding-bottom: calc(var(--nv-sp-3) * 2 + var(--nv-ctrl-h) + 2px + var(--nv-sp-3));
 }
+
+/* DEF-022 列表行操作优先于右下角 AI 浮标。
+   主方案：#aiAssistantFab 收进 --nv-fab-inset，固定区右/下外缘 = inset + 边长，
+   小于内容安全边距 --nv-fab-safe（边长 + --nv-sp-8 再加贴边，大于「边长 + sp-4～sp-8」）。
+   横滚到操作列尽头时，「查看 / 删除」中心不再落在球上；编辑在删除左侧，一并让开。
+   双保险：列表 .nv-body 右、下 padding 同为 --nv-fab-safe，操作列到不了浮标矩形。
+   不能只加 padding-bottom（球仍压操作列）。不用「挡住才隐藏」。
+   只作用于带行操作的列表（含文件行内删除链）；不改表单吸底栏、图轴、表格列宽，也不改工作台。 */
+body.nv:has(td.nv-td-actions) #aiAssistantFab,
+body.nv:has(.nv-table td a.nv-link-danger) #aiAssistantFab {
+    right: var(--nv-fab-inset);
+    bottom: var(--nv-fab-inset);
+}
+body.nv:has(td.nv-td-actions) .ai-panel,
+body.nv:has(.nv-table td a.nv-link-danger) .ai-panel {
+    right: var(--nv-fab-inset);
+    bottom: calc(var(--nv-fab-inset) + var(--nv-fab-size) + var(--nv-sp-3));
+}
+body.nv:has(td.nv-td-actions) .ai-assistant.panel-open .ai-panel,
+body.nv:has(.nv-table td a.nv-link-danger) .ai-assistant.panel-open .ai-panel {
+    bottom: var(--nv-fab-inset);
+}
+body.nv:has(td.nv-td-actions) .nv-body,
+body.nv:has(.nv-table td a.nv-link-danger) .nv-body {
+    padding-right: var(--nv-fab-safe);
+    padding-bottom: var(--nv-fab-safe);
+}
