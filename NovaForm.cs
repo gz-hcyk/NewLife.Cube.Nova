@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using NewLife;
 using NewLife.Cube.ViewModels;
@@ -46,6 +47,128 @@ public static class NovaForm
             }
         }
         return false;
+    }
+
+    /// <summary>英文必填，以及 ASP.NET 中文资源里的「字段是必需的」。</summary>
+    static readonly Regex EnglishRequired = new(
+        @"^The\s+.+?\s+field\s+is\s+required\.?$",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
+    /// <summary>ArgumentException / ArgumentNullException 追加的参数名。</summary>
+    static readonly Regex ParameterNoise = new(
+        @"\s*\(Parameter\s+'[^']*'\)|\s*Parameter\s+name:\s*\S+",
+        RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
+    static Boolean IsGenericRequired(String text)
+    {
+        if (text.IsNullOrWhiteSpace()) return true;
+        if (EnglishRequired.IsMatch(text)) return true;
+        if (text.Equals("Value cannot be null.", StringComparison.OrdinalIgnoreCase)) return true;
+        if (text.Equals("Value cannot be null", StringComparison.OrdinalIgnoreCase)) return true;
+        if (text.EndsWith("字段是必需的。", StringComparison.Ordinal)) return true;
+        if (text.EndsWith("字段是必需的.", StringComparison.Ordinal)) return true;
+        return false;
+    }
+
+    static String OneLine(String text)
+    {
+        if (text.IsNullOrWhiteSpace()) return "";
+        var line = text.Replace('\r', '\n').Split('\n', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        return (line ?? "").Trim();
+    }
+
+    static String StripParameter(String message)
+    {
+        if (message.IsNullOrEmpty()) return "";
+        return ParameterNoise.Replace(message, " ").Trim();
+    }
+
+    static Boolean HasCJK(String text)
+    {
+        if (text.IsNullOrEmpty()) return false;
+        foreach (var ch in text)
+        {
+            if (ch > 127) return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// 字段下至多一行中文。去掉 (Parameter 'Name') 与英文 The … field is required.；
+    /// 同字段已有业务句（如「用户名不能为空！」）时丢掉泛化必填。
+    /// </summary>
+    public static String FieldFailureText(ModelStateDictionary modelState, String key, String displayName)
+    {
+        if (modelState == null || key.IsNullOrEmpty()) return "";
+        if (!modelState.TryGetValue(key, out var entry) || entry == null) return "";
+
+        String specific = null;
+        var generic = false;
+        foreach (var error in entry.Errors)
+        {
+            if (IsEmptyValueBindingNoise(error)) continue;
+            var text = OneLine(StripParameter(error.ErrorMessage));
+            if (IsGenericRequired(text))
+            {
+                generic = true;
+                continue;
+            }
+            if (!text.IsNullOrEmpty()) specific ??= text;
+        }
+
+        if (!specific.IsNullOrEmpty()) return specific;
+        if (!generic) return "";
+        if (HasCJK(displayName)) return displayName + "不能为空";
+        return "不能为空";
+    }
+
+    /// <summary>模型级（无字段名）失败，至多一行中文。字段错误仍走 <see cref="FieldFailureText"/>。</summary>
+    public static String ModelLevelFailureText(ModelStateDictionary modelState)
+    {
+        if (modelState == null) return "";
+        if (!modelState.TryGetValue("", out var entry) || entry == null) return "";
+
+        String specific = null;
+        foreach (var error in entry.Errors)
+        {
+            if (IsEmptyValueBindingNoise(error)) continue;
+            var text = OneLine(StripParameter(error.ErrorMessage));
+            if (text.IsNullOrEmpty() || IsGenericRequired(text)) continue;
+            specific ??= text;
+        }
+        return specific ?? "";
+    }
+
+    /// <summary>整页一条失败文案。优先业务中文，否则用字段显示名合成的「不能为空」。</summary>
+    public static String PageFailureText(ModelStateDictionary modelState, System.Collections.IEnumerable fields)
+    {
+        if (modelState == null) return "";
+
+        var labels = new Dictionary<String, String>(StringComparer.OrdinalIgnoreCase);
+        if (fields != null)
+        {
+            foreach (var item in fields)
+            {
+                if (item is not DataField field || field.Name.IsNullOrEmpty()) continue;
+                labels[field.Name] = field.DisplayName;
+            }
+        }
+
+        String fallback = null;
+        foreach (var kv in modelState)
+        {
+            labels.TryGetValue(kv.Key ?? "", out var display);
+            var text = FieldFailureText(modelState, kv.Key, display);
+            if (text.IsNullOrEmpty()) continue;
+            // 业务句带语气标点；合成的「不能为空」先记下，继续找更具体的一句。
+            if (text.EndsWith("不能为空", StringComparison.Ordinal))
+            {
+                fallback ??= text;
+                continue;
+            }
+            return text;
+        }
+        return fallback ?? "";
     }
 
     /// <summary>字段名以 url 结尾，或 ItemType 为 url。这类字段在列长度判断之前用单行输入框。</summary>

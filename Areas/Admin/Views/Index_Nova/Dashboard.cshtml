@@ -202,6 +202,43 @@
                                     if (item.Data is ECharts chart)
                                     {
                                         @await Html.PartialAsync("_ECharts", chart)
+                                        if (chart.Name.EqualIgnoreCase("Monitor"))
+                                        {
+                                            <script>
+                                                (function () {
+                                                    var chart = chart_Monitor;
+                                                    if (!chart) return;
+                                                    var axisColor = "";
+                                                    try {
+                                                        axisColor = getComputedStyle(document.documentElement).getPropertyValue("--nv-text-3").trim();
+                                                    } catch (e) {}
+                                                    function pct(value) {
+                                                        var n = Number(value);
+                                                        if (!isFinite(n) || n < 0 || Object.is(n, -0)) n = 0;
+                                                        var t = (Math.round(n * 10) / 10).toString();
+                                                        if (t === "-0") t = "0";
+                                                        return t + "%";
+                                                    }
+                                                    chart.__nvPct = pct;
+                                                    var label = { color: axisColor || undefined, formatter: pct };
+                                                    chart.setOption({
+                                                        legend: { top: 0, textStyle: { color: axisColor || undefined } },
+                                                        grid: { containLabel: true, left: 8, right: 16, top: 56, bottom: 8 },
+                                                        yAxis: {
+                                                            min: 0,
+                                                            max: 100,
+                                                            scale: false,
+                                                            name: "CPU / 内存 %",
+                                                            nameLocation: "end",
+                                                            nameGap: 10,
+                                                            nameTextStyle: { color: axisColor || undefined, fontSize: 12 },
+                                                            axisLabel: label
+                                                        },
+                                                        xAxis: { axisLabel: { color: axisColor || undefined } }
+                                                    });
+                                                })();
+                                            </script>
+                                        }
                                         if (!info.ChartUrl.IsNullOrEmpty())
                                         {
                                             <script>
@@ -222,6 +259,9 @@
                                                                 arr.forEach(function (v) { s.push(v); if (s.length > max) s.shift(); });
                                                             });
                                                             chart.setOption({ xAxis: { data: xs }, series: opt.series.map(function (s) { return { data: s.data }; }) });
+                                                            if (typeof chart_Monitor !== "undefined" && chart === chart_Monitor && chart.__nvPct) {
+                                                                chart.setOption({ yAxis: { min: 0, max: 100, axisLabel: { formatter: chart.__nvPct } } });
+                                                            }
                                                         });
                                                     }, interval * 1000);
                                                 });

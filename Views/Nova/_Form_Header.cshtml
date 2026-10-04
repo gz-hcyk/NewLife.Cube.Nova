@@ -13,7 +13,8 @@
 {
     <div class="nv-form-title">@(isNew ? "添加" : "编辑")@formTitle</div>
 }
-@if (!msg.IsNullOrEmpty())
+@* 已有字段级失败时，页级只留下方一条 nv-notice，不再叠「添加失败！」状态条。 *@
+@if (!msg.IsNullOrEmpty() && !NovaForm.HasRealErrors(ViewData.ModelState))
 {
     // 状态提示条：与通用通知条（.nv-notice）同构，但只做「就地关闭」，
     // 不走 24h 免打扰（表单提示每次提交都可能不同，缓存会误伤）。
