@@ -86,16 +86,8 @@
             var selectName = !item.MapField.IsNullOrEmpty() ? item.MapField : item.Name;
             var selectValue = !item.MapField.IsNullOrEmpty() ? entity[item.MapField] : itemModel.Value;
 
-            // 数据字段以s结尾，表示多选，其它单选
-            if (item.ItemType.EqualIgnoreCase("singleSelect"))
-            {
-                @await Html.PartialAsync(itemView ?? "_Form_DropDownList", new ListBoxModel(selectName, ds, selectValue))
-            }
-            else if (item.ItemType.EqualIgnoreCase("multipleSelect"))
-            {
-                @await Html.PartialAsync(itemView ?? "_Form_ListBox", new ListBoxModel(selectName, ds, selectValue))
-            }
-            else if (item.Name.EndsWith("s"))
+            // singleSelect 保持单选；multipleSelect 或名称以 s 结尾为多选。与对象表单同一规则。
+            if (NovaForm.IsMultipleSelect(item.Name, item.ItemType))
             {
                 @await Html.PartialAsync(itemView ?? "_Form_ListBox", new ListBoxModel(selectName, ds, selectValue))
             }

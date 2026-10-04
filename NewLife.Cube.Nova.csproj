@@ -37,6 +37,10 @@
   </ItemGroup>
   <!-- _ace_ref 为框架 ACE/Shared 原版视图的本地参考副本，不参与 Razor 编译与打包 -->
   <ItemGroup>
+    <Compile Remove="XUnitTest\**" />
+    <Content Remove="XUnitTest\**" />
+    <EmbeddedResource Remove="XUnitTest\**" />
+    <None Remove="XUnitTest\**" />
     <Content Remove="_ace_ref\**" />
     <EmbeddedResource Remove="_ace_ref\**" />
     <None Remove="_ace_ref\**" />

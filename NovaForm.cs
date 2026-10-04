@@ -228,6 +228,29 @@ public static class NovaForm
     public static Boolean IgnoresStringLength(DataField field) =>
         field != null && (field.DataSource != null || !field.MapField.IsNullOrEmpty());
 
+    /// <summary>
+    /// 是否用大文本分部视图。有数据源或外键映射时不按列长度改成多行文本，
+    /// 仍由 _Form_Item 渲染下拉、多选或映射。无数据源的备注、描述保持多行。
+    /// </summary>
+    /// <param name="field">表单字段。为空时返回 false。</param>
+    /// <returns>无数据源且无映射，并且列长度达到大文本时为 true。</returns>
+    public static Boolean RendersAsBigText(DataField field) =>
+        field != null && !IgnoresStringLength(field) && field.IsBigText();
+
+    /// <summary>
+    /// 数据源字段是否多选。ItemType 为 singleSelect 时保持单选；
+    /// multipleSelect，或名称以 s 结尾，为多选；其余为单选。
+    /// </summary>
+    /// <param name="name">字段名。</param>
+    /// <param name="itemType">元素类型，可为 null。</param>
+    /// <returns>应使用多选列表时为 true。</returns>
+    public static Boolean IsMultipleSelect(String name, String itemType)
+    {
+        if (itemType.EqualIgnoreCase("singleSelect")) return false;
+        if (itemType.EqualIgnoreCase("multipleSelect")) return true;
+        return name != null && name.EndsWith("s");
+    }
+
     /// <summary>1–99 窄单行。有数据源或映射的字段不套用。</summary>
     public static Boolean IsNarrowSingleLine(DataField field) =>
         field != null && !IgnoresStringLength(field) && IsNarrowSingleLine(field.Name, field.ItemType, field.Type, field.Length);
@@ -239,7 +262,10 @@ public static class NovaForm
     /// <summary>
     /// 独占表单一行。多行与 <see cref="DataField.IsBigText"/> 一致；
     /// 宽单行、列长度达到宽档的 URL 也占整列宽。自定义 GroupView 与权限矩阵不并排。
+    /// 有数据源或映射且列很长时仍独占一行，控件由 <see cref="RendersAsBigText"/> 交给下拉或多选，不改成文本框。
     /// </summary>
+    /// <param name="field">表单字段。为空时返回 false。</param>
+    /// <returns>该字段不与下一个字段并排时为 true。</returns>
     public static Boolean SpansFormRow(DataField field)
     {
         if (field == null) return false;
