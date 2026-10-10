@@ -21,11 +21,22 @@
     var year = DateTime.Now.Year;
 
     // 背景只落左侧 aside。空 / 纯空白用框架 IsNullOrEmpty，不输出 url、不请求默认图。
+    // 仍是 /cube/image?id= 时改写成匿名代理，避免未登录 401 裂图；已是公开地址则直接引用。
     var bg = NewLife.Cube.CubeSetting.Current.LoginBackground;
     // SSO 才写 Model.Logo。魔方设置的 LoginLogo 在这里补上；两者都空则字标，不请求 /logo.png。
+    var settingLogo = NewLife.Cube.CubeSetting.Current.LoginLogo;
     var logo = Model?.Logo;
-    if (logo.IsNullOrEmpty()) logo = NewLife.Cube.CubeSetting.Current.LoginLogo;
+    if (logo.IsNullOrEmpty()) logo = settingLogo;
     if (!bg.IsNullOrEmpty()) bg = bg.Trim();
+    bg = NovaLoginAsset.ApplyPathBase(NovaLoginAsset.ResolveBackground(bg), p => Url.Content(p));
+    if (!logo.IsNullOrEmpty())
+    {
+        // 代理只读魔方设置。SSO 上另一张 /cube/image 不改写，失败时 onerror 回字标。
+        var resolved = NovaLoginAsset.ResolveLogo(logo);
+        if (resolved == NovaLoginAsset.LogoUrl && !NovaLoginAsset.SameCubeImage(logo, settingLogo))
+            resolved = logo.Trim();
+        logo = NovaLoginAsset.ApplyPathBase(resolved, p => Url.Content(p));
+    }
     var hasBg = !bg.IsNullOrEmpty();
     var bgCss = hasBg
         ? bg.Replace("\\", "/").Replace("\"", "%22").Replace("'", "%27").Replace("(", "%28").Replace(")", "%29").Replace(" ", "%20").Replace("\r", "").Replace("\n", "")
@@ -181,7 +192,7 @@
 </head>
 <body class="nv">
     <div class="nv-login-page">
-        <aside class="nv-login-aside@(hasBg ? " nv-login-aside--has-bg" : "")" style="@(hasBg ? $"background-image:url('{bgCss}')" : null)">
+        <aside class="nv-login-aside@(hasBg ? " nv-login-aside--has-bg" : "")" style="@(hasBg ? $"background-image:url('{bgCss}')" : null)" data-nv-login-bg="@(hasBg ? bg : null)">
             <div class="nv-aside-inner">
                 <div class="nv-aside-brand">
                     @if (!brand.IsNullOrEmpty())
@@ -189,7 +200,8 @@
                         <span class="nv-aside-logo">
                             @if (!logo.IsNullOrEmpty())
                             {
-                                <img src="@logo" alt="@brand" />
+                                <img src="@logo" alt="@brand" onerror="this.hidden=true;var n=this.nextElementSibling;if(n)n.hidden=false;" />
+                                <span class="nv-aside-logo--txt" hidden>@brand.Substring(0, 1)</span>
                             }
                             else
                             {
@@ -253,6 +265,20 @@
 
     <script>
         (function () {
+            // 背景图 401 / 404 时去掉铺图，回到 --nv-sidebar-bg。CSS 背景没有 onerror。
+            var aside = document.querySelector('.nv-login-aside--has-bg');
+            if (aside) {
+                var bgUrl = aside.getAttribute('data-nv-login-bg');
+                if (bgUrl) {
+                    var probe = new Image();
+                    probe.onerror = function () {
+                        aside.classList.remove('nv-login-aside--has-bg');
+                        aside.style.backgroundImage = '';
+                    };
+                    probe.src = bgUrl;
+                }
+            }
+
             function showNotice(msg) {
                 var box = document.getElementById('nv-login-notice');
                 var text = document.getElementById('nv-login-notice-text');

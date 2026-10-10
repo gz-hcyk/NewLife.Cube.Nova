@@ -3,6 +3,7 @@
 @using NewLife.Common
 @using NewLife.Cube
 @using NewLife.Cube.Areas.Admin.Models
+@using NewLife.Cube.Nova
 @{
     // 登录表单（Nova 观感）。PC（Login.cshtml）与移动端（MLogin.cshtml）共用本局部视图，改一处两端生效。
     //
@@ -17,8 +18,18 @@
 
     var set = Model;
     // DEF-019：Model.Logo 仅 SSO App 会赋值。空则用魔方设置 LoginLogo；仍空则 mark，不请求 /logo.png。
+    var settingLogo = CubeSetting.Current.LoginLogo;
     var logo = set?.Logo;
-    if (logo.IsNullOrEmpty()) logo = CubeSetting.Current.LoginLogo;
+    if (logo.IsNullOrEmpty()) logo = settingLogo;
+    // 旧值 /cube/image?id= 改写匿名代理；公开地址直接用。空则仍是 mark。
+    // 代理只读魔方设置。SSO 上另一张附件不改写，失败时 onerror 回 mark。
+    if (!logo.IsNullOrEmpty())
+    {
+        var resolved = NovaLoginAsset.ResolveLogo(logo);
+        if (resolved == NovaLoginAsset.LogoUrl && !NovaLoginAsset.SameCubeImage(logo, settingLogo))
+            resolved = logo.Trim();
+        logo = NovaLoginAsset.ApplyPathBase(resolved, p => Url.Content(p));
+    }
 
     var pDic = ViewData["pKey"] == null ? new KeyValuePair<string, string>() : (KeyValuePair<String, String>)ViewData["pKey"];
     var key = pDic.Key;
@@ -33,7 +44,13 @@
         <div class="nv-login-brand">
             @if (!logo.IsNullOrEmpty())
             {
-                <img src="@logo" alt="@set.DisplayName" />
+                <img src="@logo" alt="@set.DisplayName" onerror="this.hidden=true;var n=this.nextElementSibling;if(n)n.hidden=false;" />
+                @* 加载失败（401/404）收起裂图，露出与空 Logo 相同的 mark。 *@
+                <span class="nv-login-mark" role="img" aria-label="@set.DisplayName" hidden>
+                    <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" />
+                    </svg>
+                </span>
             }
             else
             {

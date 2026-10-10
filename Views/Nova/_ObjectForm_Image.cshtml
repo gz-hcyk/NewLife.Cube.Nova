@@ -4,14 +4,17 @@
 @{
     // URL 文本框随 ObjectForm 保存。文件不进本次提交：ObjectController.Update 不处理 _attachment。
     // 选择文件后由 nova-ui.js 调用实体 UploadFile（id 可空/0），把返回的 filePath 写入文本框。
+    // 仅 LoginLogo / LoginBackground 再调 Publish，把附件复制到静态目录，文本框改存公开地址。
     var name = Model.Name;
     var value = Model.Value + "";
     var uploadUrl = Url.Action("UploadFile", "User", new { area = "Admin", id = 0 });
     if (uploadUrl.IsNullOrEmpty()) uploadUrl = "/Admin/User/UploadFile/0";
+    var publish = name.EqualIgnoreCase("LoginLogo", "LoginBackground");
+    var publishUrl = publish ? Url.Content("~/Nova/LoginAsset/Publish") : "";
 }
 <div class="nv-image-field" data-nv-image-field>
     @Html.TextBox(name, value, new { @class = "nv-input", autocomplete = "off" })
-    <input type="file" class="nv-input" accept="image/*" data-nv-image-upload data-nv-upload-url="@uploadUrl" />
+    <input type="file" class="nv-input" accept="image/*" data-nv-image-upload data-nv-upload-url="@uploadUrl" data-nv-publish-url="@publishUrl" data-nv-publish-field="@(publish ? name : null)" />
     <p class="nv-image-status" data-nv-image-status hidden></p>
     @if (!value.IsNullOrEmpty())
     {
