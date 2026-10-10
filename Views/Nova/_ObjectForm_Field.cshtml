@@ -59,7 +59,10 @@
         }
         if (isImage)
         {
-            <div class="nv-field-hint">选择文件将自动上传并填入 URL</div>
+            var imageHint = name.EqualIgnoreCase("LoginLogo", "LoginBackground")
+                ? "选择文件将自动上传，并写成登录页可匿名访问的地址"
+                : "选择文件将自动上传并填入 URL";
+            <div class="nv-field-hint">@imageHint</div>
         }
     }
 </div>

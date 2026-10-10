@@ -2034,7 +2034,9 @@
 
     /* ObjectForm 图片字段：ObjectController.Update 不收附件。
        选文件后 POST 实体 UploadFile（字段名 file，带登录 cookie 与防伪令牌），
-       把 JSON data.filePath 写回 URL 文本框。保存时表单只提交字符串。 */
+       把 JSON data.filePath 写回 URL 文本框。保存时表单只提交字符串。
+       LoginLogo / LoginBackground 带 data-nv-publish-url：拿到 filePath 后再 POST Publish，
+       文本框改存 /Content/nova/login/...，登录页无需登录即可显示。其它图片字段不走这一步。 */
     function initObjectImageUpload() {
         function status(box, text, isError) {
             var el = box.querySelector('[data-nv-image-status]');
@@ -2065,14 +2067,33 @@
             var pic = link.querySelector('img');
             if (pic) pic.src = url;
         }
+        function applyPath(box, text, path) {
+            text.value = path;
+            thumb(box, path);
+            status(box, '', false);
+        }
+        function publishOk(resp) {
+            if (!resp || !resp.data || !resp.data.filePath) return false;
+            return resp.code === 0 || resp.code === '0';
+        }
         $all('[data-nv-image-upload]').forEach(function (input) {
             if (input.getAttribute('data-nv-image-bound') === '1') return;
             input.setAttribute('data-nv-image-bound', '1');
+            var box = input.closest('[data-nv-image-field]') || input.parentNode;
+            var text = box.querySelector('input[type="text"]');
+            if (text && text.getAttribute('data-nv-image-clear') !== '1') {
+                text.setAttribute('data-nv-image-clear', '1');
+                text.addEventListener('input', function () {
+                    if (!(text.value || '').trim()) {
+                        thumb(box, '');
+                        status(box, '', false);
+                    }
+                });
+            }
             input.addEventListener('change', function () {
                 var file = input.files && input.files[0];
-                var box = input.closest('[data-nv-image-field]') || input.parentNode;
                 if (!file) return;
-                var text = box.querySelector('input[type="text"]');
+                text = box.querySelector('input[type="text"]');
                 var uploadUrl = input.getAttribute('data-nv-upload-url');
                 if (!text || !uploadUrl) return;
                 var form = input.closest('form');
@@ -2088,19 +2109,48 @@
                 xhr.withCredentials = true;
                 if (token) xhr.setRequestHeader('RequestVerificationToken', token);
                 xhr.onload = function () {
-                    input.disabled = false;
                     input.value = '';
                     var resp = null;
                     try { resp = JSON.parse(xhr.responseText); } catch (e) { resp = null; }
                     var path = resp && resp.data && resp.data.filePath;
-                    if (xhr.status >= 200 && xhr.status < 300 && path) {
-                        text.value = path;
-                        thumb(box, path);
-                        status(box, '', false);
-                    } else {
+                    var publishUrl = input.getAttribute('data-nv-publish-url');
+                    var field = input.getAttribute('data-nv-publish-field');
+                    if (!(xhr.status >= 200 && xhr.status < 300 && path)) {
+                        input.disabled = false;
                         var msg = (resp && (resp.message || resp.error)) || ('上传失败（' + xhr.status + '）');
                         status(box, msg, true);
+                        return;
                     }
+                    if (!publishUrl || !field) {
+                        input.disabled = false;
+                        applyPath(box, text, path);
+                        return;
+                    }
+                    status(box, '正在公开…', false);
+                    var fd2 = new FormData();
+                    fd2.append('field', field);
+                    fd2.append('filePath', path);
+                    if (token) fd2.append('__RequestVerificationToken', token);
+                    var xhr2 = new XMLHttpRequest();
+                    xhr2.open('POST', publishUrl);
+                    xhr2.withCredentials = true;
+                    if (token) xhr2.setRequestHeader('RequestVerificationToken', token);
+                    xhr2.onload = function () {
+                        input.disabled = false;
+                        var resp2 = null;
+                        try { resp2 = JSON.parse(xhr2.responseText); } catch (e2) { resp2 = null; }
+                        if (xhr2.status >= 200 && xhr2.status < 300 && publishOk(resp2)) {
+                            applyPath(box, text, resp2.data.filePath);
+                            return;
+                        }
+                        var msg2 = (resp2 && (resp2.message || resp2.error)) || ('公开失败（' + xhr2.status + '）');
+                        status(box, msg2, true);
+                    };
+                    xhr2.onerror = function () {
+                        input.disabled = false;
+                        status(box, '网络错误，未写入 URL', true);
+                    };
+                    xhr2.send(fd2);
                 };
                 xhr.onerror = function () {
                     input.disabled = false;
