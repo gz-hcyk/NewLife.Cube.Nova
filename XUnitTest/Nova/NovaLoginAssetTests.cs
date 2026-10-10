@@ -175,10 +175,22 @@ public class NovaLoginAssetTests
 
         var ctrl = File.ReadAllText(Path.Combine(root, "LoginAssetController.cs"));
         Assert.Contains("[AllowAnonymous]", ctrl);
-        Assert.Contains("[ValidateAntiForgeryToken]", ctrl);
+        Assert.DoesNotContain("[ValidateAntiForgeryToken]", ctrl);
+        var publishMethod = ctrl.Substring(ctrl.IndexOf("Task<ActionResult> Publish", StringComparison.Ordinal));
+        var loginAt = publishMethod.IndexOf("TryLogin(HttpContext)", StringComparison.Ordinal);
+        var validateAt = publishMethod.IndexOf("ValidateRequestAsync(HttpContext)", StringComparison.Ordinal);
+        Assert.True(loginAt >= 0 && validateAt > loginAt, "必须先 TryLogin 恢复登录身份，再校验防伪");
+        Assert.Contains("AntiforgeryValidationException", publishMethod);
         Assert.Contains("CubeSetting.Current.LoginLogo", ctrl);
         Assert.Contains("CubeSetting.Current.LoginBackground", ctrl);
         Assert.DoesNotContain("PublicAttachment", ctrl);
+
+        var publish = js.Substring(js.IndexOf("function initObjectImageUpload", StringComparison.Ordinal));
+        Assert.Contains("RequestVerificationToken", publish);
+        Assert.Contains("__RequestVerificationToken", publish);
+        Assert.Contains("fd2.append('field', field)", publish);
+        Assert.Contains("fd2.append('filePath', path)", publish);
+        Assert.Contains("publishOk", publish);
     }
 
     static String RepoRoot()

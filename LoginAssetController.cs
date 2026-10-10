@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NewLife.Cube.Entity;
@@ -14,10 +15,16 @@ namespace NewLife.Cube.Nova;
 public class LoginAssetController : ControllerBaseX
 {
     readonly IWebHostEnvironment _env;
+    readonly IAntiforgery _antiforgery;
 
     /// <summary>实例化</summary>
     /// <param name="env">宿主环境，公开文件写到 WebRoot</param>
-    public LoginAssetController(IWebHostEnvironment env) => _env = env;
+    /// <param name="antiforgery">防伪服务。须在恢复登录身份之后校验</param>
+    public LoginAssetController(IWebHostEnvironment env, IAntiforgery antiforgery)
+    {
+        _env = env;
+        _antiforgery = antiforgery;
+    }
 
     /// <summary>输出当前登录 Logo。配置已是公开地址时不走这里</summary>
     /// <returns>图片内容；没有可输出的附件时 404</returns>
@@ -34,15 +41,29 @@ public class LoginAssetController : ControllerBaseX
     /// <summary>把刚上传的登录图复制到可静态访问目录</summary>
     /// <param name="field">LoginLogo 或 LoginBackground</param>
     /// <param name="filePath">User/UploadFile 返回的 <c>/cube/image?id=</c></param>
-    /// <returns>JSON，<c>data.filePath</c> 为 <c>/Content/nova/login/...</c></returns>
+    /// <returns>JSON，<c>data.filePath</c> 为 <c>/Content/nova/login/...</c>。失败时也是 JSON，调用方不得把 <c>/cube/image</c> 写入配置</returns>
+    /// <remarks>
+    /// 不能使用 <see cref="ValidateAntiForgeryTokenAttribute"/>。它在动作之前执行。
+    /// 本控制器不在魔方区域，全局实体授权不会先 <c>TryLogin</c>，此时 <c>HttpContext.User</c> 仍是匿名身份。
+    /// 设置页令牌是在 <c>SetPrincipal</c> 之后生成的，里面是登录用户的 ClaimUid（用户名留空）。
+    /// 匿名校验对不上 ClaimUid，框架直接返回空 body 的 HTTP 400。
+    /// 请求头 <c>RequestVerificationToken</c> 与表单字段 <c>__RequestVerificationToken</c> 都是框架默认名，值也一致；失败原因不是头名或 JSON 字段。
+    /// </remarks>
     [HttpPost("Publish")]
-    [ValidateAntiForgeryToken]
-    public ActionResult Publish(String field, String filePath)
+    public async Task<ActionResult> Publish(String field, String filePath)
     {
-        var user = ManageProvider.User;
-        if (user == null && ManageProvider.Provider?.TryLogin(HttpContext) is IUser logged)
-            user = logged;
+        // TryLogin 内部会 SetPrincipal。已有 Session 用户时也要调用，否则防伪看不到登录身份。
+        var user = ManageProvider.Provider?.TryLogin(HttpContext);
         if (user == null) return Json(401, "未登录");
+
+        try
+        {
+            await _antiforgery.ValidateRequestAsync(HttpContext);
+        }
+        catch (AntiforgeryValidationException)
+        {
+            return Json(400, "防伪校验未通过");
+        }
         if (!NovaLoginAsset.IsLoginImageField(field))
             return Json(400, "仅登录 Logo 与背景可公开");
         if (!NovaLoginAsset.TryParseCubeImageId(filePath, out var id))
