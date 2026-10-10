@@ -4,10 +4,12 @@ using System.Security.Principal;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace XUnitTest.Nova;
@@ -23,17 +25,24 @@ public class NovaLoginAssetAntiforgeryTests
     public async Task ClaimUidMatchesOnlyAfterPrincipalIsRestored()
     {
         var builder = WebApplication.CreateBuilder();
-        builder.WebHost.UseTestServer();
+        builder.Logging.SetMinimumLevel(LogLevel.Warning);
+        builder.WebHost.UseUrls("http://127.0.0.1:0");
         builder.Services.AddAntiforgery();
-        builder.Services.AddControllers()
+        builder.Services.AddControllersWithViews()
             .AddApplicationPart(typeof(LoginAssetAntiforgeryProbeController).Assembly);
 
         var app = builder.Build();
         app.MapControllers();
         await app.StartAsync();
+        var address = app.Services.GetRequiredService<IServer>()
+            .Features.Get<IServerAddressesFeature>()!
+            .Addresses.Single();
+        using var client = new HttpClient(new HttpClientHandler { UseCookies = false })
+        {
+            BaseAddress = new Uri(address),
+        };
         try
         {
-            var client = app.GetTestClient();
             var issued = await client.GetAsync("/probe-login-asset/issue");
             Assert.Equal(HttpStatusCode.OK, issued.StatusCode);
             var token = (await issued.Content.ReadAsStringAsync()).Trim();
@@ -44,8 +53,8 @@ public class NovaLoginAssetAntiforgeryTests
             Assert.Contains(".AspNetCore.Antiforgery.", cookie, StringComparison.Ordinal);
 
             using var anonymous = new HttpRequestMessage(HttpMethod.Post, "/probe-login-asset/filter");
-            anonymous.Headers.TryAddWithoutValidation("Cookie", cookie);
             anonymous.Headers.TryAddWithoutValidation("RequestVerificationToken", token);
+            anonymous.Headers.TryAddWithoutValidation("Cookie", cookie);
             anonymous.Content = new FormUrlEncodedContent(new Dictionary<String, String>
             {
                 ["field"] = "LoginLogo",
@@ -53,12 +62,13 @@ public class NovaLoginAssetAntiforgeryTests
                 ["__RequestVerificationToken"] = token,
             });
             var rejected = await client.SendAsync(anonymous);
-            Assert.Equal(HttpStatusCode.BadRequest, rejected.StatusCode);
-            Assert.True(String.IsNullOrEmpty(await rejected.Content.ReadAsStringAsync()));
+            var rejectedBody = await rejected.Content.ReadAsStringAsync();
+            Assert.True(rejected.StatusCode == HttpStatusCode.BadRequest, ((Int32)rejected.StatusCode) + " " + rejectedBody);
+            Assert.True(String.IsNullOrEmpty(rejectedBody), rejectedBody);
 
             using var restored = new HttpRequestMessage(HttpMethod.Post, "/probe-login-asset/after");
-            restored.Headers.TryAddWithoutValidation("Cookie", cookie);
             restored.Headers.TryAddWithoutValidation("RequestVerificationToken", token);
+            restored.Headers.TryAddWithoutValidation("Cookie", cookie);
             restored.Content = new FormUrlEncodedContent(new Dictionary<String, String>
             {
                 ["field"] = "LoginLogo",
